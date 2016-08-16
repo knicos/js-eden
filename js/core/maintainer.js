@@ -508,6 +508,10 @@
 		return this.symbols[name];
 	};
 
+	Folder.prototype.value = function(name, scope) {
+		return this.lookup(name).value(scope);
+	}
+
 	Folder.prototype.currentObservableName = function () {
 		if (this.currentObservables.length == 0) {
 			return undefined;

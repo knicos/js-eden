@@ -1849,7 +1849,7 @@ Eden.AST.Primary.prototype.unparse = function() {
 
 Eden.AST.Primary.prototype.generate = function(ctx, scope, bound) {
 	// Check if this primary is a local variable.
-	if (ctx && ctx.locals && ctx.locals.list.indexOf(this.observable) != -1) {
+	if (ctx && ctx.locals && ctx.locals[this.observable]) {
 		this.returnsbound = false;
 		var res = this.observable;
 		for (var i=0; i<this.extras.length; i++) {
@@ -2758,6 +2758,7 @@ Eden.AST.When = function() {
 	this.base = undefined;
 	this.scopes = [];
 	this.causecount = 0;
+	this.locals = {};
 };
 
 Eden.AST.When.prototype.setScope = function (scope) {
@@ -2893,9 +2894,26 @@ Eden.AST.Declarations = function() {
 	this.type = "declarations";
 	this.errors = [];
 	this.list = [];
+	this.end = 0;
+	this.start = 0;
 };
 
+Eden.AST.Declarations.prototype.setSource = function(start, end) {
+	this.start = start;
+	this.end = end;
+}
+
 Eden.AST.Declarations.prototype.error = fnEdenASTerror;
+
+Eden.AST.Declarations.prototype.generate = function(ctx, scope) {
+	var res = "var ";
+	for (var i=0; i<this.list.length; i++) {
+		res += this.list[i];
+		if (i < this.list.length-1) res += ",";
+		ctx.locals[this.list[i]] = true;
+	}
+	return res + ";\n";
+}
 
 
 

@@ -455,6 +455,8 @@ Eden.AST.prototype.pEXPRESSION_PPPPP = function() {
  *	PRIMARY	
  */
 Eden.AST.prototype.pFACTOR = function() {
+	var res;
+
 	// Sub-expression
 	if (this.token == "(") {
 		this.next();
@@ -469,7 +471,7 @@ Eden.AST.prototype.pFACTOR = function() {
 		} else {
 			this.next();
 		}
-		return expression;
+		res = expression;
 	// Action parameters
 	} else if (this.token == "$") {
 		this.next();
@@ -487,7 +489,7 @@ Eden.AST.prototype.pFACTOR = function() {
 
 		index = this.data.value
 		this.next();
-		return new Eden.AST.Parameter(index);
+		res = new Eden.AST.Parameter(index);
 	// Make a list literal
 	} else if (this.token == "[") {
 		this.next();
@@ -514,26 +516,26 @@ Eden.AST.prototype.pFACTOR = function() {
 		} else {
 			this.next();
 		}
-		return literal;
+		res = literal;
 	// Literal undefined
 	} else if (this.token == "@") {
 		this.next();
-		return new Eden.AST.Literal("UNDEFINED", "@");
+		res = new Eden.AST.Literal("UNDEFINED", "@");
 	// Should NOT be encountered here anymore!!!?
 	} else if (this.token == "JAVASCRIPT") {
 		var lit = new Eden.AST.Literal("JAVASCRIPT", this.data.value);
 		this.next();
-		return lit;
+		res = lit;
 	// Numeric literal
 	} else if (this.token == "NUMBER") {
 		var lit = new Eden.AST.Literal("NUMBER", this.data.value);
 		this.next();
-		return lit
+		res = lit
 	// Unary negation operator
 	} else if (this.token == "-") {
 		this.next();
 		var negop = new Eden.AST.UnaryOp("-", this.pFACTOR());
-		return negop;
+		res = negop;
 	// String literal
 	// TODO Multi-line strings
 	} else if (this.token == "STRING") {
@@ -553,12 +555,12 @@ Eden.AST.prototype.pFACTOR = function() {
 			}
 		}
 
-		return lit;
+		res = lit;
 	// Boolean literal
 	} else if (this.token == "BOOLEAN") {
 		var lit = new Eden.AST.Literal("BOOLEAN", this.data.value);
 		this.next();
-		return lit;
+		res = lit;
 	// Character literal
 	} else if (this.token == "CHARACTER") {
 		var lit = new Eden.AST.Literal("CHARACTER", this.data.value);
@@ -571,27 +573,35 @@ Eden.AST.prototype.pFACTOR = function() {
 			return lit;
 		}
 		this.next();
-		return lit;
+		res = lit;
 	// Unary boolean not
 	} else if (this.token == "!") {
 		this.next();
 		var f = this.pFACTOR();
-		return new Eden.AST.UnaryOp("!", f);
+		res = new Eden.AST.UnaryOp("!", f);
 	// Unary address of operator
 	} else if (this.token == "&") {
 		this.next();
 		var lvalue = this.pLVALUE();
-		return new Eden.AST.UnaryOp("&", lvalue);
+		res = new Eden.AST.UnaryOp("&", lvalue);
 	// Unary dereference operator
 	} else if (this.token == "*") {
 		this.next();
 		var lvalue = this.pFACTOR();
-		return new Eden.AST.UnaryOp("*", lvalue);
+		res = new Eden.AST.UnaryOp("*", lvalue);
 	// Otherwise it must be some primary (observable or backticks)
 	} else {
 		var primary = this.pPRIMARY();
-		return primary;
+		res = primary;
 	}
+
+	if (this.token == "with" || this.token == "::") {
+		this.next();
+		var scope = this.pSCOPE();
+		scope.setExpression(res);
+		res = scope;
+	}
+	return res;
 }
 
 
@@ -1046,12 +1056,7 @@ Eden.AST.prototype.pPRIMARY_PPP = function() {
  * PRIMARY'''' -> with SCOPE | epsilon
  */
 Eden.AST.prototype.pPRIMARY_PPPP = function() {
-	/*if (this.token == "with") {
-		this.next();
-		return this.pSCOPE();
-	} else {*/
 		return new Eden.AST.Primary();
-	//}
 }
 
 
@@ -1352,14 +1357,14 @@ Eden.AST.prototype.pEXPRESSION_PLAIN = function() {
 Eden.AST.prototype.pEXPRESSION = function() {
 	var plain = this.pEXPRESSION_PLAIN();
 
-	if (this.token == "with" || this.token == "::") {
+	/*if (this.token == "with" || this.token == "::") {
 		this.next();
 		var scope = this.pSCOPE();
 		scope.setExpression(plain);
 		return scope;
-	} else {
+	} else {*/
 		return plain;
-	}
+	//}
 }
 
 
@@ -1583,7 +1588,7 @@ Eden.AST.prototype.pLOCALS = function() {
 	var locals = new Eden.AST.Declarations();
 
 	// Get all locals, there may be many lines of such declarations
-	while (this.token == "auto" || this.token == "local") {
+	while (this.token == "var" || this.token == "auto") {
 		this.next();
 
 		var olist = this.pOLIST();
@@ -2520,6 +2525,7 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	case "for"		:	this.next(); stat = this.pFOR(); break;
 	case "while"	:	this.next(); stat = this.pWHILE(); break;
 	case "do"		:	this.next(); stat = this.pDO(); break;
+	case "var"		:	stat = this.pLOCALS(); break;
 	case "wait"		:	this.next(); stat = this.pWAIT(); break;
 	case "switch"	:	this.next(); stat = this.pSWITCH(); break;
 	case "case"		:	this.next(); stat = this.pCASE(); break;
@@ -2722,7 +2728,7 @@ Eden.AST.prototype.pSCRIPT = function() {
 	var parent = this.parent;
 	this.parent = ast;
 
-	ast.setLocals(this.pLOCALS());
+	//ast.setLocals(this.pLOCALS());
 
 	while (this.token != "EOF") {
 		var statement = this.pSTATEMENT();

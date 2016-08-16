@@ -70,7 +70,8 @@ var Language = {
 		"require": "require",
 		"after": "after",
 		"shift": "shift",
-		"with": "with"
+		"with": "with",
+		"var": "var"
 	},
 	symbols: {
 		"int": "int",

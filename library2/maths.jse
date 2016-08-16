@@ -446,152 +446,10 @@ func mod {
 	return x % n if x>=0 else (n + (x % n));
 }
 
-func pow {
-  return ${{ Math.pow(arguments[0],arguments[1]); }}$;
-}
+pow is ${{ Math.pow(context.value("value",scope),context.value("power",scope)); }}$;
 
-func randomBoolean {
-	para probability;
-	if (probability == @) {
-		probability = 0.5;
-	}
-	return random() <= probability;
-}
 
-func randomInteger {
-	${{
-		if (arguments.length != 2) {
-			eden.error(new Error("randomInteger: This function requires exactly 2 arguments"), "error");
-			return undefined;
-		}
-		
-		var lowerBound = arguments[0];
-		var upperBound = arguments[1];
-
-		if (lowerBound === undefined || upperBound === undefined) {
-			return undefined;
-		} else if (typeof(lowerBound) != "number") {
-			eden.error(new Error("randomInteger: The lower bound must be an int, not a " + typeof(lowerBound)), "error");
-			return undefined;
-		} else if (isNaN(lowerBound)) {
-			return undefined;
-		} else if (!Number.isInteger(lowerBound)) {
-			eden.error(new Error("randomInteger: The lower bound must be an int, not a float."), "error");
-			return undefined;
-		} else if (typeof(upperBound) != "number") {
-			eden.error(new Error("randomInteger: The upper bound must be an int, not a " + typeof(upperBound)), "error");
-			return undefined;
-		} else if (isNaN(upperBound)) {
-			return undefined;
-		} else if (!Number.isInteger(upperBound)) {
-			eden.error(new Error("randomInteger: The upper bound must be an int, not a float."), "error");
-			return undefined;
-		}
-		
-		var n = Math.floor(root.lookup("random").definition(root, root.scope)() * (upperBound - lowerBound + 1) + lowerBound);
-		if (n > upperBound) {
-			// 1 / 2^62 chance
-			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-			n = upperBound;
-		}
-		return n;
-	}}$;
-}
-
-func randomFloat {
-	${{
-		if (arguments.length != 2) {
-			eden.error(new Error("randomFloat: This function requires exactly 2 arguments"), "error");
-			return undefined;
-		}
-
-		var lowerBound = arguments[0];
-		var upperBound = arguments[1];
-
-		if (lowerBound === undefined || upperBound === undefined) {
-			return undefined;
-		} else if (typeof(lowerBound) != "number") {
-			eden.error(new Error("randomFloat: The lower bound must be a float, not a " + typeof(lowerBound)), "error");
-			return undefined;
-		} else if (isNaN(lowerBound)) {
-			return undefined;
-		} else if (typeof(upperBound) != "number") {
-			eden.error(new Error("randomFloat: The upper bound must be a float, not a " + typeof(upperBound)), "error");
-			return undefined;
-		} else if (isNaN(upperBound)) {
-			return undefined;
-		}
-
-		var n = root.lookup("random").definition(root)() * (upperBound - lowerBound + 1) + lowerBound;
-		if (n > upperBound) {
-			n = upperBound;
-		}
-		return n;
-	}}$;
-}
-
-${{
-	xorshift32Random = function (state) {
-		state ^= state << 13;
-		state ^= state >>> 17;
-		state ^= state << 5;
-		return state;
-	}
-}}$;
-
-func xorshiftRandomGenerator {
-	${{
-		var stateSym = root.lookup("randomGeneratorState");
-		var lower = xorshift32Random(stateSym.value());
-		var upper = xorshift32Random(lower);
-		stateSym.assign(upper, root.scope, root.lookup("xorshiftRandomGenerator"));
-		upper = Math.abs(upper) * 4194304; // 2^22, 53 bits of precision in total
-		return (upper + Math.abs(lower)) / 9007199254740991; // 2^53 - 1
-	}}$;
-}
-
-randomSeed = @;
-randomGenerator is xorshiftRandomGenerator;
-
-${{
-	window.inRandomFunc = false;
-
-	root.lookup("randomSeed").addJSObserver("applySeed", function (obs, seed) {
-		root.lookup("randomGeneratorState").assign(seed, root.scope, obs);
-		root.lookup("randomIndex").assign(0, root.scope, obs);
-	});
-
-	root.lookup("randomGenerator").addJSObserver("applySeed", function (obs, generator) {
-		root.lookup("randomGeneratorState").assign(root.lookup("randomSeed").value(), root.scope, obs);		
-		root.lookup("randomIndex").assign(0, root.scope, obs);
-	});
-
-	root.lookup("randomIndex").addJSObserver("skipToIndex", function (obs, desiredIndex) {
-		if (inRandomFunc) {
-			return;
-		}
-		inRandomFunc = true;
-		var generator = root.lookup("randomGenerator").value();
-		root.lookup("randomGeneratorState").assign(root.lookup("randomSeed").value(), root.scope, obs);
-		for (var i = 0; i < desiredIndex; i++) {
-			generator();
-		}
-		inRandomFunc = false;
-	});
-}}$;
-	
-func random {
-	auto result;
-	${{ inRandomFunc = true; }}$;
-	randomIndex++;
-	if (randomSeed == @) {
-		result = ${{ Math.random() }}$;
-	} else {
-		result = randomGenerator();
-	}
-	${{ inRandomFunc = false; }}$;
-	return result;
-}
+random is ${{ Math.random() }}$;
 
 func sin {
 	${{
@@ -622,9 +480,7 @@ func sin {
 	}}$;
 }
 
-func sqrt {
-  return ${{ Math.sqrt(arguments[0]); }}$;
-}
+sqrt is ${{ Math.sqrt(context.value("value",scope)); }}$;
 
 func sum {
 	${{
