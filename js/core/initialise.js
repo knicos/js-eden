@@ -80,15 +80,8 @@ function initialiseJSEden(callback) {
 	var plugins;
 
 	var defaultPlugins = [
-		"Canvas2D",
-		"DependencyMap",
-		"HTMLContent",
-		"ObservablePalette",
 		"PluginManager",
-		"ProjectList",
-		"ScriptGenerator",
 		"ScriptInput",
-		"StateTimeLine",
 		"SymbolLookUpTable",
 		"SymbolViewer"
 	];

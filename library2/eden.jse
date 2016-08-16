@@ -13,17 +13,15 @@ debug = ${{ {jsExceptions: edenUI.getOptionValue("developer") == "true" } }}$;
 time is ${{ Math.floor((new Date()).getTime() / 1000) }}$;
 
 when (writeln) {
-	message = str::str->writeln;
+	message = str(str->writeln);
 	${{ console.log(context.lookup("message").value(scope)) }}$;
 	_menubar_status = message;
-} :: message->@;
+}(message->@);
 
 when (forget) {
-	var symbolToDelete, nameToDelete;
-
-	if (type::value->forget == "string") {
+	if (type(value->forget) == "string") {
 		symbolToDelete = &`forget`;
-	} else if (type::value->forget == "pointer") {
+	} else if (type(value->forget) == "pointer") {
 		symbolToDelete = forget;
 	## Todo, allow a list type here.
 	} else {
@@ -51,14 +49,14 @@ when (error) {
 }
 
 
-View is [name,type] :: name-->"VIEW", type-->"ScriptInput";
-Canvas2D is View :: type->"Canvas2D";
+View is [name,type] (name-->"VIEW", type-->"ScriptInput");
+Canvas2D is View (type->"Canvas2D");
 
 when(createView) {
 	name = createView.name;
 	type = createView.type;
 	${{ edenUI.createView(root.value("name",scope),root.value("type",scope)); }}$;
-}::name-->@,type-->@;
+}(name-->@,type-->@);
 
 
 ##Autocalc compatibility
@@ -68,7 +66,7 @@ autocalc = 1;
 
 autocalc = 0;
 
-##import lib/type;
+import lib/type;
 ##import lib/core;
 ##import lib/math;
 ##import lib/string;
@@ -87,21 +85,21 @@ if (initialViews == "" || initialViews == "default") {
 	_view_projects_y = 0;
 	_view_projects_width = 210;
 	_view_projects_height = screenHeight;
-	createView = Canvas2D::name->"picture";
-	wait 1;
+	##createView = Canvas2D(name->"picture");
+	##wait 1;
 	picturecenterx is screenWidth / 2 - 30 - _view_picture_width;
 	picturecenterprojx is _view_projects_width + _views_frame_width;
-	_view_picture_x = max::a->picturecenterx, b->picturecenterprojx;
+	_view_picture_x = max(a->picturecenterx, b->picturecenterprojx);
 	_view_picture_y = screenHeight / 2 - _view_picture_height / 2;
 	if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
-		picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
+		##picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
 	}
-	createView is View::name->"input", type->"ScriptInput";
+	createView is View(name->"input", type->"ScriptInput");
 	_view_input_agent = "view/script/input";
 	_view_input_height = _view_picture_height;
 	inputcenterx is screenWidth / 2 + 30;
 	inputcenterxpic is _view_picture_x + _view_picture_width + _views_frame_width + (_view_picture_x - (_view_projects_x + _view_projects_width + _views_frame_width));
-	_view_input_x = min::a->inputcenterx,b->inputcenterxpic;
+	_view_input_x = min(a->inputcenterx,b->inputcenterxpic);
 	_view_input_y = screenHeight / 2 - _view_input_height / 2;
 }
 ##forget(&initialViews);

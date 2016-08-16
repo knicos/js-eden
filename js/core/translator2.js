@@ -594,12 +594,15 @@ Eden.AST.prototype.pFACTOR = function() {
 		var primary = this.pPRIMARY();
 		res = primary;
 	}
-
-	if (this.token == "with" || this.token == "::") {
+	if (this.token == "(") {
 		this.next();
 		var scope = this.pSCOPE();
 		scope.setExpression(res);
 		res = scope;
+		if (this.token != ")") {
+			res.error(new Eden.SyntaxError(this, Eden.SyntaxError.SCOPECLOSE));
+		}
+		this.next();
 	}
 	return res;
 }
@@ -815,7 +818,7 @@ Eden.AST.prototype.pPRIMARY_P = function() {
 		primary.prepend(index);
 		return primary;
 	// Do we have a function call?
-	} else if (this.token == "(") {
+	/*} else if (this.token == "(") {
 		this.next();
 		var func = new Eden.AST.FunctionCall();	
 
@@ -853,7 +856,7 @@ Eden.AST.prototype.pPRIMARY_P = function() {
 			if (primary.errors.length > 0) return primary;
 			primary.prepend(func);
 			return primary;
-		}
+		}*/
 	// Scope path
 	} else if (this.token == ".") {
 		this.next();
@@ -1129,7 +1132,7 @@ Eden.AST.prototype.pSCOPE_P = function() {
 		return scope;
 	}
 
-	if (this.token != "->" && this.token != "in" && this.token != "-->" && this.token != "is") {
+	if (this.token != "->" && this.token != "in" && this.token != "-->") {
 		var scope = new Eden.AST.Scope();
 		scope.error(new Eden.SyntaxError(this, Eden.SyntaxError.SCOPEEQUALS));
 		return scope;
@@ -1137,14 +1140,8 @@ Eden.AST.prototype.pSCOPE_P = function() {
 	if (this.token == "in") isin = true;
 	if (this.token == "-->") isdefault = true;
 
-	var legacy = this.token == "is";
-
-	if (legacy) {
-		this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.DEPRECATED, "use of 'is' in scopes is deprecated, use 'in', '->' or '-->'"));
-	}
-
 	this.next();
-	var expression = (legacy || isin) ? this.pEXPRESSION() : this.pFACTOR_SIMPLE();
+	var expression = (isin) ? this.pEXPRESSION() : this.pFACTOR_SIMPLE();
 	if (expression.errors.length > 0) {
 		var scope = new Eden.AST.Scope();
 		obs.setStart(expression);
@@ -1154,8 +1151,7 @@ Eden.AST.prototype.pSCOPE_P = function() {
 
 	var exp2 = undefined;
 	var exp3 = undefined;
-	if (isin || (legacy && this.token == "..")) {
-		isin = true;
+	if (isin) {
 		if (this.token == "..") {
 			this.next();
 			exp2 = this.pEXPRESSION();
@@ -1453,11 +1449,17 @@ Eden.AST.prototype.pWHEN = function() {
 		return when;
 	}
 
-	if (this.token == "with" || this.token == "::") {
+	if (this.token == "(") {
 		this.next();
 		var scope = this.pSCOPE();
+
+		if (this.token != ")") {
+			scope.errors.push(new Eden.SyntaxError(this, Eden.SyntaxError.SCOPECLOSE));
+		}
+
 		when.setScope(scope);
 		if (scope.errors.length > 0) return when;
+		this.next();
 	}
 
 	// Compile the expression and log dependencies
@@ -2525,7 +2527,7 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	case "for"		:	this.next(); stat = this.pFOR(); break;
 	case "while"	:	this.next(); stat = this.pWHILE(); break;
 	case "do"		:	this.next(); stat = this.pDO(); break;
-	case "var"		:	stat = this.pLOCALS(); break;
+	//case "var"		:	stat = this.pLOCALS(); break;
 	case "wait"		:	this.next(); stat = this.pWAIT(); break;
 	case "switch"	:	this.next(); stat = this.pSWITCH(); break;
 	case "case"		:	this.next(); stat = this.pCASE(); break;
