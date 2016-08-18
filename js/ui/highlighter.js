@@ -449,13 +449,13 @@
 			}
 
 			if (this.mode == 0 || this.mode == 5) {
-				if (token == "##") {
+				if (token == "//") {
 					classes += "eden-comment";
 					var comment = "";
 					while (stream.valid() && stream.peek() != 10) {
 						comment += String.fromCharCode(stream.get());
 					}
-					tokentext = "##" + comment;
+					tokentext = "//" + comment;
 				} else if (token == "local" || token == "auto" || token == "para") {
 					classes += "eden-storage";
 				} else if (type == "keyword") {

@@ -272,7 +272,7 @@ Eden.AST.prototype.next = function() {
 			}
 			this.token = this.stream.readToken();
 		// Skip line comments
-		} else if (this.token == "##") {
+		} else if (this.token == "//") {
 			this.stream.skipLine();
 			this.token = this.stream.readToken();
 		// Extract javascript code blocks
@@ -361,7 +361,7 @@ Eden.AST.prototype.pTERM_A = function() {
 Eden.AST.prototype.pTERM_P = function() {
 	var left = this.pTERM_PP();
 
-	while (this.token == "+" || this.token == "-" || this.token == "//") {
+	while (this.token == "+" || this.token == "-") {
 		var binop = new Eden.AST.BinaryOp(this.token);
 		this.next();
 		binop.left(left);
@@ -1709,42 +1709,53 @@ Eden.AST.prototype.pFOR = function() {
 			return forast;
 		}
 
-		if (this.token != ";") {
+		if (forast.sstart.type != "range" && this.token != ";") {
 			forast.error(new Eden.SyntaxError(this, Eden.SyntaxError.FORSTART));
 			this.parent = parent;
 			return forast;
-		} else {
+		} else if (this.token == ";") {
 			this.next();
 		}
 	}
 
-	if (this.token == ";") {
-		this.next();
-	} else {
-		forast.setCondition(this.pEXPRESSION());
-		if (forast.errors.length > 0) {
-			this.parent = parent;
-			return forast;
-		}
-
-		if (this.token != ";") {
-			forast.error(new Eden.SyntaxError(this, Eden.SyntaxError.FORCOND));
-			this.parent = parent;
-			return forast;
-		} else {
+	
+	if (forast.sstart.type != "range") {
+		if (this.token == ";") {
 			this.next();
-		}
-	}
+		} else {
+			forast.setCondition(this.pEXPRESSION());
+			if (forast.errors.length > 0) {
+				this.parent = parent;
+				return forast;
+			}
 
-	if (this.token == ")") {
-		this.next();
+			if (this.token != ";") {
+				forast.error(new Eden.SyntaxError(this, Eden.SyntaxError.FORCOND));
+				this.parent = parent;
+				return forast;
+			} else {
+				this.next();
+			}
+		}
+
+		if (this.token == ")") {
+			this.next();
+		} else {
+			forast.setIncrement(this.pSTATEMENT_P());
+			if (forast.errors.length > 0) {
+				this.parent = parent;
+				return forast;
+			}
+
+			if (this.token != ")") {
+				forast.error(new Eden.SyntaxError(this, Eden.SyntaxError.FORCLOSE));
+				this.parent = parent;
+				return forast;
+			} else {
+				this.next();
+			}
+		}
 	} else {
-		forast.setIncrement(this.pSTATEMENT_P());
-		if (forast.errors.length > 0) {
-			this.parent = parent;
-			return forast;
-		}
-
 		if (this.token != ")") {
 			forast.error(new Eden.SyntaxError(this, Eden.SyntaxError.FORCLOSE));
 			this.parent = parent;
@@ -2079,6 +2090,9 @@ Eden.AST.prototype.pSTATEMENT_PP = function() {
 	if (this.token == "is") {
 		this.next();
 		return new Eden.AST.Definition(this.pEXPRESSION());
+	} else if (this.token == "in") {
+		this.next();
+		return new Eden.AST.Range(this.pEXPRESSION());
 	} else if (this.token == "=") {
 		this.next();
 		return new Eden.AST.Assignment(this.pEXPRESSION());
@@ -2523,21 +2537,21 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	case "proc"		:	this.next(); stat = this.pACTION(); end = this.stream.position; endline = this.stream.line; this.next(); break;
 	case "func"		:	this.next(); stat = this.pFUNCTION(); end = this.stream.position; endline = this.stream.line; this.next(); break;
 	case "when"		:	this.next(); stat = this.pWHEN(); end = this.stream.prevposition; endline = this.stream.prevline; break;
-	case "action"	:	this.next(); stat = this.pNAMEDSCRIPT(); end = this.stream.position; endline = this.stream.line; this.next(); break;
+	//case "action"	:	this.next(); stat = this.pNAMEDSCRIPT(); end = this.stream.position; endline = this.stream.line; this.next(); break;
 	case "for"		:	this.next(); stat = this.pFOR(); break;
 	case "while"	:	this.next(); stat = this.pWHILE(); break;
-	case "do"		:	this.next(); stat = this.pDO(); break;
+	//case "do"		:	this.next(); stat = this.pDO(); break;
 	//case "var"		:	stat = this.pLOCALS(); break;
 	case "wait"		:	this.next(); stat = this.pWAIT(); break;
 	case "switch"	:	this.next(); stat = this.pSWITCH(); break;
 	case "case"		:	this.next(); stat = this.pCASE(); break;
-	case "insert"	:	this.next(); stat = this.pINSERT(); break;
+	//case "insert"	:	this.next(); stat = this.pINSERT(); break;
 	case "delete"	:	this.next(); stat = this.pDELETE(); break;
-	case "append"	:	this.next(); stat = this.pAPPEND(); break;
-	case "shift"	:	this.next(); stat = this.pSHIFT(); break;
-	case "require"	:	this.next(); stat = this.pREQUIRE(); break;
-	case "after"	:	this.next(); stat = this.pAFTER(); break;
-	case "include"	:	this.next(); stat = this.pINCLUDE(); break;
+	//case "append"	:	this.next(); stat = this.pAPPEND(); break;
+	//case "shift"	:	this.next(); stat = this.pSHIFT(); break;
+	//case "require"	:	this.next(); stat = this.pREQUIRE(); break;
+	//case "after"	:	this.next(); stat = this.pAFTER(); break;
+	//case "include"	:	this.next(); stat = this.pINCLUDE(); break;
 	case "import"	:	this.next(); stat = this.pIMPORT(); break;
 	case "default"	:	this.next();
 						var def = new Eden.AST.Default();

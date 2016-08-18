@@ -9,8 +9,8 @@
  * belongs, etc.
  */
 
-##=============================================================================
-##Type casting functions.
+//=============================================================================
+//Type casting functions.
 
 char is ${{String.fromCharCode(context.value("value",scope))}}$ if (type == "number")
 		else (${{String.fromCharCode(1)}}$ if (value) else ${{String.fromCharCode(0)}}$) if (type == "boolean")
@@ -22,7 +22,7 @@ int is value if (typeof == "number") else ${{ parseInt(context.value("value",sco
 str is @ if (value == @) else value if (typeof == "string") else edenCode;
 edenCode is ${{ Eden.edenCodeForValue(context.value("value",scope)) }}$(value->value);
 
-##=============================================================================
+//=============================================================================
 
 typeof is ${{typeof context.value("value",scope)}}$(value->value);
 type is "list" if (typeof == "object") else typeof;
@@ -33,6 +33,6 @@ isDefined is ${{ context.lookup(context.value("name",scope)).definition !== unde
 isInt is ${{ Number.isInteger(context.value("value",scope)) }}$(value->value);
 isList is type == "list";
 isNumber is typeof == "number";
-##isPointer
+//isPointer
 isString is typeof == "string";
 

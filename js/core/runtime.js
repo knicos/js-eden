@@ -57,9 +57,20 @@ var rt = {
 		return false;
 	},
 
+	addAssign: function(l, r) {
+		if (Array.isArray(l)) {
+			l.push(r);
+			return l;
+		} else {
+			return l + r;
+		}
+	},
+
 	add: function (a, b) {
 		if (a === undefined || b === undefined) {
 			return undefined;
+		} else if (Array.isArray(a) || typeof a == "string") {
+			return rt.concat(a,b);
 		} else if (a instanceof Point) {
 			return new Point(a.x + b.x, a.y + b.y);
 		} else {

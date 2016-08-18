@@ -902,7 +902,7 @@ EdenUI.plugins.ScriptInput = function(edenUI, success) {
 		}
 
 		// Set source text.
-		agent.setSource("## "+name+"\n\
+		agent.setSource("// "+name+"\n\
 _view_"+name+"_script = "+Eden.edenCodeForValue(agent.state[obs_script])+";\n\
 _view_"+name+"_next = "+Eden.edenCodeForValue(agent.state[obs_next])+";\n\
 _view_"+name+"_prev = "+Eden.edenCodeForValue(agent.state[obs_prev])+";\n\
@@ -1310,7 +1310,7 @@ _view_"+name+"_zoom = "+Eden.edenCodeForValue(agent.state[obs_zoom])+";\n\
 		 */
 		function commentOutLine(lineno) {
 			var lines = intextarea.value.split("\n");
-			lines[lineno-1] = "##" + lines[lineno-1];
+			lines[lineno-1] = "//" + lines[lineno-1];
 			intextarea.value = lines.join("\n");
 		}
 

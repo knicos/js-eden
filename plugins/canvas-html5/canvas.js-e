@@ -62,7 +62,7 @@ ${{
 ## Access to mouse capturing capabilities can be restricted based upon a browser preference setting.
 ## (In Chrome this is under Settings->Advanced settings->Content settings->Mouse cursor.)
 ##
-proc attemptMouseCapture {
+when( attemptMouseCapture ) {
 	${{
 		var canvasName = root.lookup("mouseView").value();
 		if (canvasName !== undefined) {
@@ -71,66 +71,44 @@ proc attemptMouseCapture {
 	}}$;
 }
 
+_canvas_content is `observable`;
+Canvas2D is [type,name,title,observable](name-->observable,title-->observable,type->"Canvas2D",content->_canvas_content);
+
 ##Creates a canvas and a triggered procedure so that canvas display is kept in
 ##sync with the value of a given observable at all times.  The first parameter
 ##is the name of the observable who's value provides the list of drawables.  The
 ##second, optional parameter, is the text to place into the window's title bar.
-proc createCanvas {
-	para p1, p2, p3;
-	auto obsName, viewTitle, viewName;
-	auto titleSymName, contentSymName, addJSObserver;
-	auto argc;
-	argc = ${{ arguments.length }}$;
-
-	if (argc == 1) {
-		obsName = p1;
-	} else if (argc == 2) {
-		obsName = p1;
-		viewTitle = p2;
-	} else if (argc == 3) {
-		viewName = p1;
-		obsName = p2;
-		viewTitle = p3;
-		if (!isString(viewName)) {
-			error("createCanvas: The first argument must be a string, not a " // type(viewName));
-			return;
-		}
-	} else {
-		error("createCanvas: This procedure requires at least 1 argument and at most 3 arguments.");
-		return;
-	}
-
+when( createCanvas ) {
+	observable = createCanvas.observable;
+	name = createCanvas.name;
+	title = createCanvas.title;
 	
-	
-	if (isPointer(obsName)) {
-		obsName = nameof(obsName);
-	} else if (!isString(obsName)) {
-		error("createCanvas: The observable name must be expressed as a string or a pointer, not a " // type(obsName));
-		return;
-	}
-
-	if (viewName == @) {
-		viewName = obsName;
+	if (isPointer(value->observable)) {
+		observable = nameof(value->observable);
+	} else if (!isString(value->observable)) {
+		##error("createCanvas: The observable name must be expressed as a string or a pointer, not a " // type(obsName));
+		##return;
 	}
 	
-	if (viewTitle != @ && !isString(viewTitle)) {
-		error("createCanvas: The window title must be a string, not a " // type(viewTitle));
-		return;
+	if (title != @ && !isString(title)) {
+		##error("createCanvas: The window title must be a string, not a " // type(viewTitle));
+		##return;
 	}
 
-	if (`obsName` == @) {
-		`obsName` = [];
+	if (`observable` == @) {
+		`observable` = [];
 	}
 
-	createView(viewName, "Canvas2D");
-	execute2("_view_" // viewName // "_content is " // obsName // ";");
-	if (viewTitle == @) {
+	createView = createCanvas;
+	execute = "_view_" // name // "_content is " // observable // ";";
+
+	if (title == @) {
 		##Don't attempt to make this update by dependency on redefinition of _view_viewName_content.
 		##Severe performance problems result.
-		viewTitle = "Canvas " // obsName;
+		title = "Canvas " // name;
 	}
-	`"_view_" // viewName // "_title"` = viewTitle;
-}
+	`"_view_" // name // "_title"` = title;
+}(observable->@,name->@,title->@);
 
 ##Returns a string that can be used as the src attribute for an <img> tag inside the content of a
 ##HTML view.  The image with the special URL returned by this function is a snapshot of the contents

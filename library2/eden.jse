@@ -6,10 +6,10 @@
  * See LICENSE.txt
  */
 
-##Debugging flags.
+// Debugging flags.
 debug = ${{ {jsExceptions: edenUI.getOptionValue("developer") == "true" } }}$;
 
-## Todo, needs to always be marked out-of-date.
+// Todo, needs to always be marked out-of-date.
 time is ${{ Math.floor((new Date()).getTime() / 1000) }}$;
 
 when (writeln) {
@@ -23,7 +23,7 @@ when (forget) {
 		symbolToDelete = &`forget`;
 	} else if (type(value->forget) == "pointer") {
 		symbolToDelete = forget;
-	## Todo, allow a list type here.
+	// Todo, allow a list type here.
 	} else {
 		return;
 	}
@@ -50,7 +50,6 @@ when (error) {
 
 
 View is [name,type] (name-->"VIEW", type-->"ScriptInput");
-Canvas2D is View (type->"Canvas2D");
 
 when(createView) {
 	name = createView.name;
@@ -58,20 +57,24 @@ when(createView) {
 	${{ edenUI.createView(root.value("name",scope),root.value("type",scope)); }}$;
 }(name-->@,type-->@);
 
+when (execute) {
+	${{ eden.execute2(root.value("execute",scope)); }}$;
+}
 
-##Autocalc compatibility
+
+// Autocalc compatibility
 autocalc = 1;
 
-##Include the rest of the library
+// Include the rest of the library
 
 autocalc = 0;
 
 import lib/type;
-##import lib/core;
-##import lib/math;
-##import lib/string;
-##import lib/colour;
-##import lib/scoping;
+//import lib/core;
+//import lib/math;
+//import lib/string;
+//import lib/colour;
+//import lib/scoping;
 
 max is a if (a >= b) else b;
 min is a if (a <= b) else b;
@@ -85,14 +88,14 @@ if (initialViews == "" || initialViews == "default") {
 	_view_projects_y = 0;
 	_view_projects_width = 210;
 	_view_projects_height = screenHeight;
-	##createView = Canvas2D(name->"picture");
-	##wait 1;
+	//createView = Canvas2D(name->"picture");
+	//wait 1;
 	picturecenterx is screenWidth / 2 - 30 - _view_picture_width;
 	picturecenterprojx is _view_projects_width + _views_frame_width;
 	_view_picture_x = max(a->picturecenterx, b->picturecenterprojx);
 	_view_picture_y = screenHeight / 2 - _view_picture_height / 2;
 	if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
-		##picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
+		//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
 	}
 	createView is View(name->"input", type->"ScriptInput");
 	_view_input_agent = "view/script/input";
@@ -102,4 +105,4 @@ if (initialViews == "" || initialViews == "default") {
 	_view_input_x = min(a->inputcenterx,b->inputcenterxpic);
 	_view_input_y = screenHeight / 2 - _view_input_height / 2;
 }
-##forget(&initialViews);
+//forget(&initialViews);

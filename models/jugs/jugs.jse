@@ -14,7 +14,7 @@ Bfull is capB==contentB;
 contentA = 0;
 contentB = 0;
 
-height is max(capA,capB)+2;
+height is max(a->capA,b->capB)+2;
 
 widthB = 5;
 widthA = 5;
@@ -34,42 +34,32 @@ valid7 is valid4 && valid1;
 Error=0; updating=0;
 finish is ((contentA==target)||(contentB==target))&&!updating;
 
-func avail
-{
-	/* indicates whether the menu option with parameter $1 is open */
-	para opt;
-	auto t;
-	t = menustatus[opt];
-	return t;
-}
+avail is menustatus[opt];
 
 input = @;
 opt = @;
 step = 0;
 
-proc init_pour : input
+when (input)
 {
-	if (input == @) {
-		return;
-	}
+	if (input != @) {
 	updating = 1;
-	if (int(input) == 5) {
+	if (int(value->input) == 5) {
 		content5 = contentA + contentB;
 		contentB is content5 - contentA;
-		opt = valid6 ? 6 : 7;
+		opt = 6 if (valid6) else 7;
 	} else {
-		opt = int(input);
+		opt = int(value->input);
 	}
 	step = 0;
+	}
 }
 
-proc pour : step
+when (step != @)
 {
-	if (opt == @) {
-		return;
-	}
+	if (opt != @) {
 
-	if (avail(opt)) {
+	if (avail) {
 		switch (opt) {
 		case 1:
 			contentA = contentA + 1;
@@ -90,26 +80,26 @@ proc pour : step
 			contentA = contentA + 1;
 			break;
 		default:
-			writeln("option = ", opt);
+			##writeln(value->"option = ", opt);
 			return;
 		}
 
-		after (viscosity) {
-			step++;
-		}
+
+		wait viscosity;
+		step++;
 	} else {
 		contentA = contentA;
 		contentB = contentB;
 		updating = 0;
 	}
+	}
 }
 
 status is (Error)?"invalid option": ((updating)?"updating":"awaiting input");
 totstat is (finish) ? "Success!" : status;
-targ is ("Target is " // str(target) // " : ");
+targ is ("Target is " // str(value->target) // " : ");
 
 
 viscosity = 100;
 
 autocalc = 1;
-
