@@ -1701,6 +1701,7 @@ Eden.AST.Modify = function(kind, expression) {
 	this.end = 0;
 	this.executed = 0;
 	this.scopes = [];
+	this.dependencies = {};
 };
 
 Eden.AST.Modify.prototype.getParameterByNumber = function(index) {
@@ -1770,11 +1771,12 @@ Eden.AST.Modify.prototype.generate = function(ctx,scope) {
 	} else {
 		result += ";\n";
 	}
+
 	return result;
 };
 
 Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
-	var _scopes = [];
+	//var _scopes = [];
 
 	this.executed = 1;
 	// TODO: allow this to work on list indices
@@ -1785,19 +1787,32 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 	} else if (this.kind == "--") {
 		sym.assign(sym.value(scope)-1, scope);
 	} else {
-		var rhs = "(function(context,scope) { return ";
-		rhs += this.expression.generate(this, "scope");
+		var rhs = "(function(context,scope) {\n";
+		var express = this.expression.generate(this, "scope");
 		if (this.expression.doesReturnBound && this.expression.doesReturnBound()) {
-			rhs += ".value";
+			//express += ".value";
+			this.bound = true;
+		} else {
+			this.bound = false;
 		}
+		//var rhs = "(function(context,scope) { \n";
+		// Generate array of all scopes used in this definition (if any).
+		if (this.scopes.length > 0) {
+			//rhs += "\tvar _scopes = [];\n";
+			for (var i=0; i<this.scopes.length; i++) {
+				rhs += "\tvar scope" + (i+1) + " = " + this.scopes[i];
+				rhs += ";\n";
+			}
+		}
+		rhs += "return " + express;
 		rhs += ";})";
 
 		//var scope = eden.root.scope;
 		var context = eden.root;
 
-		for (var i=0; i<this.scopes.length; i++) {
-			_scopes.push(eval(this.scopes[i]));
-		}
+		//for (var i=0; i<this.scopes.length; i++) {
+		//	_scopes.push(eval(this.scopes[i]));
+		//}
 
 		this.scopes = [];
 
@@ -1805,11 +1820,23 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 		console.log(this.scopes);
 		console.log(rhs);*/
 
-		switch (this.kind) {
-		case "+="	: sym.assign(rt.addAssign(sym.value(scope), eval(rhs).call(ctx,root,scope)), scope); break;
-		case "-="	: sym.assign(rt.subtract(sym.value(scope), eval(rhs)(root,scope)), scope); break;
-		case "/="	: sym.assign(rt.divide(sym.value(scope), eval(rhs)(root,scope)), scope); break;
-		case "*="	: sym.assign(rt.multiply(sym.value(scope), eval(rhs)(root,scope)), scope); break;
+		if (this.bound) {
+			var value = sym.boundValue(scope);
+			var cache = scope.lookup(sym.name);
+			if (cache) cache.scope = value.scope;
+			switch (this.kind) {
+			case "+="	: sym.assign(rt.addAssign(value.value, eval(rhs).call(ctx,root,scope)), scope); break;
+			case "-="	: sym.assign(rt.subtract(value.value, eval(rhs)(root,scope)), scope); break;
+			case "/="	: sym.assign(rt.divide(value.value, eval(rhs)(root,scope)), scope); break;
+			case "*="	: sym.assign(rt.multiply(value.value, eval(rhs)(root,scope)), scope); break;
+			}
+		} else {
+			switch (this.kind) {
+			case "+="	: sym.assign(rt.addAssign(sym.value(scope), eval(rhs).call(ctx,root,scope)), scope); break;
+			case "-="	: sym.assign(rt.subtract(sym.value(scope), eval(rhs)(root,scope)), scope); break;
+			case "/="	: sym.assign(rt.divide(sym.value(scope), eval(rhs)(root,scope)), scope); break;
+			case "*="	: sym.assign(rt.multiply(sym.value(scope), eval(rhs)(root,scope)), scope); break;
+			}
 		}
 	}
 }
@@ -2570,12 +2597,20 @@ Eden.AST.For.prototype.execute = function(root, ctx, base, scope) {
 	this.executed = 1;
 
 	if (this.sstart && this.sstart.type == "range") {
-		var list = this.sstart.expression.execute(root,ctx,base,scope);
+		var list = this.sstart.expression.execute(root,ctx,base,scope,true);
+		//var bound = this.sstart.expression.doesReturnBound && this.sstart.expression.doesReturnBound();
 		var sym = root.lookup(this.sstart.lvalue.name);
 		// Error if not a simple lvalue
 		if (Array.isArray(list)) {
 			for (var i=0; i<list.length; i++) {
-				sym.assign(list[i],scope);
+				if (list[i] instanceof BoundValue) {
+					sym.assign(list[i].value,scope);
+					var cache = scope.lookup(sym.name);
+					if (cache) cache.scope = list[i].scope;
+					console.log(cache);
+				} else {
+					sym.assign(list[i],scope);
+				}
 				this.statement.execute(root,ctx,base,scope);
 			}
 		} else {

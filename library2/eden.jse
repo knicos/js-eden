@@ -12,9 +12,13 @@ debug = ${{ {jsExceptions: edenUI.getOptionValue("developer") == "true" } }}$;
 // Todo, needs to always be marked out-of-date.
 time is ${{ Math.floor((new Date()).getTime() / 1000) }}$;
 
-when (writeln) {
-	message = str(str->writeln);
-	${{ console.log(context.lookup("message").value(scope)) }}$;
+console = [];
+when (console# > 0) {
+	for (message in console) {
+		message = str(value->message);
+		${{ console.log(root.lookup("message").value(scope)) }}$;
+	}
+	console = [];
 	_menubar_status = message;
 }(message->@);
 
@@ -44,18 +48,26 @@ when (forget) {
 };
 
 
-when (error) {
-	${{ eden.error(new Error(context.value("error",scope)),"error"); }}$;
+errors = [];
+when (errors) {
+	for (error in errors) {
+		${{ eden.error(new Error(root.value("error",scope)),"error"); }}$;
+	}
+	errors = [];
 }
 
 
 View is [name,type] (name-->"VIEW", type-->"ScriptInput");
 
-when(createView) {
-	name = createView.name;
-	type = createView.type;
-	${{ edenUI.createView(root.value("name",scope),root.value("type",scope)); }}$;
-}(name-->@,type-->@);
+createViews = [];
+when(createViews# > 0) {
+	for (view in createViews) {
+		name = view.name;
+		type = view.type;
+		${{ edenUI.createView(root.value("name",scope),root.value("type",scope)); }}$;
+	}
+	createViews = [];
+}(name-->@,type-->@,view-->@);
 
 when (execute) {
 	${{ eden.execute2(root.value("execute",scope)); }}$;
@@ -97,7 +109,7 @@ if (initialViews == "" || initialViews == "default") {
 	if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
 		//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
 	}
-	createView is View(name->"input", type->"ScriptInput");
+	createViews += View(name->"input", type->"ScriptInput");
 	_view_input_agent = "view/script/input";
 	_view_input_height = _view_picture_height;
 	inputcenterx is screenWidth / 2 + 30;
