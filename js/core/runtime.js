@@ -17,6 +17,24 @@ Point.prototype.getEdenCode = Point.prototype.toString;
 
 // functions to act in the same way as EDEN operators
 var rt = {
+	scopebreakout: function(list, breakout, scope) {
+		if (!breakout) return list;
+
+		var scopes = [];
+		var values = [];
+		for (var i=0; i<list.length; i++) {
+			if (list[i] instanceof BoundValue) {
+				scopes.push(list[i].scope);
+				values.push(list[i].value);
+			} else {
+				scopes.push(scope);
+				values.push(list[i]);
+			}
+		}
+
+		return new BoundValue(values, scope, scopes);
+	},
+
 	index: function (ix) {
 		var type = typeof ix;
 		if (type == "number") {

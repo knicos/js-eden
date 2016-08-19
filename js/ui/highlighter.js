@@ -202,7 +202,8 @@
 	"autocalc": true,
 	"this": true,
 	"from": true,
-	"has": true
+	"has": true,
+	"self": true
 	};
 
 	var edenValues = {

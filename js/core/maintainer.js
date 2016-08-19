@@ -105,6 +105,11 @@
 		return false;
 	}
 
+	Scope.prototype.self = function() {
+		if (this.cause) return this.cause.name.slice(1);
+		else return undefined;
+	}
+
 	Scope.prototype.baseCause = function() {
 		var scope = this;
 		while(scope.parent && scope.parent.parent) scope = scope.parent;
@@ -183,6 +188,7 @@
 		this.add("/this");
 		this.add("/has");
 		this.add("/from");
+		this.add("/self");
 
 		/* Process the overrides */
 		for (var i = 0; i < this.overrides.length; i++) {

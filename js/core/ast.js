@@ -78,12 +78,17 @@ Eden.AST.Literal = function(type, literal) {
 	this.errors = [];
 	this.start = 0;
 	this.end = 0;
+	this.bound = false;
 }
 Eden.AST.Literal.prototype.error = fnEdenASTerror;
 
 Eden.AST.Literal.prototype.setSource = function(start, end) {
 	this.start = start;
 	this.end = end;
+}
+
+Eden.AST.Literal.prototype.doesReturnBound = function() {
+	return this.bound;
 }
 
 Eden.AST.Literal.prototype.unparse = function() {
@@ -108,16 +113,17 @@ Eden.AST.Literal.prototype.unparse = function() {
 Eden.AST.Literal.prototype.generate = function(ctx,scope) {
 	switch (this.datatype) {
 	case "NUMBER"	:	return this.value;
-	case "LIST"		:	var res = "[";
+	case "LIST"		:	var res = "rt.scopebreakout([";
 						// Loop over each element and generate that also.
 						for (var i=0; i<this.value.length; i++) {
-							res += this.value[i].generate(ctx,scope);
+							res += this.value[i].generate(ctx,scope,true);
 							if (this.value[i].doesReturnBound && this.value[i].doesReturnBound()) {
-								res += ".value";
+								//res += ".value";
+								this.bound = true;
 							}
 							if (i != this.value.length-1) res += ",";
 						}
-						res += "]";
+						res += "],"+this.bound+","+scope+")";
 						return res;
 	case "CHARACTER":
 	case "STRING"	:	var str = this.value.replace(/\n/g,"\\n");
@@ -371,7 +377,11 @@ Eden.AST.Scope.prototype.generate = function(ctx, scope) {
 
 		// Remove unwanted dependencies.
 		for (var o in this.overrides) {
-			if (ctx.dependencies[o]) ctx.dependencies[o] = false;
+			if (this.overrides[o].isdefault) {
+				ctx.dependencies[o] = true;
+			} else {
+				if (ctx.dependencies[o]) ctx.dependencies[o] = false;
+			}
 		} 
 
 		//console.log(ctx);
@@ -417,7 +427,12 @@ Eden.AST.Scope.prototype.generate = function(ctx, scope) {
 		// Remove unwanted dependencies.
 		for (var o in this.overrides) {
 			//delete ctx.dependencies[o];
-			if (ctx.dependencies[o]) ctx.dependencies[o] = false;
+			console.log(this.overrides[o]);
+			if (this.overrides[o].isdefault) {
+				ctx.dependencies[o] = true;
+			} else {
+				if (ctx.dependencies[o]) ctx.dependencies[o] = false;
+			}
 		}
 		
 		if (this.expression.doesReturnBound && this.expression.doesReturnBound()) {

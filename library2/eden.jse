@@ -91,6 +91,11 @@ import lib/type;
 max is a if (a >= b) else b;
 min is a if (a <= b) else b;
 
+from is ${{ scope.hasCause(context.lookup("name").value(scope)) }}$;
+has is ${{ scope.hasOverride(context.lookup("name").value(scope)) }}$;
+this is ${{ scope.baseCause() }}$;
+self is ${{ scope.self() }}$;
+
 
 autocalc = 1;
 
