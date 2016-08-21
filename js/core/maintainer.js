@@ -57,7 +57,17 @@
 		this.start = start;
 		this.end = (options && options.range) ? options.end : undefined;
 		this.increment = (options) ? options.increment : undefined;
-		this.current = (options && options.isin && !options.range) ? start[0] : start;
+		if (this.start instanceof BoundValue) {
+			this.current = (options && options.isin && !options.range && Array.isArray(start.value) && start.value.length > 0) ? start.value[0] : start.value;
+			if (this.start.scopes && Array.isArray(this.start.scopes) && this.start.scopes.length > 0) {
+				this.currentscope = this.start.scopes[0];
+			} else {
+				this.currentscope = this.start.scope;
+			}
+		} else {
+			this.current = (options && options.isin && !options.range && Array.isArray(start) && start.length > 0) ? start[0] : start;
+			this.currentscope = undefined;
+		}
 		this.isin = options && options.isin;
 		this.index = 1;
 		this.isdefault = (options) ? options.isdefault : false;
@@ -69,7 +79,7 @@
 		// Check for valid combinations of options
 		if (this.increment == 0) {
 			throw new Error(Eden.RuntimeError.INFINITERANGE);
-		} else if (this.isin && this.end === undefined && !(this.start instanceof Array)) {
+		} else if (this.isin && this.end === undefined && !(this.start instanceof Array || (this.start instanceof BoundValue && this.start.value instanceof Array))) {
 			throw new Error(Eden.RuntimeError.NOLISTRANGE);
 		}
 	}
@@ -286,6 +296,12 @@
 			}
 		}
 	}
+	
+	Scope.prototype.expire = function(sym) {
+		for (var d in sym.subscribers) {
+			this.updateSubscriber(d);
+		}
+	}
 
 	Scope.prototype.updateOverride = function(override) {
 		var name = "/"+override.name;
@@ -299,14 +315,14 @@
 		} else {
 			//console.log(override.current);
 			currentval = override.current;
-			currentscope = this.parent;
+			currentscope = (this.currentscope) ? this.currentscope : this;
 		}
 
 		if (this.cache[name] === undefined) {
-			this.cache[name] = new ScopeCache( true, currentval, this );
+			this.cache[name] = new ScopeCache( true, currentval, currentscope );
 		} else {
 			this.cache[name].value = currentval;
-			this.cache[name].scope = this;
+			this.cache[name].scope = currentscope;
 			this.cache[name].up_to_date = true;
 		}
 	}
@@ -355,18 +371,27 @@
 		}
 		for (var i = this.overrides.length-1; i >= 0; i--) {
 			var over = this.overrides[i];
+			var isbound = over.start instanceof BoundValue;
+			var length = (isbound) ? over.start.value.length : (over.start) ? over.start.length : 0;
 
 			if (!over.isin && !over.range) continue;
 
 			if (!over.range) {
-				if (over.index < over.start.length) {
-					over.current = over.start[over.index];
+				if (over.index < length) {
+					if (isbound) {
+						over.current = over.start.value[over.index];
+						if (over.start.scopes) {
+							over.currentscope = over.start.scopes[over.index];
+						}
+					} else {
+						over.current = over.start[over.index];
+					}
 					over.index++;
 					this.updateOverride(over);
 					return true;
 				} else {
 					over.index = 1;
-					over.current = over.start[0];
+					over.current = (isbound) ? over.start.value[0] : over.start[0];
 					this.updateOverride(over);
 				}
 			} else {
@@ -1150,8 +1175,10 @@
 		this.clearObservees();
 		this.clearDependencies();
 
-		if (this.context) {
+		if (this.context && scope === this.context.scope) {
 			this.context.expireSymbol(this);
+		} else {
+			scope.expire(this);
 		}
 
 		return this;

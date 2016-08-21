@@ -12,14 +12,27 @@ debug = ${{ {jsExceptions: edenUI.getOptionValue("developer") == "true" } }}$;
 // Todo, needs to always be marked out-of-date.
 time is ${{ Math.floor((new Date()).getTime() / 1000) }}$;
 
+from is ${{ scope.hasCause(context.lookup("name").value(scope)) }}$;
+has is ${{ scope.hasOverride(context.lookup("name").value(scope)) }}$;
+this is ${{ scope.baseCause() }}$;
+self is ${{ scope.self() }}$;
+
+JSFunction is (self + ":" + function)(
+	object-->@,
+	function-->@,
+	args-->[]
+);
+_js_console_log is JSFunction(object->"console",function->"console.log");
+_js_brieflyHighlightView is JSFunction(object->"edenUI",function->"edenUI.brieflyHighlighView");
+
 console = [];
 when (console# > 0) {
 	for (message in console) {
-		message = str(value->message);
-		${{ console.log(root.lookup("message").value(scope)) }}$;
+		message = [str(value->message)];
+		call _js_console_log(args->message);
 	}
 	console = [];
-	_menubar_status = message;
+	_menubar_status = message[1];
 }(message->@);
 
 when (forget) {
@@ -57,14 +70,35 @@ when (errors) {
 }
 
 
-View is [name,type] (name-->"VIEW", type-->"ScriptInput");
+View is self+":"+this (
+	name-->this,
+	type-->"ScriptInput",
+	visibility-->"visible",
+	title-->this,
+	width-->200,
+	height-->150,
+	x-->10,
+	y-->10
+);
+
 
 createViews = [];
+views = [];
+activeDialogs = [];
 when(createViews# > 0) {
 	for (view in createViews) {
 		name = view.name;
 		type = view.type;
-		${{ edenUI.createView(root.value("name",scope),root.value("type",scope)); }}$;
+		curtype = activeDialogs[name];
+		if (curtype == type) {
+			//view.visibility = "visible";
+			name = [name];
+			call _js_brieflyHightlightView(args->name);
+			return;
+		}
+
+		views += view;
+		${{ edenUI.createView(root.lookup("name").value(scope),root.lookup("type").value(scope)); }}$;
 	}
 	createViews = [];
 }(name-->@,type-->@,view-->@);
@@ -91,11 +125,6 @@ import lib/type;
 max is a if (a >= b) else b;
 min is a if (a <= b) else b;
 
-from is ${{ scope.hasCause(context.lookup("name").value(scope)) }}$;
-has is ${{ scope.hasOverride(context.lookup("name").value(scope)) }}$;
-this is ${{ scope.baseCause() }}$;
-self is ${{ scope.self() }}$;
-
 
 autocalc = 1;
 
@@ -114,7 +143,8 @@ if (initialViews == "" || initialViews == "default") {
 	if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
 		//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
 	}
-	createViews += View(name->"input", type->"ScriptInput");
+	inputview is View(name->"input", type->"ScriptInput");
+	createViews += inputview;
 	_view_input_agent = "view/script/input";
 	_view_input_height = _view_picture_height;
 	inputcenterx is screenWidth / 2 + 30;

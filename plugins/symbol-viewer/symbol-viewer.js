@@ -749,7 +749,7 @@ EdenUI.plugins.SymbolViewer.Symbol.prototype.updateObservable = function () {
 		namehtml = this.name;
 	}
 
-	var scopehtml = (this.symbol.cache.scope !== this.symbol.context.scope) ? "<span class='result_scope'>&#xf0da;</span>" : "";
+	var scopehtml = (this.symbol.cache.scope !== this.symbol.context.scope || this.symbol.cache.scopes) ? "<span class='result_scope'>&#xf0da;</span>" : "";
 
 	var html = scopehtml+"<span class='result_name'>" + namehtml + "</span><span class='result_separator'> = </span> " +
 		"<span class='result_value'>" + valhtml + "</span>";

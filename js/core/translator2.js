@@ -1463,7 +1463,7 @@ Eden.AST.prototype.pWHEN = function() {
 	}
 
 	// Compile the expression and log dependencies
-	when.compile(this);
+	//when.compile(this);
 
 	this.parent = parent;
 	return when;
@@ -2497,6 +2497,16 @@ Eden.AST.prototype.pWAIT = function() {
 
 
 
+Eden.AST.prototype.pCALL = function() {
+	var callstat = new Eden.AST.Call();
+	
+	var fname = this.pEXPRESSION();
+	callstat.setFunction(fname);
+	return callstat;
+}
+
+
+
 /**
  * STATEMENT Production
  * STATEMENT ->
@@ -2542,6 +2552,7 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	case "while"	:	this.next(); stat = this.pWHILE(); break;
 	//case "do"		:	this.next(); stat = this.pDO(); break;
 	//case "var"		:	stat = this.pLOCALS(); break;
+	case "call"		:	this.next(); stat = this.pCALL(); break;
 	case "wait"		:	this.next(); stat = this.pWAIT(); break;
 	case "switch"	:	this.next(); stat = this.pSWITCH(); break;
 	case "case"		:	this.next(); stat = this.pCASE(); break;

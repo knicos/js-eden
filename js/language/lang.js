@@ -71,7 +71,7 @@ var Language = {
 		"after": "after",
 		"shift": "shift",
 		"with": "with",
-		"var": "var"
+		"call": "call"
 	},
 	symbols: {
 		"int": "int",

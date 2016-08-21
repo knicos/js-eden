@@ -1,15 +1,21 @@
-## Copyright (c) 2013, Empirical Modelling Group
-## All rights reserved.
-##
-## See LICENSE.txt
+// Copyright (c) 2013, Empirical Modelling Group
+// All rights reserved.
+//
+// See LICENSE.txt
+
+Arc is (self+":"+this)(x-->0,y-->0,r-->1,sAngle-->0,eAngle-->90,colour-->"black");
 
 ${{
-Arc = function(x, y, r, sAngle, eAngle, colour, drawingOptions) {
-	this.x = x;
-	this.y = y;
-	this.r = r;
-	this.sAngle = sAngle;
-	this.eAngle = eAngle;
+
+EdenUI.plugins.Canvas2D.drawArc = function(observable, x, y, r, eAngle, sAngle, colour) {
+	console.log("Drawing Arc for "+observable+" at " + x + "," + y);
+	return;
+	var x = scope.lookup("/x").value;
+	var y = scope.lookup("/y").value;
+	var r = scope.lookup("/r").value;
+	var eAngle = scope.lookup("/eAngle").value;
+	var sAngle = scope.lookup("/sAngle").value;
+	var colour = scope.lookup("/colour").value;
 	var radiansPerUnit = Math.PI / root.lookup("semicircleAngle").value();
 	var sRadians = sAngle * radiansPerUnit;
 	var eRadians = eAngle * radiansPerUnit;
@@ -22,19 +28,7 @@ Arc = function(x, y, r, sAngle, eAngle, colour, drawingOptions) {
 	if (eRadians < 0) {
 		eRadians = eRadians + twoPI;
 	}
-	this.sRadians = sRadians;
-	this.eRadians = eRadians;
-	
-	this.colour = colour
-	this.drawingOptions = drawingOptions;
-}
-}}$;
 
-Arc is (self+":"+this)(x-->0,y-->0,r-->1,sAngle-->0,eAngle-->90,colour-->"black");
-
-${{
-
-Arc.prototype.draw = function(context, scale) {
 	var anticlockwise;
 	if (this.drawingOptions !== undefined && "direction" in this.drawingOptions) {
 		var directionName = this.drawingOptions.direction;
@@ -67,19 +61,17 @@ Arc.prototype.draw = function(context, scale) {
 		}
 	} else {
 		//Default to "auto" 
-		anticlockwise = this.sAngle < this.eAngle;
+		anticlockwise = sAngle < eAngle;
 	}
-	var sRadians = this.sRadians;
-	var eRadians = this.eRadians;
 	if (scale < 0) {
 		sRadians = -sRadians;
 		eRadians = -eRadians;
 		anticlockwise = !anticlockwise;
 	}
-	var r = this.r - context.lineWidth / 2;
+	r = r - context.lineWidth / 2;
 	context.beginPath();
-	context.arc(this.x, this.y, r, -sRadians, -eRadians, anticlockwise);
-	context.strokeStyle = this.colour;
+	context.arc(x, y, r, -sRadians, -eRadians, anticlockwise);
+	context.strokeStyle = colour;
 	context.stroke();
 
 	if (this.drawingOptions !== undefined && this.drawingOptions.arrowhead instanceof Arrowhead) {
@@ -105,18 +97,5 @@ Arc.prototype.draw = function(context, scale) {
 			gradient2, reverse2);
 	}
 };
-
-Arc.prototype.toString = function() {
-	var s = "Arc(" + Eden.edenCodeForValues(this.x, this.y, this.r, this.sAngle, this.eAngle, this.colour);
-
-	if (this.drawingOptions !== undefined) {
-		s = s + ", " + Eden.edenCodeForValue(this.drawingOptions);
-	}
-	
-	s = s + ")";
-	return s;
-}
-
-Arc.prototype.getEdenCode = Arc.prototype.toString;
 
 }}$;

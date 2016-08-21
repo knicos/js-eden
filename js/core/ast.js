@@ -245,7 +245,7 @@ Eden.AST.ScopePattern.prototype.unparse = function() {
 }
 
 Eden.AST.ScopePattern.prototype.generate = function(ctx, scope) {
-	var startstr = this.start.generate(ctx,scope);
+	var startstr = this.start.generate(ctx,scope,true);
 	if (this.range) {
 		if (this.start.doesReturnBound && this.start.doesReturnBound()) {
 			startstr += ".value";
@@ -427,7 +427,7 @@ Eden.AST.Scope.prototype.generate = function(ctx, scope) {
 		// Remove unwanted dependencies.
 		for (var o in this.overrides) {
 			//delete ctx.dependencies[o];
-			console.log(this.overrides[o]);
+			//console.log(this.overrides[o]);
 			if (this.overrides[o].isdefault) {
 				ctx.dependencies[o] = true;
 			} else {
@@ -441,6 +441,13 @@ Eden.AST.Scope.prototype.generate = function(ctx, scope) {
 			return "new BoundValue("+res+", scope"+(ctx.scopes.length)+")";
 		}
 	}
+}
+
+Eden.AST.Scope.prototype.execute = function(root, ctx, base, scope, bound) {
+	var rhs = "(function(context,scope) { return ";
+	rhs += this.generate(ctx, "scope",bound);
+	rhs += ";})";
+	return eval(rhs)(root,scope);
 }
 
 
@@ -532,6 +539,13 @@ Eden.AST.ScopePath.prototype.generate = function(ctx, scope) {
 	// And then use that scope to access the primary.
 	//return this.primary.generate(ctx, "_scopes["+(ctx.scopes.length-1)+"]");
 	return this.primary.generate(ctx, path, true);
+}
+
+Eden.AST.ScopePath.prototype.execute = function(root, ctx, base, scope, bound) {
+	var rhs = "(function(context,scope) { return ";
+	rhs += this.generate(ctx, "scope",bound);
+	rhs += ";})";
+	return eval(rhs)(root,scope);
 }
 
 Eden.AST.ScopePath.prototype.error = fnEdenASTerror;
@@ -1544,6 +1558,61 @@ Eden.AST.Range.prototype.left = function(lvalue) {
 
 //------------------------------------------------------------------------------
 
+
+Eden.AST.Call = function() {
+	this.type = "call";
+	this.parent = undefined;
+	this.errors = [];
+	this.funcexp = undefined;
+	this.start = 0;
+	this.end = 0;
+	//this.scopes = [];
+	//this.backtickCount = 0;
+	//this.executed = 0;
+	//this.compiled = undefined;
+	//this.dirty = false;
+	//this.value = undefined;
+	//this.dependencies = {};
+	//this.bound = false;
+};
+
+Eden.AST.Call.prototype.setSource = function(start, end) {
+	this.start = start;
+	this.end = end;
+}
+
+Eden.AST.Call.prototype.generate = function(ctx,scope) {
+	
+}
+
+Eden.AST.Call.prototype.execute = function(root, ctx, base, scope) {
+	//if (this.func === undefined) {
+		var fobj = this.funcexp.execute(root,ctx,base,scope,true);
+		if (fobj.value !== undefined) {
+			var fname = root.lookup("function").value(fobj.scope);
+			var obj = root.lookup("object").value(fobj.scope);
+			var args = root.lookup("args").value(fobj.scope);
+			if (typeof fname == "string") {
+			this.func = eval(fname);
+			} else if (typeof fname == "function") {
+				this.func = fname;
+			} else {
+				// ERROR
+			}
+			// TODO Check args is list and obj is not undefined.
+			this.func.apply(obj,args);
+		}
+}
+
+Eden.AST.Call.prototype.setFunction = function(express) {
+	this.funcexp = express;
+	this.errors.push.apply(this.errors,express.errors);
+}
+
+
+
+//------------------------------------------------------------------------------
+
 Eden.AST.Assignment = function(expression) {
 	this.type = "assignment";
 	this.parent = undefined;
@@ -1626,7 +1695,7 @@ Eden.AST.Assignment.prototype.compile = function(ctx) {
 	this.dirty = false;
 
 	var rhs = "(function(context,scope) { \n";
-	var express = this.expression.generate(this, "scope");
+	var express = this.expression.generate(this, "scope",true);
 
 	// Generate array of all scopes used in this definition (if any).
 	if (this.scopes.length > 0) {
@@ -1667,19 +1736,12 @@ Eden.AST.Assignment.prototype.execute = function(root, ctx, base, scope) {
 				sym.assign(this.value.value,scope, base.agent);
 				var cache = scope.lookup(sym.name);
 				if (cache) cache.scope = this.value.scope;
+				if (cache) cache.scopes = this.value.scopes;
 			} else {
 				sym.assign(this.value,scope, base.agent);
 			}
 		}
 	} catch(e) {
-		/*if (e.message == Eden.RuntimeError.ASSIGNTODEFINED) {
-			this.errors.push(new Eden.RuntimeError(base, Eden.RuntimeError.ASSIGNTODEFINED, this, "Cannot assign to a defined list, use 'is'"));
-		} else if (e.message == Eden.RuntimeError.ASSIGNDIMENSION) {
-			this.errors.push(new Eden.RuntimeError(base, Eden.RuntimeError.ASSIGNDIMENSION, this, "List does not have this many dimensions"));
-		} else {
-			this.errors.push(new Eden.RuntimeError(base, Eden.RuntimeError.ASSIGNEXEC, this, e));
-		}
-		Eden.Agent.emit("error", [base.agent,this.errors[this.errors.length-1]]);*/
 		var agentobj = base.agent;
 		var err;
 
@@ -1747,7 +1809,7 @@ Eden.AST.Modify.prototype.generate = function(ctx,scope) {
 
 	var express;
 	if (this.expression) {
-		express = this.expression.generate(ctx,"scope");
+		express = this.expression.generate(ctx,"scope",true);
 		if (this.expression.doesReturnBound && this.expression.doesReturnBound()) {
 			express += ".value";
 		}
@@ -1803,7 +1865,7 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 		sym.assign(sym.value(scope)-1, scope);
 	} else {
 		var rhs = "(function(context,scope) {\n";
-		var express = this.expression.generate(this, "scope");
+		var express = this.expression.generate(this, "scope",true);
 		if (this.expression.doesReturnBound && this.expression.doesReturnBound()) {
 			//express += ".value";
 			this.bound = true;
@@ -1838,19 +1900,27 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 		if (this.bound) {
 			var value = sym.boundValue(scope);
 			var cache = scope.lookup(sym.name);
-			if (cache) cache.scope = value.scope;
+			//if (cache) cache.scope = value.scope;
+			var rhseval = eval(rhs).call(ctx,root,scope);
+			if (cache) {
+				if (Array.isArray(value.value) && this.kind == "+=") {
+					if (cache.scopes === undefined) cache.scopes = [];
+					cache.scopes.push(rhseval.scope);
+				}
+				cache.scope = scope;
+			}
 			switch (this.kind) {
-			case "+="	: sym.assign(rt.addAssign(value.value, eval(rhs).call(ctx,root,scope)), scope); break;
-			case "-="	: sym.assign(rt.subtract(value.value, eval(rhs)(root,scope)), scope); break;
-			case "/="	: sym.assign(rt.divide(value.value, eval(rhs)(root,scope)), scope); break;
-			case "*="	: sym.assign(rt.multiply(value.value, eval(rhs)(root,scope)), scope); break;
+			case "+="	: sym.assign(rt.addAssign(value.value, rhseval.value), scope); break;
+			case "-="	: sym.assign(rt.subtract(value.value, rhseval.value), scope); break;
+			case "/="	: sym.assign(rt.divide(value.value, rhseval.value), scope); break;
+			case "*="	: sym.assign(rt.multiply(value.value, rhseval.value), scope); break;
 			}
 		} else {
 			switch (this.kind) {
-			case "+="	: sym.assign(rt.addAssign(sym.value(scope), eval(rhs).call(ctx,root,scope)), scope); break;
-			case "-="	: sym.assign(rt.subtract(sym.value(scope), eval(rhs)(root,scope)), scope); break;
-			case "/="	: sym.assign(rt.divide(sym.value(scope), eval(rhs)(root,scope)), scope); break;
-			case "*="	: sym.assign(rt.multiply(sym.value(scope), eval(rhs)(root,scope)), scope); break;
+			case "+="	: sym.assign(rt.addAssign(sym.value(scope), rhseval), scope); break;
+			case "-="	: sym.assign(rt.subtract(sym.value(scope), rhseval), scope); break;
+			case "/="	: sym.assign(rt.divide(sym.value(scope), rhseval), scope); break;
+			case "*="	: sym.assign(rt.multiply(sym.value(scope), rhseval), scope); break;
 			}
 		}
 	}
@@ -2027,11 +2097,11 @@ Eden.AST.Primary.prototype.generate = function(ctx, scope, bound) {
 	return res;
 }
 
-Eden.AST.Primary.prototype.execute = function(root, ctx, base, scope) {
+Eden.AST.Primary.prototype.execute = function(root, ctx, base, scope, bound) {
 	var rhs = "(function(context,scope) { return ";
-	rhs += this.generate(ctx, "scope");
+	rhs += this.generate(ctx, "scope",bound);
 	rhs += ";})";
-	return eval(rhs)(root,scope);
+	return eval(rhs).call(ctx,root,scope);
 }
 
 Eden.AST.Primary.prototype.error = fnEdenASTerror;
@@ -2613,6 +2683,7 @@ Eden.AST.For.prototype.execute = function(root, ctx, base, scope) {
 
 	if (this.sstart && this.sstart.type == "range") {
 		var list = this.sstart.expression.execute(root,ctx,base,scope,true);
+		//console.log(list);
 		//var bound = this.sstart.expression.doesReturnBound && this.sstart.expression.doesReturnBound();
 		var sym = root.lookup(this.sstart.lvalue.name);
 		// Error if not a simple lvalue
@@ -2622,14 +2693,32 @@ Eden.AST.For.prototype.execute = function(root, ctx, base, scope) {
 					sym.assign(list[i].value,scope);
 					var cache = scope.lookup(sym.name);
 					if (cache) cache.scope = list[i].scope;
-					console.log(cache);
+					//console.log(cache);
 				} else {
 					sym.assign(list[i],scope);
 				}
 				this.statement.execute(root,ctx,base,scope);
 			}
-		} else {
-			// Report error
+		} else if (list instanceof BoundValue) {
+			for (var i=0; i<list.value.length; i++) {
+				if (list.scopes) {
+					sym.assign(list.value[i],scope);
+					var cache = scope.lookup(sym.name);
+					if (cache) cache.scope = list.scopes[i];
+				} else {
+					if (list.value[i] instanceof BoundValue) {
+						sym.assign(list.value[i].value,scope);
+						var cache = scope.lookup(sym.name);
+						if (cache) cache.scope = list.value[i].scope;
+						//console.log(cache);
+					} else {
+						sym.assign(list.value[i],scope);
+						var cache = scope.lookup(sym.name);
+						if (cache) cache.scope = list.scope;
+					}
+				}
+				this.statement.execute(root,ctx,base,scope);
+			}
 		}
 	} else {
 		if (this.sstart) {
@@ -2951,7 +3040,7 @@ Eden.AST.When.prototype.execute = function(root, ctx, base, scope) {
 	if (this.active) return;
 	this.active = true;
 	this.executed = 1;
-	//this.compile(base);
+	this.compile(base);
 	this.causecount = 0;
 
 	var scope = root.scope;
@@ -3106,6 +3195,8 @@ Eden.AST.Script.prototype.executeGenerator = function*(root, ctx, base, scope, p
 			} else {
 				yield 0;
 			}
+		} else if (this.statements[i].type == "return") {
+			break;
 		} else if (this.statements[i].type == "import") {
 			yield this.statements[i];
 		} else {
