@@ -43,6 +43,19 @@ Eden.AST = function(code, imports) {
 
 
 
+Eden.AST.prototype.addTrigger = function(d, statement, scope) {
+	var trigs = this.triggers[d];
+	if (trigs) {
+		for (var i=0; i<trigs.length; i++) if (trigs[i].statement === statement) return;
+		this.triggers[d].push({statement: statement, scope: scope});
+	} else {
+		trigs = [{statement: statement, scope: scope}];
+		this.triggers[d] = trigs;
+	}
+}
+
+
+
 /**
  * Recursive search of all imports for the required action code.
  */
@@ -1463,7 +1476,7 @@ Eden.AST.prototype.pWHEN = function() {
 	}
 
 	// Compile the expression and log dependencies
-	//when.compile(this);
+	when.compile(this);
 
 	this.parent = parent;
 	return when;

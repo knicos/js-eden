@@ -77,9 +77,11 @@ Eden.Agent = function(parent, name, meta, options) {
 		if (me.ast && me.executed && me.ast.script.errors.length == 0) {
 			var whens = me.ast.triggers[sym.name.slice(1)];
 			if (whens) {
+				console.log("TRIGGER WITH " + sym.name);
 				//clearExecutedState();
 				for (var i=0; i<whens.length; i++) {
-					whens[i].execute(eden.root, undefined, me.ast);
+					console.log(whens[i].scope);
+					whens[i].statement.execute(eden.root, undefined, me.ast, whens[i].scope);
 				}
 				//gutter.generate(this.ast,-1);
 				//me.clearExecutedState();

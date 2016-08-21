@@ -1019,7 +1019,7 @@
 		// To put the dependency on the outer scoped observable is in a scoping context
 		if (scope && scope.cause) {
 			var basescope = scope.baseScope();
-			return basescope.cause.subscribeDynamic(basescope.cause.causecount++, dependency);
+			return basescope.cause.subscribeDynamic(basescope.cause.causecount++, dependency, scope);
 		}
 
 		if (!(dependency in this.dependencies)) {

@@ -2971,16 +2971,9 @@ Eden.AST.When.prototype.setScope = function (scope) {
 	this.scope = scope;
 }
 
-Eden.AST.When.prototype.subscribeDynamic = function(position, dependency) {
-	//console.log("Subscribe Dyn: " + dependency);
-	if (this.base.triggers[dependency]) {
-		if (this.base.triggers[dependency].indexOf(this) == -1) {
-			this.base.triggers[dependency].push(this);
-		}
-	} else {
-		var trigs = [this];
-		this.base.triggers[dependency] = trigs;
-	}
+Eden.AST.When.prototype.subscribeDynamic = function(position, dependency,scope) {
+	//console.log(scope);
+	this.base.addTrigger(dependency, this, scope);
 	return eden.root.lookup(dependency);
 }
 
@@ -3019,18 +3012,36 @@ Eden.AST.When.prototype.compile = function(base) {
 
 	// Register with base to be triggered
 	for (var d in this.dependencies) {
-		if (base.triggers[d]) {
-			if (base.triggers[d].indexOf(this) == -1) {
-				base.triggers[d].push(this);
-			}
-		} else {
-			var trigs = [this];
-			base.triggers[d] = trigs;
-		}
+		base.addTrigger(d,this);
 	}
 
 	if (this.scope && this.compScope === undefined) {
-		this.compScope = eval("(function (context, scope) { return " + this.scope.generateConstructor(this, "scope") + "; })").call(this,eden.root, eden.root.scope);
+		//try {
+			this.compScope = eval("(function (context, scope) { return " + this.scope.generateConstructor(this, "scope") + "; })");
+		//} catch(e) {
+		//	this.compScope = undefined;
+		//}
+	}
+
+	// MUST EXECUTE CONDITION TO GENERATE DYNAMIC DEPENDENCIES
+	var scope = eden.root.scope;
+	if (this.compScope) {
+		try { scope = this.compScope.call(this,eden.root, eden.root.scope) } catch(e) {}
+		//scope.causecount = 0;
+	}
+
+	if (scope.range) {
+		scope.range = false;
+
+		while (true) {
+			var cscope = scope.clone();
+			this.compiled.call(this,eden.root,cscope);
+			if (scope.next() == false) break;
+		}
+
+		scope.range = true;
+	} else {
+		this.compiled.call(this,eden.root,scope);
 	}
 
 	return "";
@@ -3040,21 +3051,27 @@ Eden.AST.When.prototype.execute = function(root, ctx, base, scope) {
 	if (this.active) return;
 	this.active = true;
 	this.executed = 1;
-	this.compile(base);
+	//this.compile(base);
 	this.causecount = 0;
+	//console.log("ACTIVATING WHEN");
 
-	var scope = root.scope;
-	if (this.compScope) {
-		scope = this.compScope;
-		//scope.causecount = 0;
+	if (scope === undefined || scope === eden.root.scope) {
+		scope = eden.root.scope;
+		if (this.compScope) {
+			scope = this.compScope.call(this,root, root.scope);
+			//scope.causecount = 0;
+		}
+	} else {
 	}
 
 	if (scope.range) {
 		scope.range = false;
 
 		while (true) {
-			if (this.compiled.call(this,root,scope)) {
-				this.statement.execute(root, this, base, scope);
+			var cscope = scope.clone();
+			//console.log(cscope);
+			if (this.compiled.call(this,root,cscope)) {
+				this.statement.execute(root, this, base, cscope);
 			} else {
 				this.executed = 2;
 			}
