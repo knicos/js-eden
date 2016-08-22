@@ -2274,17 +2274,7 @@ Eden.AST.prototype.pINSERT = function() {
 Eden.AST.prototype.pDELETE = function() {
 	var del = new Eden.AST.Delete();
 	
-	del.setDest(this.pLVALUE());
-	if (del.errors.length > 0) return del;
-
-	if (this.token != ",") {
-		del.error(new Eden.SyntaxError(this, Eden.SyntaxError.DELETECOMMA));
-		return del;
-	} else {
-		this.next();
-	}
-
-	del.setIndex(this.pEXPRESSION());
+	del.setSymbol(this.pLVALUE());
 	if (del.errors.length > 0) return del;
 
 	if (this.token != ";") {

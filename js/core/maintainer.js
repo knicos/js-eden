@@ -757,6 +757,30 @@
 		this.globalNotifyIndex = 0;
 	};
 
+	Folder.prototype.queryNames = function(query) {
+		var results = [];
+		for (var s in this.symbols) {
+			if (query.test(s)) {
+				results.push(s);
+			}
+		}
+		return results;
+	}
+
+	Folder.prototype.queryValues = function(query, scope) {
+		var results = [];
+		var bcause = scope.baseCause();
+		for (var s in this.symbols) {
+			if (s == "query") continue;
+			if (s == "values") continue;
+			if (s == bcause) continue;
+			if (query.test(String(this.symbols[s].value(scope)))) {
+				results.push(s);
+			}
+		}
+		return results;
+	}
+
 	/**
 	 * A symbol table entry.
 	 *

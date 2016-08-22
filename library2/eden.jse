@@ -17,13 +17,7 @@ has is ${{ scope.hasOverride(context.lookup("name").value(scope)) }}$;
 this is ${{ scope.baseCause() }}$;
 self is ${{ scope.self() }}$;
 
-JSFunction is (self + ":" + function)(
-	object-->@,
-	function-->@,
-	args-->[]
-);
-_js_console_log is JSFunction(object->"console",function->"console.log");
-_js_brieflyHighlightView is JSFunction(object->"edenUI",function->"edenUI.brieflyHighlighView");
+import lib/jsfuncs;
 
 console = [];
 when (console# > 0) {
@@ -34,31 +28,6 @@ when (console# > 0) {
 	console = [];
 	_menubar_status = message[1];
 }(message->@);
-
-when (forget) {
-	if (type(value->forget) == "string") {
-		symbolToDelete = &`forget`;
-	} else if (type(value->forget) == "pointer") {
-		symbolToDelete = forget;
-	// Todo, allow a list type here.
-	} else {
-		return;
-	}
-
-	${{ if (symbolToDelete.garbage) return; }}$;
-	nameToDelete = ${{ symbolToDelete.name }}$;
-
-	if (nameToDelete == "/picture") {
-		picture = @;
-		return;
-	}
-
-	if (!${{symbolToDElete.canSafelyBeForgotten()}}$) {
-		return;
-	}
-
-	${{ symbolToDelete.forget(); }}$;
-};
 
 
 errors = [];
@@ -116,6 +85,7 @@ autocalc = 1;
 autocalc = 0;
 
 import lib/type;
+import lib/search;
 //import lib/core;
 //import lib/math;
 //import lib/string;

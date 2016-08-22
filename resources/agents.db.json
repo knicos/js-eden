@@ -251,6 +251,16 @@
 			"title": "Colour functions",
 			"enabled": true
 		},
+		"lib/jsfuncs": {
+			"file": "library2/jsfuncs.js-e",
+			"title": "Javascript functions",
+			"enabled": true
+		},
+		"lib/search": {
+			"file": "library2/search.js-e",
+			"title": "Symbol Search functions",
+			"enabled": true
+		},
 		"lib/agent": {
 			"file": "library2/agents.js-e",
 			"title": "Agent Support Library"

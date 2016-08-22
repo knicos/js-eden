@@ -1,0 +1,13 @@
+/**
+ * @title Symbol Search
+ * Copyright (c) 2013, Empirical Modelling Group
+ * All rights reserved.
+ *
+ * See LICENSE.txt
+ */
+
+query is ${{ context.queryNames(edenUI.regExpFromStr(context.lookup("names").value(scope),"",false,"regexp")) }}$ if names
+	else ${{ context.queryValues(edenUI.regExpFromStr(context.lookup("values").value(scope),"",false,"regexp"), scope) }}$ if values
+	else []
+	(names-->@,values-->@);
+

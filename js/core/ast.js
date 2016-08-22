@@ -1329,44 +1329,36 @@ Eden.AST.Insert.prototype.error = fnEdenASTerror;
 
 Eden.AST.Delete = function() {
 	this.type = "delete";
-	this.destination = undefined;
-	this.index = undefined;
+	this.sym = undefined;
 	this.errors = [];
 	this.start = 0;
 	this.end = 0;
 	this.executed = 0;
 }
 
-Eden.AST.Delete.prototype.setDest = function(dest) {
-	this.destination = dest;
-	if (dest.errors.length > 0) {
-		this.errors.push.apply(this.errors, dest.errors);
-	}
-}
-
-Eden.AST.Delete.prototype.setIndex = function(index) {
-	this.index = index;
-	if (index.errors.length > 0) {
-		this.errors.push.apply(this.errors, index.errors);
+Eden.AST.Delete.prototype.setSymbol = function(sym) {
+	this.sym = sym;
+	if (sym.errors.length > 0) {
+		this.errors.push.apply(this.errors, sym.errors);
 	}
 }
 
 Eden.AST.Delete.prototype.generate = function(ctx) {
-	var ix = this.index.generate(ctx, "scope");
-	if (this.index.doesReturnBound && this.index.doesReturnBound()) {
-		ix += ".value";
-	}
-	var lvalue = this.destination.generate(ctx);
-	return lvalue + ".mutate(scope, function(s) { scope.lookup(s.name).value.splice(rt.index("+ix+"), 1); }, this);";
+	return "";
 }
 
 Eden.AST.Delete.prototype.execute = function(root, ctx, base, scope) {
 	this.executed = 1;
-	var ix = this.index.execute(root,ctx,base,scope);
-	if (ix instanceof BoundValue) ix = ix.value;
-	root.lookup(this.destination.name).mutate(scope, function(s) {
-		s.value().splice(ix-1, 1);
-	}, undefined);
+	var symbol = root.lookup(this.sym.name);
+	if (symbol) {
+		if (this.sym.lvaluep.length == 0) {
+			if (symbol.garbage) return;
+			if (symbol.canSafelyBeForgotten() == false) return;
+			symbol.forget();
+		} else {
+			// Delete an array item
+		}
+	}
 }
 
 Eden.AST.Delete.prototype.setSource = function(start, end) {
