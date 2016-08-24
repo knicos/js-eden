@@ -1167,6 +1167,7 @@
 			modifying_agent = scope;
 			scope = root.scope;
 		}
+
 		this.garbage = false;
 		value = copy(value);
 		if (pushToNetwork) {
@@ -1202,6 +1203,7 @@
 		if (this.context && scope === this.context.scope) {
 			this.context.expireSymbol(this);
 		} else {
+			this.context.expireSymbol(this);
 			scope.expire(this);
 		}
 
@@ -1417,6 +1419,14 @@
 	Symbol.prototype.getDependencies = function() {
 		var res = [];
 		for (var d in this.dependencies) {
+			res.push(d.slice(1));
+		}
+
+		return res;
+	}
+	Symbol.prototype.getSubscribers = function() {
+		var res = [];
+		for (var d in this.subscribers) {
 			res.push(d.slice(1));
 		}
 

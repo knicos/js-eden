@@ -1584,6 +1584,7 @@ Eden.AST.Call.prototype.execute = function(root, ctx, base, scope) {
 			var fname = root.lookup("function").value(fobj.scope);
 			var obj = root.lookup("object").value(fobj.scope);
 			var args = root.lookup("args").value(fobj.scope);
+			//console.log("CALLING: " + fname);
 			if (typeof fname == "string") {
 			this.func = eval(fname);
 			} else if (typeof fname == "function") {
@@ -1771,6 +1772,7 @@ Eden.AST.Modify = function(kind, expression) {
 	this.executed = 0;
 	this.scopes = [];
 	this.dependencies = {};
+	this.compiled = undefined;
 };
 
 Eden.AST.Modify.prototype.getParameterByNumber = function(index) {
@@ -1792,9 +1794,40 @@ Eden.AST.Modify.prototype.left = function(lvalue) {
 	}
 };
 
+Eden.AST.Modify.prototype.compile = function(ctx) {
+	if (this.compiled && !this.dirty) return;
+	this.dirty = false;
+
+	var rhs = "(function(context,scope) { \n";
+	var express = this.expression.generate(this, "scope",true);
+
+	// Generate array of all scopes used in this definition (if any).
+	if (this.scopes.length > 0) {
+		//rhs += "\tvar _scopes = [];\n";
+		for (var i=0; i<this.scopes.length; i++) {
+			rhs += "\tvar scope" + (i+1) + " = " + this.scopes[i];
+			rhs += ";\n";
+		}
+	}
+
+	rhs += "return " + express;
+
+	// Remove the scope if a boundValue is returned.
+	if (this.expression.doesReturnBound && this.expression.doesReturnBound()) {
+		//rhs += ".value";
+		this.bound = true;
+	} else {
+		this.bound = false;
+	}
+	rhs += ";})";
+
+	this.compiled = eval(rhs);
+}
+
 Eden.AST.Modify.prototype.generate = function(ctx,scope) {
 	var lval = this.lvalue.generate(ctx);
 	var result = lval;
+	this.compile(ctx);
 
 	if (this.lvalue.islocal == false) result += ".assign(\n\t";
 	else result += " = ";
@@ -1889,11 +1922,32 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 		console.log(this.scopes);
 		console.log(rhs);*/
 
+		var rhseval;
+		try {
+			rhseval = eval(rhs).call(ctx,root,scope);
+		} catch(e) {
+			var agentobj = base.agent;
+			var err;
+
+			if (/[0-9][0-9]*/.test(e.message)) {
+				err = new Eden.RuntimeError(base, parseInt(e.message), this, e.message);
+			} else {
+				err = new Eden.RuntimeError(base, 0, this, e);
+			}
+
+			if (agentobj) {
+				err.line = agentobj.findDefinitionLine(this.lvalue.name, base.getSource(this));
+			}
+
+			this.errors.push(err);
+			if (agentobj) Eden.Agent.emit("error", [agentobj,err]);
+			else console.log(err.prettyPrint());
+		}
+
 		if (this.bound) {
 			var value = sym.boundValue(scope);
 			var cache = scope.lookup(sym.name);
 			//if (cache) cache.scope = value.scope;
-			var rhseval = eval(rhs).call(ctx,root,scope);
 			if (cache) {
 				if (Array.isArray(value.value) && this.kind == "+=") {
 					if (cache.scopes === undefined) cache.scopes = [];
@@ -1908,6 +1962,7 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 			case "*="	: sym.assign(rt.multiply(value.value, rhseval.value), scope); break;
 			}
 		} else {
+			var value = sym.value(scope);
 			switch (this.kind) {
 			case "+="	: sym.assign(rt.addAssign(sym.value(scope), rhseval), scope); break;
 			case "-="	: sym.assign(rt.subtract(sym.value(scope), rhseval), scope); break;

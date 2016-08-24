@@ -11,3 +11,7 @@ query is ${{ context.queryNames(edenUI.regExpFromStr(context.lookup("names").val
 	else []
 	(names-->@,values-->@);
 
+union is ${{ rt.union(context.lookup("a").value(scope),context.lookup("b").value(scope)) }}$(a-->[],b-->[]);
+
+dependencies is ${{ context.lookup(context.lookup("name").value(scope)).getDependencies() }}$(name-->@);
+dependants is ${{ context.lookup(context.lookup("name").value(scope)).getSubscribers() }}$(name-->@);

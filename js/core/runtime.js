@@ -172,6 +172,19 @@ var rt = {
 		} else {
 			return !(new RegExp(pattern)).test(subject);
 		}
+	},
+
+	union: function(a,b) {
+		if (!(Array.isArray(a) && Array.isArray(b))) return [];
+		var temp = {};
+		for (var i=0; i<a.length; i++) {
+			temp[a[i]] = true;
+		}
+		var result = [];
+		for (var i=0; i<b.length; i++) {
+			if (temp[b[i]]) result.push(b[i]);
+		}
+		return result;
 	}
 
 };

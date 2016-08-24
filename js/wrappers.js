@@ -80,7 +80,7 @@ Eden.Agent = function(parent, name, meta, options) {
 				console.log("TRIGGER WITH " + sym.name);
 				//clearExecutedState();
 				for (var i=0; i<whens.length; i++) {
-					whens[i].statement.execute(eden.root, undefined, me.ast, whens[i].scope);
+					whens[i].statement.execute(eden.root, undefined, me.ast, (whens[i].scope) ? whens[i].scope : eden.root.scope);
 				}
 				//gutter.generate(this.ast,-1);
 				//me.clearExecutedState();
