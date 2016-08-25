@@ -13,7 +13,7 @@
  * report the errors found. To use, pass the script to the constructor.
  * @param code String containing the script.
  */
-Eden.AST = function(code, imports) {
+Eden.AST = function(code, imports, singleton) {
 	this.stream = new EdenStream(code);
 	this.data = new EdenSyntaxData();
 	this.token = "INVALID";
@@ -38,7 +38,11 @@ Eden.AST = function(code, imports) {
 	this.next();
 
 	// Start parse with SCRIPT production
-	this.script = this.pSCRIPT();
+	if (!singleton) this.script = this.pSCRIPT();
+	else {
+		this.script = this.pSTATEMENT();
+		console.log(this.token);
+	}
 }
 
 

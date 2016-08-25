@@ -347,7 +347,7 @@
 		else this.mode = 0;
 
 		// Get error position information
-		if (ast.script.errors.length > 0) {
+		if (ast.script && ast.script.errors.length > 0) {
 			errstart = ast.script.errors[0].prevposition;
 			errend = ast.script.errors[0].position;
 			errmsg = ast.script.errors[0].messageText();
@@ -648,7 +648,7 @@
 			return;
 		}
 
-		if (ast.script.errors.length > 0) {
+		if (ast.script && ast.script.errors.length > 0) {
 			errstart = ast.script.errors[0].prevposition;
 			errend = ast.script.errors[0].position;
 			errmsg = ast.script.errors[0].messageText();
