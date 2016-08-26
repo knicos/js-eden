@@ -406,6 +406,7 @@ textarea.hidden-textarea {
 	width: 80%;*/
 	height: 50px;
 	tab-size: 4;
+	outline: none;
 }
 
 div.outputcontent {

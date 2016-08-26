@@ -3,16 +3,17 @@
 div.scriptbox-output {
 	display: inline-block;
 	/* width: 100%;*/
-	min-width: calc(100% - 22px);
+	min-width: calc(100% - 31px);
 	/*min-height: calc(100% - 1px);*/
 	resize: none;
 	/*margin-left: 22px;*/
-	border-left-width: 1px;
+	/*border-left-width: 1px;
 	border-left-style: solid;
-	border-left-color: #e5e5e5;
+	border-left-color: #e5e5e5;*/
 	box-sizing: border-box;
 	padding-left: 8px;
-	padding-top: 5px;
+	padding-top: 3px;
+	padding-bottom: 2px;
 	padding-right: 1px;
 	/*padding: 4px;*/
 	/*margin: 5px;*/
@@ -22,13 +23,54 @@ div.scriptbox-output {
 	white-space: pre;
 	/*overflow: auto;*/
 	/*background: #f5f5f5;*/
+}
+
+div.scriptbox-statement {
+	border-bottom: 1px solid #e5e5e5;
+	border-top: 1px solid #e5e5e5;
+	margin-top: 10px;
 	background: white;
 }
 
 div.readonly {
 	-webkit-filter: grayscale(70%);
 	filter: grayscale(70%);
-	background-color: #f5f5f5;
+	background-color: #f0f0ff;
+}
+
+div.scriptbox-gutter {
+	float: left;
+	width: 18px;
+	height: 18px;
+	/*background: #f5f5f5;*/
+	cursor: pointer;
+	margin-top: 3px;
+	margin-left: 8px;
+	border: 1px solid silver;
+	border-radius: 20px;
+	background-color: none;
+	box-sizing: border-box;
+}
+
+::placeholder { color: #AAAAAA; opacity: 1; font-style: italic; }
+::-webkit-input-placeholder { color: #AAAAAA; opacity: 1; font-style: italic; }
+::-moz-placeholder { color: #AAAAAA; opacity: 1; font-style: italic; }
+
+/*div.scriptbox-gutter.play:after {
+	color: #66bb66;
+	font-family: "FontAwesome";
+	font-size: 10pt;
+	opacity: 0.4;
+	content: "\f04b";
+	position: relative;
+	left: 10px;
+	background: none;
+	top: 5px;
+	margin-top: 0;
+}*/
+
+div.scriptbox-gutter.active {
+	background: #00ff00;
 }
 
 .scriptbox-codearea {
@@ -52,4 +94,56 @@ div.readonly {
 	-webkit-transform: translate3d(0,0,0);
 }
 
+div.scriptview-bar {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: 55px;
+	background: #dbdbdb;
+	border-bottom: 1px solid #719ECE;
+	box-sizing: border-box;
+}
+
+div.scriptview-box {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	top: 55px;
+}
+
+div.scriptview-inputhider {
+	margin-top: 5px;
+}
+
+div.searchouter {
+	margin-left: 40px;
+	margin-right: 20px;
+	margin-top: 15px;
+}
+
+input.search {
+	border: 1px solid #b5b5f5;
+	border-radius: 20px;
+	padding: 5px;
+	padding-left: 30px;
+	font-size: 10pt;
+	width: 300px;
+	outline: none;
+}
+
+div.searchouter:after {
+	color: #5555bb;
+	/*text-shadow: 0px 0px 2px black;*/
+	font-family: "FontAwesome";
+	font-size: 10pt;
+	opacity: 0.4;
+	content: "\f002";
+	position: relative;
+	left: -325px;
+	background: none;
+	top: 1px;
+	margin-top: 0;
+}
 

@@ -64,6 +64,7 @@ var confirmUnload = function (event) {
 function initialiseJSEden(callback) {
 	root = new Folder();
 	eden = new Eden(root);
+	Eden.Statement.init();
 	
 	var menuBar = URLUtil.getParameterByName("menus") != "false";
 	var pluginsStr = URLUtil.getParameterByName("plugins");
@@ -143,6 +144,8 @@ function initialiseJSEden(callback) {
 
 		edenUI = new EdenUI(eden);
 		edenUI.scrollBarSize2 = window.innerHeight - $(window).height();
+		//Register the view options
+		edenUI.views["ScriptView2"] = {dialog: EdenUI.ScriptView.createDialog, title: "Script View2", category: edenUI.viewCategories.interpretation};
 
 		$(document)
 		.on('keydown', null, 'ctrl+m', function () {

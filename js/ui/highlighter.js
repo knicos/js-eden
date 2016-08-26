@@ -300,7 +300,7 @@
 			if (lineerror) {
 				className = "eden-line eden-errorline";
 			} else {
-				if (stream.code.charAt(linestart) == "#") {
+				if (stream.code.charAt(linestart) == "/") {
 					className = "eden-commentline";
 				} else {
 					className = "eden-line";

@@ -4,13 +4,17 @@ EdenUI.ScriptBox = function(element) {
 
 	// Construct the inner elements required.
 	this.contents = $(this.outer);
-	this.contents.html('<div class="inputhider"><textarea autofocus tabindex="1" class="hidden-textarea"></textarea><div class="scriptbox-codearea"><div class="eden_suggestions"></div></div></div><div class="outputbox"></div></div>');
+	this.contents.html('<div class="scriptbox-inputhider"><textarea autofocus tabindex="1" class="hidden-textarea"></textarea><div class="scriptbox-codearea"><div class="eden_suggestions"></div></div></div><div class="outputbox"></div></div>');
 	//this.outer.appendChild(this.contents.get(0));
+
+	//this.statements = [""];
+	var dstat = new Eden.Statement();
+	this.currentstatement = dstat.id;
 
 	this.$codearea = this.contents.find('.scriptbox-codearea');
 	this.codearea = this.$codearea.get(0);
 	this.intextarea = this.contents.find('.hidden-textarea').get(0);
-	this.$codearea.append($('<div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="0"></div>'));
+	this.$codearea.append($('<div class="scriptbox-statement"><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
 	this.outdiv = this.contents.find('.scriptbox-output').get(0);
 	this.infobox = this.contents.find('.info-bar').get(0);
 	this.outputbox = this.contents.find('.outputbox').get(0);
@@ -18,6 +22,8 @@ EdenUI.ScriptBox = function(element) {
 	this.suggestions.hide();
 	$(this.infobox).hide();
 	this.highlighter = new EdenUI.Highlight(this.outdiv);
+
+	//changeClass(this.outdiv.parentNode.firstChild, "play", true);
 
 	this.ast = undefined;
 	this.refreshentire = false;
@@ -32,9 +38,6 @@ EdenUI.ScriptBox = function(element) {
 	this.dragline = -1;
 	this.dragvalue = 0;
 	this.draglast = 0;
-
-	this.statements = [""];
-	this.currentstatement = 0;
 
 	var me = this;
 
@@ -370,12 +373,11 @@ EdenUI.ScriptBox = function(element) {
 		//me.hideMenu();
 
 		if (e.currentTarget !== me.outdiv) {
-			console.log("CHANGE STATEMENT");
-			me.statements[me.currentstatement] = me.intextarea.value;
+			Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
 			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 			me.changeOutput(e.currentTarget);
 			me.currentstatement = num;
-			me.setSource(me.statements[me.currentstatement]);
+			me.setSource(Eden.Statement.statements[me.currentstatement].source);
 			//return;
 		}
 
@@ -461,6 +463,14 @@ EdenUI.ScriptBox = function(element) {
 		}
 	}
 
+	function onGutterClick(e) {
+		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
+		console.log("GUTTER CLICK: " + num);
+		var stat = Eden.Statement.statements[num];
+		stat.ast.script.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
+		changeClass(e.currentTarget,"active",true);
+	}
+
 	// Set the event handlers
 	this.contents
 	.on('input', '.hidden-textarea', onInputChanged)
@@ -472,7 +482,8 @@ EdenUI.ScriptBox = function(element) {
 	.on('paste', '.scriptbox-output', onOutputPaste)
 	.on('blur', '.hidden-textarea', onTextBlur)
 	.on('focus', '.hidden-textarea', onTextFocus)
-	.on('mouseup', '.scriptbox-output', onOutputMouseUp);
+	.on('mouseup', '.scriptbox-output', onOutputMouseUp)
+	.on('click','.scriptbox-gutter', onGutterClick);
 	
 	this.setSource("");
 }
@@ -498,21 +509,23 @@ EdenUI.ScriptBox.prototype.setCaretToFakeCaret = function() {
 
 EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 	this.disable();
+	//changeClass(this.outdiv.parentNode.firstChild, "play", false);
 	$(this.outdiv).find(".fake-caret").remove();
 	this.outdiv = newoutput;
+	//changeClass(this.outdiv.parentNode.firstChild, "play", true);
 	this.highlighter = new EdenUI.Highlight(this.outdiv);
 	this.enable();
 }
 
 EdenUI.ScriptBox.prototype.insertStatement = function() {
-	this.statements[this.currentstatement] = this.intextarea.value;
-	var curstat = this.statements.length;
-	var newout = $('<div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(curstat)+'"></div>');
+	Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value);
+	var stat = new Eden.Statement();
+	var newout = $('<div class="scriptbox-statement"><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
 	//this.$codearea.append(newout);
-	newout.insertAfter($(this.outdiv));
-	this.currentstatement = curstat;
-	this.statements.push("");
-	this.changeOutput(newout.get(0));
+	newout.insertAfter($(this.outdiv.parentNode));
+	this.currentstatement = stat.id;
+	//this.statements.push("");
+	this.changeOutput(newout.find(".scriptbox-output").get(0));
 }
 
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {
@@ -521,12 +534,12 @@ EdenUI.ScriptBox.prototype.hideInfoBox = function() {
 
 EdenUI.ScriptBox.prototype.disable = function() {
 	this.outdiv.contentEditable = false;
-	changeClass(this.outdiv, "readonly", true);
+	changeClass(this.outdiv.parentNode, "readonly", true);
 }
 
 EdenUI.ScriptBox.prototype.enable = function() {
 	this.outdiv.contentEditable = true;
-	changeClass(this.outdiv, "readonly", false);
+	changeClass(this.outdiv.parentNode, "readonly", false);
 }
 
 EdenUI.ScriptBox.prototype.setSource = function(src) {
@@ -534,6 +547,9 @@ EdenUI.ScriptBox.prototype.setSource = function(src) {
 	this.ast = new Eden.AST(src,undefined,true);
 	this.highlightContent(this.ast, -1, 0);
 	this.intextarea.focus();
+	if (this.ast.script && this.ast.script.errors.length == 0) {
+		Eden.Statement.statements[this.currentstatement].setSource(src,this.ast);
+	}
 	//checkScroll();
 	this.outdiv.contentEditable = true;
 }
@@ -675,6 +691,7 @@ EdenUI.ScriptBox.prototype.highlightContent = function(ast, lineno, position) {
 					//}
 
 					me.highlightContent(me.ast, me.dragline, -1);
+					Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value,me.ast);
 				}
 			},
 			start: function(e,u) {
@@ -740,6 +757,8 @@ EdenUI.ScriptBox.prototype.doRebuild = function() {
 	// Adjust scroll position if required
 	//checkScroll();
 	//this.dirty = false;
+
+	Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
 }
 
 EdenUI.ScriptBox.prototype.runScript = function(line) {
