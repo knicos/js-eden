@@ -10,12 +10,14 @@ EdenUI.ScriptBox = function(element) {
 	//this.statements = [""];
 	var dstat = new Eden.Statement();
 	this.currentstatement = dstat.id;
+	this.statements = {};
 
 	this.$codearea = this.contents.find('.scriptbox-codearea');
 	this.codearea = this.$codearea.get(0);
 	this.intextarea = this.contents.find('.hidden-textarea').get(0);
 	this.$codearea.append($('<div class="scriptbox-statement"><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
 	this.outdiv = this.contents.find('.scriptbox-output').get(0);
+	this.statements[dstat.id] = $(this.outdiv.parent);
 	this.infobox = this.contents.find('.info-bar').get(0);
 	this.outputbox = this.contents.find('.outputbox').get(0);
 	this.suggestions = this.contents.find('.eden_suggestions');
@@ -40,6 +42,19 @@ EdenUI.ScriptBox = function(element) {
 	this.draglast = 0;
 
 	var me = this;
+
+	eden.root.addGlobal(function(sym, create) {
+		var symname = sym.name.slice(1);
+		var stats = Eden.Statement.symbols[symname];
+		if (stats) {
+			for (var x in stats) {
+				if (stats[x] && me.statements[stats[x].id]) {
+					//me.statements[stats[i].id].get(0).firstChild;
+					console.log("CHANGE TO STAT " + stats[x].id);
+				}
+			}
+		}
+	});
 
 	/**
 	 * Event handler for input change.
@@ -523,6 +538,7 @@ EdenUI.ScriptBox.prototype.insertStatement = function() {
 	var newout = $('<div class="scriptbox-statement"><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
 	//this.$codearea.append(newout);
 	newout.insertAfter($(this.outdiv.parentNode));
+	this.statements[stat.id] = newout;
 	this.currentstatement = stat.id;
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
@@ -549,6 +565,9 @@ EdenUI.ScriptBox.prototype.setSource = function(src) {
 	this.intextarea.focus();
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(src,this.ast);
+		changeClass(this.outdiv.parentNode.firstChild,"error",false);
+	} else {
+		changeClass(this.outdiv.parentNode.firstChild,"error",true);
 	}
 	//checkScroll();
 	this.outdiv.contentEditable = true;
@@ -574,6 +593,13 @@ EdenUI.ScriptBox.prototype.updateLineHighlight = function() {
 
 	this.highlightContent(this.ast, lineno, pos);
 	//rebuildNotifications();
+
+	if (this.ast.script && this.ast.script.errors.length == 0) {
+		Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
+		changeClass(this.outdiv.parentNode.firstChild,"error",false);
+	} else {
+		changeClass(this.outdiv.parentNode.firstChild,"error",true);
+	}
 }
 
 
@@ -614,6 +640,13 @@ EdenUI.ScriptBox.prototype.updateEntireHighlight = function(rerun) {
 	}
 
 	this.highlightContent(this.ast, -1, pos);
+
+	if (this.ast.script && this.ast.script.errors.length == 0) {
+		Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
+		changeClass(this.outdiv.parentNode.firstChild,"error",false);
+	} else {
+		changeClass(this.outdiv.parentNode.firstChild,"error",true);
+	}
 }
 
 /**
