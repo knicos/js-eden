@@ -21,9 +21,8 @@ Eden.Statement.prototype.setSource = function(src, ast) {
 
 			var sym = eden.root.symbols[ast.script.lvalue.name];
 			if (sym && sym.statid == this.id) {
-				console.log("DEFINE: " + this.id + " =");
-				console.log(this.ast.script);
-				sym.define(this.ast.script, this.id, this.ast);
+				if (ast.script.type == "definition") sym.define(this.ast.script, this.id, this.ast);
+				//else ast.script.execute(eden.root, ast, ast, eden.root.scope);
 			}
 		}
 	}

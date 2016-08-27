@@ -56,8 +56,15 @@ EdenUI.ScriptBox = function(element) {
 					//console.log("CHANGE TO STAT " + stats[x].id);
 					if (stats[x].id != sym.statid) {
 						changeClass(me.statements[stats[x].id].firstChild, "active", false);
+						changeClass(me.statements[stats[x].id].firstChild, "last", false);
 					} else {
-						changeClass(me.statements[stats[x].id].firstChild, "active", true);
+						if (sym.definition) {
+							changeClass(me.statements[stats[x].id].firstChild, "active", true);
+							changeClass(me.statements[stats[x].id].firstChild, "last", false);
+						} else {
+							changeClass(me.statements[stats[x].id].firstChild, "last", true);
+							changeClass(me.statements[stats[x].id].firstChild, "active", false);
+						}
 					}
 				}
 			}
@@ -492,6 +499,10 @@ EdenUI.ScriptBox = function(element) {
 		var stat = Eden.Statement.statements[num];
 		if (stat.ast.script && stat.ast.script.errors.length == 0) {
 			stat.ast.script.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
+			if (stat.ast.script.type == "when") {
+				Eden.Statement.active[stat.id] = (Eden.Statement.active[stat.id]) ? false : true;
+				changeClass(e.currentTarget, "active", Eden.Statement.active[stat.id]);
+			}
 		} else {
 			var err = stat.ast.script.errors[0];
 			me.showInfoBox(e.target.offsetLeft+20, e.target.offsetTop-me.codearea.scrollTop+25, "error", err.messageText());

@@ -73,6 +73,10 @@ div.scriptbox-gutter.active {
 	background: #00ff00;
 }
 
+div.scriptbox-gutter.last {
+	background: #8888ff;
+}
+
 div.scriptbox-gutter.error {
 	background: #ff0000;
 }

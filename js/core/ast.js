@@ -1726,12 +1726,12 @@ Eden.AST.Assignment.prototype.execute = function(root, ctx, base, scope) {
 		} else {
 			this.value = this.compiled.call(sym,root,scope);
 			if (this.bound) {
-				sym.assign(this.value.value,scope, base.agent);
+				sym.assign(this.value.value,scope, base.statid);
 				var cache = scope.lookup(sym.name);
 				if (cache) cache.scope = this.value.scope;
 				if (cache) cache.scopes = this.value.scopes;
 			} else {
-				sym.assign(this.value,scope, base.agent);
+				sym.assign(this.value,scope, base.statid);
 			}
 		}
 	} catch(e) {

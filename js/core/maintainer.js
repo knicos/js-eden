@@ -1163,7 +1163,8 @@
 	 * @param {Symbol} modifying_agent
 	 * @param {boolean} pushToNetwork
 	 */
-	Symbol.prototype.assign = function (value, scope, modifying_agent, pushToNetwork) {
+	Symbol.prototype.assign = function (value, scope, statid, pushToNetwork) {
+		var modifying_agent;
 		if (!(scope instanceof Scope)) {
 			pushToNetwork = modifying_agent;
 			modifying_agent = scope;
@@ -1188,7 +1189,8 @@
 		//this.eden_definition = undefined;
 		this.clearEvalIDs();
 		this.evalResolved = true;
-		this._setLastModifiedBy(modifying_agent);
+		//this._setLastModifiedBy(modifying_agent);
+		this.statid = statid;
 		this.definition = undefined;
 
 		this.extend = undefined;
@@ -1498,7 +1500,7 @@
 		this.clearEvalIDs();
 		this.evalResolved = true;
 		this.definition = undefined;
-		console.trace("FORGET : " + this.name);
+		//console.trace("FORGET : " + this.name);
 		this.cache.value = undefined;
 		this.cache.up_to_date = true;
 		this.clearObservees();
