@@ -137,6 +137,7 @@ div.searchouter {
 	margin-left: 40px;
 	margin-right: 20px;
 	margin-top: 15px;
+	z-index: 2001;
 }
 
 input.search {
@@ -184,5 +185,40 @@ div.searchouter:after {
 	background: none;
 	top: 1px;
 	margin-top: 0;
+	z-index: 2001;
+}
+
+div.scriptview-results {
+	display: none;
+	z-index: 2000;
+	position: absolute;
+	top: 40px;
+	left: 100px;
+	width: 250px;
+	min-height: 200px;
+	background: #f5f5f5;
+	padding-top: 10px;
+	border-left: 1px solid #719ECE;
+	border-right: 1px solid #719ECE;
+	border-bottom: 1px solid #719ECE;
+	box-shadow: 0 0 10px #719ECE;
+}
+
+div.scriptview-result {
+	padding: 5px;
+	border-top: 1px solid #e5e5e5;
+	border-bottom: 1px solid #e5e5e5;
+	margin-bottom: 2px;
+	font: 12px Roboto Mono,monospace;
+	background: white;
+	cursor: pointer;
+}
+
+div.scriptview-result.active {
+	background: #eeffee;
+}
+
+div.scriptview-result:hover {
+	background: #f5f5f5;
 }
 

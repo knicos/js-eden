@@ -405,9 +405,7 @@ EdenUI.ScriptBox = function(element) {
 		if (e.currentTarget !== me.outdiv) {
 			//Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
 			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
-			me.changeOutput(e.currentTarget);
-			me.currentstatement = num;
-			me.setSource(Eden.Statement.statements[me.currentstatement].source);
+			me.moveTo(num);
 			//return;
 		}
 
@@ -546,6 +544,12 @@ EdenUI.ScriptBox.prototype.setCaretToFakeCaret = function() {
 	$(me.outdiv).remove(".fake-caret");
 }
 
+EdenUI.ScriptBox.prototype.moveTo = function(num) {
+	this.changeOutput($(this.statements[num]).find(".scriptbox-output").get(0));
+	this.currentstatement = num;
+	this.setSource(Eden.Statement.statements[this.currentstatement].source);
+}
+
 EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 	this.disable();
 	//changeClass(this.outdiv.parentNode.firstChild, "play", false);
@@ -556,9 +560,11 @@ EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 	this.enable();
 }
 
-EdenUI.ScriptBox.prototype.insertStatement = function() {
+EdenUI.ScriptBox.prototype.insertStatement = function(stat) {
 	Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
-	var stat = new Eden.Statement();
+	if (stat === undefined) {
+		stat = new Eden.Statement();
+	}
 	var newout = $('<div class="scriptbox-statement"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
 	//this.$codearea.append(newout);
 	newout.insertAfter($(this.outdiv.parentNode));
@@ -566,6 +572,7 @@ EdenUI.ScriptBox.prototype.insertStatement = function() {
 	this.currentstatement = stat.id;
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
+	this.setSource(stat.source);
 }
 
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {

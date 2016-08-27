@@ -5,6 +5,55 @@ Eden.Statement = function() {
 	this.ast = undefined;
 }
 
+Eden.Statement.search = function(regex, m) {
+	var maxres = (m) ? m : 10;
+	var results = [];
+	for (var i=0; i<Eden.Statement.statements.length; i++) {
+		//if (results.length >= maxres) break;
+		var stat = Eden.Statement.statements[i];
+		if (stat.ast && stat.ast.script) {
+			if (stat.ast.script.type == "definition" || stat.ast.script.type == "assignment") {
+				if (regex.test(stat.ast.script.lvalue.name)) {
+					if (stat.isActive()) {
+						var nres = [i];
+						nres.push.apply(nres,results);
+						results = nres;
+					} else {
+						results.push(i);
+					}
+					continue;
+				}
+			} else if (stat.ast.script.type == "when") {
+				for (var x in stat.ast.triggers) {
+					if (regex.test(x)) {
+						if (stat.isActive()) {
+							var nres = [i];
+							nres.push.apply(nres,results);
+							results = nres;
+						} else {
+							results.push(i);
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+	return results;
+}
+
+Eden.Statement.prototype.isActive = function() {
+	if (this.ast && this.ast.script) {
+		if (this.ast.script.type == "definition" || this.ast.script.type == "assignment") {
+			var sym = eden.root.symbols[this.ast.script.lvalue.name];
+			return (sym && sym.statid == this.id);
+		} else if (this.ast.script.type == "when") {
+			return Eden.Statement.active[this.id];
+		}
+	}
+	return false;
+}
+
 Eden.Statement.prototype.setSource = function(src, ast) {
 	if (this.ast && this.ast.script && (this.ast.script.type == "definition" || this.ast.script.type == "assignment")) {
 		if (Eden.Statement.symbols[this.ast.script.lvalue.name] && Eden.Statement.symbols[this.ast.script.lvalue.name][this.id]) {
