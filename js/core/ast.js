@@ -1493,7 +1493,7 @@ Eden.AST.Definition.prototype.execute = function(root, ctx, base, scope) {
 		if (this.lvalue.lvaluep.length > 0) {
 			sym.addExtension(this.lvalue.generateIdStr(), this, base);
 		} else {
-			sym.define(this, base.agent, base);
+			sym.define(this, base.statid, base);
 		}
 	} catch(e) {
 		var err;

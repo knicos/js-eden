@@ -28,6 +28,7 @@ Eden.AST = function(code, imports, singleton) {
 	this.dependencies = {};		// Dummy dependency record
 	this.warnings = [];
 	this.agent = undefined;
+	this.statid = undefined;
 
 	this.lastDoxyComment = undefined;
 	this.mainDoxyComment = undefined;

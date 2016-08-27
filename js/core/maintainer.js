@@ -805,6 +805,7 @@
 
 		this.definition = undefined;
 		this.causecount = 0;
+		this.statid = undefined;
 		//this.eden_definition = undefined;
 		this.evalResolved = true;
 		this.extend = undefined;
@@ -1104,9 +1105,10 @@
 	 * @param {function(Folder)} definition
 	 * @param {Symbol} modifying_agent Agent modifying this Symbol.
 	 */
-	Symbol.prototype.define = function (definition, modifying_agent, base) {
+	Symbol.prototype.define = function (definition, statid, base) {
 		this.garbage = false;
-		this._setLastModifiedBy(modifying_agent);
+		//this._setLastModifiedBy(modifying_agent);
+		this.statid = (typeof statid == "number") ? statid : undefined;
 
 		if (this.definition === undefined) this.definition = new Symbol.Definition();
 		this.definition.setBase(definition, base);
@@ -1228,6 +1230,7 @@
 		this.evalResolved = true;
 		this._setLastModifiedBy(modifying_agent);
 		this.definition = undefined;
+		console.log("ASSIGNED TO : " + this.name);
 
 		// symbol no longer observes or depends on anything
 		this.clearObservees();
@@ -1264,6 +1267,7 @@
 		// which is allowed to refer to the cached value.
 		this.value(scope);
 		this.definition = undefined;
+		console.log("MUTATE : " + this.name);
 
 		var args = [];
 		for (var i = 1; i < arguments.length; i++) {
@@ -1474,7 +1478,7 @@
 	 */
 	Symbol.prototype.removeSubscriber = function (name) {
 		delete this.subscribers[name];
-		if (this.last_modified_by === undefined && this.canSafelyBeForgotten()) {
+		if (this.last_modified_by === undefined && this.statid === undefined && this.canSafelyBeForgotten()) {
 			this.forget();
 		}
 	};
@@ -1494,6 +1498,7 @@
 		this.clearEvalIDs();
 		this.evalResolved = true;
 		this.definition = undefined;
+		console.trace("FORGET : " + this.name);
 		this.cache.value = undefined;
 		this.cache.up_to_date = true;
 		this.clearObservees();
@@ -1534,7 +1539,7 @@
 	 */
 	Symbol.prototype.removeObserver = function (name) {
 		delete this.observers[name];
-		if (this.last_modified_by === undefined && this.canSafelyBeForgotten()) {
+		if (this.last_modified_by === undefined && this.statid === undefined && this.canSafelyBeForgotten()) {
 			this.forget();
 		}
 	};

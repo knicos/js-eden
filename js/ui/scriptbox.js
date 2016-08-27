@@ -4,7 +4,7 @@ EdenUI.ScriptBox = function(element) {
 
 	// Construct the inner elements required.
 	this.contents = $(this.outer);
-	this.contents.html('<div class="scriptbox-inputhider"><textarea autofocus tabindex="1" class="hidden-textarea"></textarea><div class="scriptbox-codearea"><div class="eden_suggestions"></div></div></div><div class="outputbox"></div></div>');
+	this.contents.html('<div class="scriptbox-inputhider"><textarea autofocus tabindex="1" class="hidden-textarea"></textarea><div class="scriptbox-codearea"><div class="eden_suggestions"></div></div></div><div class="outputbox"></div><div class="info-bar"></div></div>');
 	//this.outer.appendChild(this.contents.get(0));
 
 	//this.statements = [""];
@@ -17,7 +17,9 @@ EdenUI.ScriptBox = function(element) {
 	this.intextarea = this.contents.find('.hidden-textarea').get(0);
 	this.$codearea.append($('<div class="scriptbox-statement"><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
 	this.outdiv = this.contents.find('.scriptbox-output').get(0);
-	this.statements[dstat.id] = $(this.outdiv.parent);
+	this.$codearea.sortable({revert: 100, handle: ".scriptbox-gutter",
+		distance: 10, axis: "y", scroll: false});
+	this.statements[dstat.id] = this.outdiv.parentNode;
 	this.infobox = this.contents.find('.info-bar').get(0);
 	this.outputbox = this.contents.find('.outputbox').get(0);
 	this.suggestions = this.contents.find('.eden_suggestions');
@@ -48,9 +50,15 @@ EdenUI.ScriptBox = function(element) {
 		var stats = Eden.Statement.symbols[symname];
 		if (stats) {
 			for (var x in stats) {
+				//console.log(me.statements[x]);
 				if (stats[x] && me.statements[stats[x].id]) {
 					//me.statements[stats[i].id].get(0).firstChild;
-					console.log("CHANGE TO STAT " + stats[x].id);
+					//console.log("CHANGE TO STAT " + stats[x].id);
+					if (stats[x].id != sym.statid) {
+						changeClass(me.statements[stats[x].id].firstChild, "active", false);
+					} else {
+						changeClass(me.statements[stats[x].id].firstChild, "active", true);
+					}
 				}
 			}
 		}
@@ -388,7 +396,7 @@ EdenUI.ScriptBox = function(element) {
 		//me.hideMenu();
 
 		if (e.currentTarget !== me.outdiv) {
-			Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
+			//Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
 			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 			me.changeOutput(e.currentTarget);
 			me.currentstatement = num;
@@ -482,8 +490,13 @@ EdenUI.ScriptBox = function(element) {
 		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 		console.log("GUTTER CLICK: " + num);
 		var stat = Eden.Statement.statements[num];
-		stat.ast.script.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
-		changeClass(e.currentTarget,"active",true);
+		if (stat.ast.script && stat.ast.script.errors.length == 0) {
+			stat.ast.script.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
+		} else {
+			var err = stat.ast.script.errors[0];
+			me.showInfoBox(e.target.offsetLeft+20, e.target.offsetTop-me.codearea.scrollTop+25, "error", err.messageText());
+		}
+		//changeClass(e.currentTarget,"active",true);
 	}
 
 	// Set the event handlers
@@ -533,19 +546,34 @@ EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 }
 
 EdenUI.ScriptBox.prototype.insertStatement = function() {
-	Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value);
+	Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
 	var stat = new Eden.Statement();
 	var newout = $('<div class="scriptbox-statement"><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
 	//this.$codearea.append(newout);
 	newout.insertAfter($(this.outdiv.parentNode));
-	this.statements[stat.id] = newout;
+	this.statements[stat.id] = newout.get(0);
 	this.currentstatement = stat.id;
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
 }
 
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {
+	$(this.infobox).hide("fast");
+}
 
+/**
+ * Displays the error/warning box.
+ */
+EdenUI.ScriptBox.prototype.showInfoBox = function(x, y, type, message) {
+	if (type == "warning") {
+		this.infobox.innerHTML = "<div class='info-warnitem'><span>"+message+"</span></div>";
+	} else if (type == "error") {
+		this.infobox.innerHTML = "<div class='info-erroritem'><span>"+message+"</span></div>";
+	}
+	var $info = $(this.infobox);
+	$info.css("top",""+y+"px");
+	$info.css("left", ""+x+"px");
+	$(this.infobox).show("fast");
 }
 
 EdenUI.ScriptBox.prototype.disable = function() {
@@ -565,6 +593,8 @@ EdenUI.ScriptBox.prototype.setSource = function(src) {
 	this.intextarea.focus();
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(src,this.ast);
+		changeClass(this.outdiv.parentNode.firstChild,"error",false);
+	} else if (src == "") {
 		changeClass(this.outdiv.parentNode.firstChild,"error",false);
 	} else {
 		changeClass(this.outdiv.parentNode.firstChild,"error",true);
