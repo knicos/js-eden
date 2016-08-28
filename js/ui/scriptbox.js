@@ -495,9 +495,9 @@ EdenUI.ScriptBox = function(element) {
 		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 		console.log("GUTTER CLICK: " + num);
 		var stat = Eden.Statement.statements[num];
-		if (stat.ast.script && stat.ast.script.errors.length == 0) {
-			stat.ast.script.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
-			if (stat.ast.script.type == "when") {
+		if (stat.statement && stat.statement.errors.length == 0) {
+			stat.statement.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
+			if (stat.statement.type == "when") {
 				Eden.Statement.active[stat.id] = (Eden.Statement.active[stat.id]) ? false : true;
 				changeClass(e.currentTarget, "active", Eden.Statement.active[stat.id]);
 			}
@@ -573,6 +573,7 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat) {
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
 	this.setSource(stat.source);
+	if (stat.isActive()) changeClass(this.statements[stat.id].childNodes[2],"active",true);
 }
 
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {

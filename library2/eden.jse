@@ -31,7 +31,7 @@ when (console# > 0) {
 
 
 errors = [];
-when (errors) {
+when (errors# > 0) {
 	for (error in errors) {
 		${{ eden.error(new Error(root.value("error",scope)),"error"); }}$;
 	}
@@ -113,7 +113,7 @@ if (initialViews == "" || initialViews == "default") {
 	if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
 		//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
 	}
-	inputview is View(name->"input", type->"ScriptInput");
+	inputview is View(name->"input", type->"ScriptView2");
 	createViews += inputview;
 	_view_input_agent = "view/script/input";
 	_view_input_height = _view_picture_height;

@@ -185,14 +185,25 @@ Eden.Agent.importAgent = function(path, tag, options, callback) {
 				//Eden.Agent.emit("error", [ag,ag.ast.script.errors[0]]);
 				//console.error("Agent: " + path + "@" + tag + "\n" + ag.ast.script.errors[0].prettyPrint());
 			}
-			// Does it need executing?
-			if (options === undefined || options.indexOf("noexec") == -1) {
-				ag.execute((options && options.indexOf("force") >= 0), true, function() {
-					doCallbacks(ag);
-				});
-			} else {
-				doCallbacks(ag);
+
+			var doexec = (options === undefined || options.indexOf("noexec") == -1);
+
+			// Generate statements for each...
+			for (var i=0; i<ag.ast.script.statements.length; i++) {
+				var aststat = ag.ast.script.statements[i];
+				var stat = new Eden.Statement();
+				stat.setSource(ag.ast.getSource(aststat), ag.ast, aststat);
+				if (doexec) stat.activate();
 			}
+
+			// Does it need executing?
+			//if (options === undefined || options.indexOf("noexec") == -1) {
+			//	ag.execute((options && options.indexOf("force") >= 0), true, function() {
+			//		doCallbacks(ag);
+			//	});
+			//} else {
+				doCallbacks(ag);
+			//}
 		// There is no existing agent but create it
 		} else if (options && options.indexOf("create") >= 0) {
 			// Auto create agents that don't exist

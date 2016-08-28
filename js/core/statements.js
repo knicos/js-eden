@@ -11,9 +11,9 @@ Eden.Statement.search = function(regex, m) {
 	for (var i=0; i<Eden.Statement.statements.length; i++) {
 		//if (results.length >= maxres) break;
 		var stat = Eden.Statement.statements[i];
-		if (stat.ast && stat.ast.script) {
-			if (stat.ast.script.type == "definition" || stat.ast.script.type == "assignment") {
-				if (regex.test(stat.ast.script.lvalue.name)) {
+		if (stat.ast && stat.statement) {
+			if (stat.statement.type == "definition" || stat.statement.type == "assignment") {
+				if (regex.test(stat.statement.lvalue.name)) {
 					if (stat.isActive()) {
 						var nres = [i];
 						nres.push.apply(nres,results);
@@ -23,7 +23,7 @@ Eden.Statement.search = function(regex, m) {
 					}
 					continue;
 				}
-			} else if (stat.ast.script.type == "when") {
+			} else if (stat.statement.type == "when") {
 				for (var x in stat.ast.triggers) {
 					if (regex.test(x)) {
 						if (stat.isActive()) {
@@ -43,39 +43,51 @@ Eden.Statement.search = function(regex, m) {
 }
 
 Eden.Statement.prototype.isActive = function() {
-	if (this.ast && this.ast.script) {
-		if (this.ast.script.type == "definition" || this.ast.script.type == "assignment") {
-			var sym = eden.root.symbols[this.ast.script.lvalue.name];
+	if (this.ast && this.statement) {
+		if (this.statement.type == "definition" || this.statement.type == "assignment") {
+			var sym = eden.root.symbols[this.statement.lvalue.name];
 			return (sym && sym.statid == this.id);
-		} else if (this.ast.script.type == "when") {
+		} else if (this.statement.type == "when") {
 			return Eden.Statement.active[this.id];
 		}
 	}
 	return false;
 }
 
-Eden.Statement.prototype.setSource = function(src, ast) {
-	if (this.ast && this.ast.script && (this.ast.script.type == "definition" || this.ast.script.type == "assignment")) {
-		if (Eden.Statement.symbols[this.ast.script.lvalue.name] && Eden.Statement.symbols[this.ast.script.lvalue.name][this.id]) {
-			Eden.Statement.symbols[this.ast.script.lvalue.name][this.id] = undefined;
+Eden.Statement.prototype.setSource = function(src, ast, stat) {
+	if (ast && stat === undefined) stat = ast.script;
+	if (this.ast && this.statement && (this.statement.type == "definition" || this.statement.type == "assignment")) {
+		if (Eden.Statement.symbols[this.statement.lvalue.name] && Eden.Statement.symbols[this.statement.lvalue.name][this.id]) {
+			Eden.Statement.symbols[this.statement.lvalue.name][this.id] = undefined;
 		}
 	}
 	this.source = src;
 	this.ast = ast;
-	if (ast && ast.script && ast.script.errors.length == 0) {
+	this.statement = stat;
+	if (ast && stat && stat.errors.length == 0) {
 		ast.statid = this.id;
-		if (ast.script.type == "definition" || ast.script.type == "assignment") {
-			if (Eden.Statement.symbols[ast.script.lvalue.name] === undefined) Eden.Statement.symbols[ast.script.lvalue.name] = {};
-			Eden.Statement.symbols[ast.script.lvalue.name][this.id] = this;
+		if (stat.type == "definition" || stat.type == "assignment") {
+			if (Eden.Statement.symbols[stat.lvalue.name] === undefined) Eden.Statement.symbols[stat.lvalue.name] = {};
+			Eden.Statement.symbols[stat.lvalue.name][this.id] = this;
 
-			var sym = eden.root.symbols[ast.script.lvalue.name];
+			var sym = eden.root.symbols[stat.lvalue.name];
 			if (sym && sym.statid == this.id) {
-				if (ast.script.type == "definition") sym.define(this.ast.script, this.id, this.ast);
+				if (stat.type == "definition") sym.define(stat, this.id, this.ast);
 				//else ast.script.execute(eden.root, ast, ast, eden.root.scope);
 			}
 		}
 	}
 }
+
+Eden.Statement.prototype.activate = function() {
+	if (this.statement) {
+		if (this.statement.type == "when") {
+			Eden.Statement.active[this.id] = true;
+		}
+		this.statement.execute(eden.root, this.ast, this.ast, eden.root.scope);
+	}
+}
+
 
 // Watch to trigger whens
 Eden.Statement.init = function() {
