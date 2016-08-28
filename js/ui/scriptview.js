@@ -32,7 +32,9 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res) {
 		var html = "";
 		for (var i=0; i<res.length; i++) {
 			var stat = Eden.Statement.statements[res[i]];
-			html += "<div class='scriptview-result"+((stat.isActive())?" active":"")+"' data-statement='"+res[i]+"'>"+stat.source+"</div>\n";
+			var ixof = stat.source.indexOf("{")
+			var src = (ixof >= 0) ? stat.source.substr(0,ixof) : stat.source;
+			html += "<div class='scriptview-result"+((stat.isActive())?" active":"")+"' data-statement='"+res[i]+"'>"+src+"</div>\n";
 		}
 		this.searchres.html(html);
 	} else {

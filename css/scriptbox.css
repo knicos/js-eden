@@ -212,6 +212,8 @@ div.scriptview-result {
 	font: 12px Roboto Mono,monospace;
 	background: white;
 	cursor: pointer;
+	white-space: pre;
+	overflow: hidden;
 }
 
 div.scriptview-result.active {
