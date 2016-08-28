@@ -50,6 +50,11 @@
 	//Case when a window is moved off to the left of the screen.
 	EdenUI.prototype.minimumWindowWidthShowing = 72 + EdenUI.prototype.dialogBorderWidth;
 
+	EdenUI.prototype.createRawView = function(name, type) {
+		var viewData = this.views[type].raw(name + "-dialog", name);
+		return viewData;
+	}
+
 	/**
 	 * A view is a window which appears in the JsEden UI.
 	 *

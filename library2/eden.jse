@@ -72,6 +72,13 @@ when(createViews# > 0) {
 	createViews = [];
 }(name-->@,type-->@,view-->@);
 
+when (setView) {
+	name = setView.name;
+	type = setView.type;
+	views += setView;
+	${{ $(document.body).html(""); $(document.body).append(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope)).contents); }}$;
+}
+
 when (execute) {
 	${{ eden.execute2(root.value("execute",scope)); }}$;
 }
@@ -95,6 +102,8 @@ import lib/search;
 max is a if (a >= b) else b;
 min is a if (a <= b) else b;
 
+mobile is ${{ mobilecheck(); }}$;
+
 
 autocalc = 1;
 
@@ -114,7 +123,8 @@ if (initialViews == "" || initialViews == "default") {
 		//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
 	}
 	inputview is View(name->"input", type->"ScriptView2");
-	createViews += inputview;
+	if (mobile) setView = inputview;
+	else createViews += inputview;
 	_view_input_agent = "view/script/input";
 	_view_input_height = _view_picture_height;
 	inputcenterx is screenWidth / 2 + 30;
