@@ -30,9 +30,9 @@ EdenUI.Tabs.prototype.build = function(agents, current) {
 
 		for (var i=0; i<agents.length; i++) {
 			var title = agents[i];
-			if (Eden.Agent.agents[agents[i]]) {
-				title = Eden.Agent.agents[agents[i]].title;
-			}
+			//if (Eden.Agent.agents[agents[i]]) {
+			//	title = Eden.Agent.agents[agents[i]].title;
+			//}
 			if (this.scrollix <= i) {
 				this.add(tabcontainer, agents[i], title, (current && agents[i] == current), i);
 			}
@@ -68,17 +68,17 @@ EdenUI.Tabs.prototype.add = function(container, name, title, current, ix) {
 	}
 
 	var iconclass;
-	if (Eden.Agent.agents[name]) {
-		if (Eden.Agent.agents[name].hasErrors()) {
-			iconclass = "tab-icon errored";
-		} else if (Eden.Agent.agents[name].executed) {
-			iconclass = "tab-icon executed";
-		} else {
-			iconclass = "tab-icon";
-		}
-	} else {
+	//if (Eden.Agent.agents[name]) {
+		//if (Eden.Agent.agents[name].hasErrors()) {
+		//	iconclass = "tab-icon errored";
+		//} else if (Eden.Agent.agents[name].executed) {
+		//	iconclass = "tab-icon executed";
+		//} else {
+		//	iconclass = "tab-icon";
+		//}
+	//} else {
 		iconclass = "tab-icon noagent";
-	}
+	//}
 
 
 	tab.className = classname;

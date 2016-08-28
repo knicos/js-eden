@@ -8,6 +8,19 @@ div#eden-logo {
 	height: 70px;
 }
 
+div#mainview {
+	position: absolute;
+	top: 35px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+div#viewtabs {
+	height: 35px;
+	background: silver;
+}
+
 div.search-box-outer {
 	margin: 15px;
 	position: relative;
