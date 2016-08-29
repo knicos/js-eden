@@ -3012,7 +3012,19 @@ Eden.AST.When = function() {
 	//this.scopes = [];
 	this.causecount = 0;
 	this.locals = {};
+	this.triggers = {};
 };
+
+Eden.AST.When.prototype.addTrigger = function(d, scope) {
+	var trigs = this.triggers[d];
+	if (trigs) {
+		for (var i=0; i<trigs.length; i++) if (trigs[i].statement === statement) return;
+		this.triggers[d].push({scope: scope});
+	} else {
+		trigs = [{scope: scope}];
+		this.triggers[d] = trigs;
+	}
+}
 
 Eden.AST.When.prototype.setScope = function (scope) {
 	this.scope = scope;
@@ -3020,7 +3032,7 @@ Eden.AST.When.prototype.setScope = function (scope) {
 
 Eden.AST.When.prototype.subscribeDynamic = function(position, dependency,scope) {
 	//console.log(scope);
-	this.base.addTrigger(dependency, this, scope);
+	this.addTrigger(dependency, scope);
 	return eden.root.lookup(dependency);
 }
 
@@ -3059,7 +3071,7 @@ Eden.AST.When.prototype.compile = function(base) {
 
 	// Register with base to be triggered
 	for (var d in this.dependencies) {
-		base.addTrigger(d,this);
+		this.addTrigger(d);
 	}
 
 	if (this.scope && this.compScope === undefined) {

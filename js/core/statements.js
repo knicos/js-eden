@@ -12,7 +12,7 @@ Eden.Statement.search = function(regex, m) {
 		//if (results.length >= maxres) break;
 		var stat = Eden.Statement.statements[i];
 		if (stat.ast && stat.statement) {
-			if (stat.statement.type == "definition" || stat.statement.type == "assignment") {
+			if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
 				if (regex.test(stat.statement.lvalue.name)) {
 					if (stat.isActive()) {
 						var nres = [i];
@@ -24,7 +24,7 @@ Eden.Statement.search = function(regex, m) {
 					continue;
 				}
 			} else if (stat.statement.type == "when") {
-				for (var x in stat.ast.triggers) {
+				for (var x in stat.statement.triggers) {
 					if (regex.test(x)) {
 						if (stat.isActive()) {
 							var nres = [i];
@@ -96,13 +96,13 @@ Eden.Statement.init = function() {
 			if (!Eden.Statement.active[x]) continue;
 			//console.log("TRIGGER");
 			var me = Eden.Statement.statements[x];
-			if (me.ast && me.ast.script.errors.length == 0) {
-				var whens = me.ast.triggers[sym.name.slice(1)];
+			if (me.ast && me.statement.errors.length == 0) {
+				var whens = me.statement.triggers[sym.name.slice(1)];
 				if (whens) {
 					console.log("TRIGGER WITH " + sym.name);
 					//clearExecutedState();
 					for (var i=0; i<whens.length; i++) {
-						whens[i].statement.execute(eden.root, undefined, me.ast, (whens[i].scope) ? whens[i].scope : eden.root.scope);
+						me.statement.execute(eden.root, undefined, me.ast, (whens[i].scope) ? whens[i].scope : eden.root.scope);
 					}
 					//gutter.generate(this.ast,-1);
 					//me.clearExecutedState();

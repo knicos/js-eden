@@ -20,7 +20,7 @@ EdenUI.ScriptView = function(name, title) {
 
 	this.searchres.on("click", ".scriptview-result", function(e) {
 		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
-		if (me.script.statements[num] === undefined) me.script.insertStatement(Eden.Statement.statements[num]);
+		if (me.script.statements[num] === undefined) me.script.insertStatement(Eden.Statement.statements[num], false);
 		else me.script.moveTo(num);
 		me.searchres.hide('fast');
 	});

@@ -137,6 +137,9 @@ function initialiseJSEden(callback) {
 			invalidVersion("Your browser is not supported by JS-Eden, use Firefox or Chrome.");
 		}
 
+		// Reset scroll and hide address bar.
+		window.scrollTo(0,1);
+
 		document.addEventListener("touchstart", touchHandler, true);
 		document.addEventListener("touchmove", touchHandler, true);
 		document.addEventListener("touchend", touchHandler, true);

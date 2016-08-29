@@ -22,7 +22,7 @@ Eden.AST = function(code, imports, singleton) {
 	this.lines = [];
 	this.parent = undefined;
 	this.scripts = {};			// Actions table
-	this.triggers = {};			// Guarded actions
+	//this.triggers = {};			// Guarded actions
 	this.definitions = {};		// Definitions mapping
 	this.imports = (imports) ? imports : [];
 	this.dependencies = {};		// Dummy dependency record
@@ -42,20 +42,6 @@ Eden.AST = function(code, imports, singleton) {
 	if (!singleton) this.script = this.pSCRIPT();
 	else {
 		this.script = this.pSTATEMENT();
-		console.log(this.token);
-	}
-}
-
-
-
-Eden.AST.prototype.addTrigger = function(d, statement, scope) {
-	var trigs = this.triggers[d];
-	if (trigs) {
-		for (var i=0; i<trigs.length; i++) if (trigs[i].statement === statement) return;
-		this.triggers[d].push({statement: statement, scope: scope});
-	} else {
-		trigs = [{statement: statement, scope: scope}];
-		this.triggers[d] = trigs;
 	}
 }
 

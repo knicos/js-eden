@@ -47,8 +47,8 @@ div.readonly {
 
 input.scriptbox-check {
 	float: left;
-	width: 18px;
-	margin-left: 5px;
+	/*width: 18px;
+	margin-left: 5px;*/
 	margin-top: 6px;
 }
 
@@ -61,10 +61,19 @@ div.scriptbox-gutter {
 	margin-top: 3px;
 	margin-left: 8px;
 	margin-right: 10px;
-	border: 1px solid silver;
-	border-radius: 20px;
-	background-color: #f5f5f5;
+	/*border: 1px solid silver;
+	border-radius: 20px;*/
+	/*background-color: #f5f5f5;*/
 	box-sizing: border-box;
+}
+
+div.scriptbox-gutter:before {
+	color: silver;
+	font-family: "FontAwesome";
+	font-size: 18px;
+	content: "\f01d";
+	position: relative;
+	top: 1px;
 }
 
 ::placeholder { color: #AAAAAA; opacity: 1; font-style: italic; }
@@ -84,16 +93,27 @@ div.scriptbox-gutter {
 	margin-top: 0;
 }*/
 
-div.scriptbox-gutter.active {
-	background: #00ff00;
+div.scriptbox-gutter:hover:before {
+	color: #00ff00;
+	text-shadow: 0px 0px 2px black;
 }
 
-div.scriptbox-gutter.last {
-	background: #8888ff;
+div.scriptbox-gutter.active:before {
+	color: #00ff00;
+	content: "\f144";
+	text-shadow: 0px 0px 2px black;
 }
 
-div.scriptbox-gutter.error {
-	background: #ff0000;
+div.scriptbox-gutter.last:before {
+	color: #8888ff;
+	content: "\f144";
+	text-shadow: 0px 0px 2px black;
+}
+
+div.scriptbox-gutter.error:before {
+	color: #ff0000;
+	content: "\f06a";
+	/*text-shadow: 0px 0px 2px black;*/
 }
 
 .scriptbox-codearea {
@@ -167,11 +187,12 @@ div.grippy {
   display: inline-block;
   overflow: hidden;
   line-height: 5px;
-  padding: 0px 4px;
+  padding: 0;
+	padding-left: 4px;
   cursor: move;
   vertical-align: middle;
   /*margin-top: -.7em;*/
-  margin-right: 3px;
+  /*margin-right: 3px;*/
   font-size: 12px;
   font-family: sans-serif;
   letter-spacing: 2px;
@@ -182,12 +203,50 @@ div.grippy::after {
   content: '.. .. .. ..';
 }
 
+div.scriptbox-sticky {
+	float: left;
+	width: 18px;
+	height: 18px;
+	/*background: #f5f5f5;*/
+	cursor: pointer;
+	margin-top: 3px;
+	margin-left: 8px;
+	margin-right: 2px;
+	border: none;
+	box-sizing: border-box;
+}
+
+div.scriptbox-sticky:before {
+	color: silver;
+	font-family: "FontAwesome";
+	font-size: 18px;
+	content: "\f006";
+	position: relative;
+	top: 1px;
+}
+
+div.scriptbox-sticky:hover:before {
+	color: yellow;
+	text-shadow: 0px 0px 2px black;
+	content: "\f006";
+}
+
+div.scriptbox-sticky.stuck:before {
+	color: yellow;
+	text-shadow: 0px 0px 2px black;
+	font-family: "FontAwesome";
+	font-size: 18px;
+	content: "\f005";
+	position: relative;
+	top: 1px;
+}
+
 div.searchouter:after {
 	color: #5555bb;
 	/*text-shadow: 0px 0px 2px black;*/
 	font-family: "FontAwesome";
 	font-size: 10pt;
-	opacity: 0.4;
+	/*opacity: 0.8;*/
 	content: "\f002";
 	position: relative;
 	left: -325px;
