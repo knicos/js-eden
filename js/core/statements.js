@@ -7,7 +7,9 @@ Eden.Statement = function() {
 
 Eden.Statement.search = function(regex, m) {
 	var maxres = (m) ? m : 10;
-	var results = [];
+	var agentres = [];
+	var activeres = [];
+	var inactiveres = [];
 	for (var i=0; i<Eden.Statement.statements.length; i++) {
 		//if (results.length >= maxres) break;
 		var stat = Eden.Statement.statements[i];
@@ -15,31 +17,23 @@ Eden.Statement.search = function(regex, m) {
 			if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
 				if (regex.test(stat.statement.lvalue.name)) {
 					if (stat.isActive()) {
-						var nres = [i];
-						nres.push.apply(nres,results);
-						results = nres;
+						activeres.push(i);
 					} else {
-						results.push(i);
+						inactiveres.push(i);
 					}
 					continue;
 				}
 			} else if (stat.statement.type == "when") {
 				for (var x in stat.statement.triggers) {
 					if (regex.test(x)) {
-						if (stat.isActive()) {
-							var nres = [i];
-							nres.push.apply(nres,results);
-							results = nres;
-						} else {
-							results.push(i);
-						}
+						agentres.push(i);
 						break;
 					}
 				}
 			}
 		}
 	}
-	return results;
+	return {active: activeres, inactive: inactiveres, agents: agentres};
 }
 
 Eden.Statement.prototype.isActive = function() {
