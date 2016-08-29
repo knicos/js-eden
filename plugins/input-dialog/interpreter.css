@@ -434,11 +434,11 @@ div.outputcontent {
 	background: white;
 }
 
-div.readonly {
+/*div.readonly {
 	-webkit-filter: grayscale(70%);
 	filter: grayscale(70%);
 	background-color: #f5f5f5;
-}
+}*/
 
 div.inspect {
 	-webkit-filter: hue-rotate(120deg);

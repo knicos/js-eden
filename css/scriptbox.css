@@ -32,6 +32,7 @@ div.scriptbox-statement {
 	background: white;
 	white-space: pre;
 	overflow-x: scroll;
+	overflow-y: hidden;
 }
 
 div.scriptbox-statement::-webkit-scrollbar {
@@ -39,10 +40,10 @@ div.scriptbox-statement::-webkit-scrollbar {
     background: transparent;  /* optional: just make scrollbar invisible */
 }
 
-div.readonly {
-	-webkit-filter: grayscale(50%);
-	filter: grayscale(50%);
-	background-color: #f0f0ff;
+div.scriptbox-statement.readonly {
+	/*-webkit-filter: grayscale(70%);
+	filter: grayscale(70%);*/
+	background-color: #f8f8f8;
 	max-height: 27px;
 }
 
@@ -95,7 +96,7 @@ div.scriptbox-gutter:before {
 }*/
 
 div.scriptbox-gutter:hover:before {
-	color: #00ff00;
+	color: black;
 	text-shadow: 0px 0px 2px black;
 }
 
@@ -227,7 +228,7 @@ div.scriptbox-sticky:before {
 }
 
 div.scriptbox-sticky:hover:before {
-	color: yellow;
+	color: black;
 	text-shadow: 0px 0px 2px black;
 	content: "\f006";
 }
