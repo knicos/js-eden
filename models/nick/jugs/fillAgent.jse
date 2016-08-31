@@ -6,7 +6,7 @@
 input = @;
 opt = @;
 
-## Init Pour Agent
+// Init Pour Agent
 when (input) {
 	updating = 1;
 	if (input == 5) {

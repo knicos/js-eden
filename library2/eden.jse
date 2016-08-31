@@ -76,6 +76,7 @@ when (setView) {
 	name = setView.name;
 	type = setView.type;
 	views += setView;
+	${{ $(document.body).find("#mainview").css("height","calc(100% + 100px)"); }}$;
 	${{ $(document.body).find("#mainview").append(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope)).contents); }}$;
 }
 

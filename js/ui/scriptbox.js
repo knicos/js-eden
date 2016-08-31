@@ -574,10 +574,13 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	if (stat === undefined) {
 		stat = new Eden.Statement();
 	}
-	var newout = $('<div class="scriptbox-statement" data-statement="'+(stat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky'+((stick)?" stuck":"")+'"></div><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
+	var newout = $(this.statements[stat.id]);
 	//this.$codearea.append(newout);
-	newout.insertAfter($(this.outdiv.parentNode));
-	this.statements[stat.id] = newout.get(0);
+	if (this.statements[stat.id] === undefined) {
+		newout = $('<div class="scriptbox-statement" data-statement="'+(stat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky'+((stick)?" stuck":"")+'"></div><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
+		newout.insertAfter($(this.outdiv.parentNode));
+		this.statements[stat.id] = newout.get(0);
+	}
 	this.currentstatement = stat.id;
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
@@ -605,18 +608,19 @@ EdenUI.ScriptBox.prototype.removeStatement = function(num) {
 
 EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 	var parent = this.outdiv.parentNode.parentNode;
-	for (var i=0; i<parent.childNodes.length; i++) {
-		var node = parent.childNodes[i];
-		console.log(node);
+	var dnum;
+	node = parent.firstChild;
+	while (node) {
+		//var node = parent.childNodes[i];
+		var cachenext = node.nextSibling;
+		//console.log(node);
 		var snum = parseInt(node.getAttribute("data-statement"));
 		if (node.childNodes[2].className.indexOf("stuck") == -1) {
 			if (this.outdiv.parentNode === node) {
-				if (parent.childNodes[i-1]) {
-					var dnum = parseInt(parent.childNodes[i-1].getAttribute("data-statement"));
-					this.moveTo(dnum);
-				} else if (parent.childNodes[i+1]) {
-					var dnum = parseInt(parent.childNodes[i+1].getAttribute("data-statement"));
-					this.moveTo(dnum);
+				if (node.previousSibling) {
+					dnum = parseInt(node.previousSibling.getAttribute("data-statement"));
+				} else if (node.nextSibling) {
+					dnum = parseInt(node.nextSibling.getAttribute("data-statement"));
 				} else {
 
 				}
@@ -625,7 +629,10 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 			parent.removeChild(node);
 			//break;
 		}
+		node = cachenext;
 	}
+
+	if (dnum !== undefined) this.moveTo(dnum);
 }
 
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {

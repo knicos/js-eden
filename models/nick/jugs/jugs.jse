@@ -18,7 +18,7 @@ Bfull is capB==contentB;
 contentA = 0;
 contentB = 0;
 
-height is max(capA,capB)+2;
+height is max(a->capA,b->capB)+2;
 
 widthB = 5;
 widthA = 5;
@@ -38,18 +38,11 @@ valid7 is valid4 && valid1;
 Error=0; updating=0;
 finish is ((contentA==target)||(contentB==target))&&!updating;
 
-func avail
-{
-	/* indicates whether the menu option with parameter $1 is open */
-	para opt;
-	auto t;
-	t = menustatus[opt];
-	return t;
-}
+avail is menustatus[opt];
 
 status is (Error)?"invalid option": ((updating)?"updating":"awaiting input");
 totstat is (finish) ? "Success!" : status;
-targ is ("Target is " // str(target) // " : ");
+targ is ("Target is " + str(value->target) + " : ");
 
 
 viscosity = 100;
