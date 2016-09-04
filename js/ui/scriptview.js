@@ -1,14 +1,37 @@
 EdenUI.ScriptView = function(name, title) {
-	this.contents = $('<div><div class="scriptview-bar"><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div></div><div class="scriptview-box"></div><div class="scriptview-results"></div></div>');
+	this.contents = $('<div><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="scriptview-title">'+title+'</div><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
 	this.script = new EdenUI.ScriptBox(this.contents.find(".scriptview-box").get(0));
 	this.statements = [];
 	this.name = name;
 	this.title = title;
 	this.searchin = this.contents.find(".search");
 	this.searchres = this.contents.find(".scriptview-results");
+	this.buttons = this.contents.find(".scriptview-buttons");
+	this.bar = this.contents.find(".scriptview-bar");
+	this.menushow = this.contents.find(".scriptview-menuicon");
 	this.lastres = undefined;
 
+	//this.bar.hide();
+	this.menushow.hide();
+
+	if (mobilecheck()) {
+		this.buttons.append($('<button class="control-button control-enabled">&#xf142;</button>'));
+	} else {
+		this.buttons.append($('<button class="control-button control-enabled scriptview-but-save">&#xf0c7;</button><button class="control-button control-enabled scriptview-but-clear">&#xf05e;</button>'));
+	}
+
 	var me = this;
+	this.menushow.on("click", function() {
+		me.bar.show("fast");
+		me.menushow.hide();
+	});
+
+	this.buttons.on("click",".scriptview-but-clear",function(e) {
+		me.script.clearUnstuck();
+	})
+	.on("click", ".scriptview-but-save", function(e) {
+		me.save();
+	});
 	this.searchin.on("keyup", function() {
 		var str = me.searchin.get(0).value;
 		if (str != "") {
@@ -20,7 +43,7 @@ EdenUI.ScriptView = function(name, title) {
 		}
 	});
 	this.searchin.on("click", function() {
-		me.searchres.show('fast');
+		if (me.searchin.get(0).value != "") me.searchres.show('fast');
 	});
 
 	this.searchres.on("click", ".scriptview-result", function(e) {
@@ -28,6 +51,15 @@ EdenUI.ScriptView = function(name, title) {
 		if (me.script.statements[num] === undefined) me.script.insertStatement(Eden.Statement.statements[num], false);
 		else me.script.moveTo(num);
 		me.searchres.hide('fast');
+		//me.bar.hide("fast");
+		//me.menushow.show();
+	});
+
+	this.searchres.on("click", ".scriptview-resultview", function(e) {
+		me.load(e.currentTarget.textContent);
+		me.searchres.hide('fast');
+		//me.bar.hide("fast");
+		//me.menushow.show();
 	});
 
 	this.searchres.on("click", ".scriptview-resultsearch", function(e) {
@@ -41,18 +73,74 @@ EdenUI.ScriptView = function(name, title) {
 			me.script.insertStatement(Eden.Statement.statements[me.lastres.agents[i]], false);
 		}
 		me.searchres.hide('fast');
+		//me.bar.hide("fast");
+		//me.menushow.show();
 	});
 
 	this.script.$codearea.on("click",function() {
 		me.searchres.hide('fast');
+		//me.bar.hide("fast");
+		//me.menushow.show();
 	});
 }
 
+EdenUI.ScriptView.savedViews = {};
+
+EdenUI.ScriptView.prototype.load = function(name) {
+	var listing = EdenUI.ScriptView.savedViews[name];
+	if (listing) {
+		// Clear all
+		this.script.clearAll();
+		for (var i=0; i<listing.length; i++) {
+			this.script.insertStatement(Eden.Statement.statements[listing[i]]);
+		}
+		this.title = name;
+	}
+}
+
+EdenUI.ScriptView.prototype.save = function() {
+	if (this.title) {
+		name = this.title;
+	} else if (name === undefined) {
+		name = "Untitled View";
+	}
+
+	var listing = [];
+	var node = this.script.codearea.firstChild;
+	while (node) {
+		var num = parseInt(node.getAttribute("data-statement"));
+		listing.push(num);
+		node = node.nextSibling;
+	}
+
+	EdenUI.ScriptView.savedViews[name] = listing;
+}
+
 EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
-	if (res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0) {
+	var regex = edenUI.regExpFromStr(str);
+	res.views = [];
+	for (var x in EdenUI.ScriptView.savedViews) {
+		if (regex.test(x)) {
+			res.views.push(x);
+		}	
+	}
+
+	if (res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0) {
 		this.searchres.show('fast');
 		var html = "";
 		var symmax = 6;
+
+		if (res.views.length > 0) {
+			for (var i=0; i<((res.views.length > 3)?3:res.views.length); i++) {
+				html += "<div class='scriptview-resultview active'><span class='scriptview-resulticon'>&#xf0f6;</span>"+res.views[i]+"</div>\n";
+			}
+		}
+
+		/*for (var i=0; i<this.pastSearch.length; i++) {
+			if (regex.test(this.pastSearch[i])) {
+				html += "<div class='scriptview-result active'><span class='scriptview-resulticon'>&#xf017;</span>"+this.pastSearch[i]+"</div>\n";
+			}
+		}*/
 
 		if (res.active.length > 0) {
 			for (var i=0; i<((res.active.length > symmax)?symmax:res.active.length); i++) {
@@ -96,6 +184,7 @@ EdenUI.ScriptView.createDialog = function(name, mtitle) {
 	$('<div id="'+name+'"></div>')
 		.append(viewdata.contents)
 		.dialog({
+			handle: ".scriptview-bar",
 			title: mtitle,
 			width: 800,
 			height: 500,

@@ -3,6 +3,7 @@ Eden.Statement = function() {
 	this.id = Eden.Statement.statements.length-1;
 	this.source = "";
 	this.ast = undefined;
+	this.owned = false;
 }
 
 Eden.Statement.search = function(regex, m) {
@@ -36,6 +37,19 @@ Eden.Statement.search = function(regex, m) {
 	return {active: activeres, inactive: inactiveres, agents: agentres};
 }
 
+Eden.Statement.prototype.lock = function() {
+	if (this.owned == false) {
+		this.owned = true;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Eden.Statement.prototype.unlock = function() {
+	this.owned = false;
+}
+
 Eden.Statement.prototype.isActive = function() {
 	if (this.ast && this.statement) {
 		if (this.statement.type == "definition" || this.statement.type == "assignment") {
@@ -46,6 +60,56 @@ Eden.Statement.prototype.isActive = function() {
 		}
 	}
 	return false;
+}
+
+Eden.Statement.reload = function() {
+	try {
+		if (window.localStorage) {
+			Eden.Statement.statements = [];
+			Eden.Statement.symbols = {};
+			Eden.Statement.active = {};
+
+			var stats = JSON.parse(window.localStorage.getItem("statements"));
+
+			if (stats && Array.isArray(stats) && stats.length > 0) {
+				for (var i=0; i<stats.length; i++) {
+					var stat = new Eden.Statement();
+					stat.setSource(stats[i].source, new Eden.AST(stats[i].source, undefined, true));
+					if (stats[i].active) {
+						console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
+						stat.activate();
+					}
+				}
+				return true;
+			}
+		}
+	} catch(e) {
+
+	}
+
+	return false;
+}
+
+Eden.Statement.autosave = function() {
+	if (Eden.Statement.timeout) clearTimeout(Eden.Statement.timeout);
+	var me = this;
+	Eden.Statement.timeout = setTimeout(function() {
+		var stats = [];
+		for (var i=0; i<Eden.Statement.statements.length; i++) {
+			var stat = Eden.Statement.statements[i];
+			stats.push({source: stat.source, active: stat.isActive()});
+		}
+
+		try {
+			if (window.localStorage) {
+				window.localStorage.setItem('statements',JSON.stringify(stats));
+			}
+		} catch(e) {
+
+		}
+
+		Eden.Statement.timeout = undefined;
+	}, 2000);
 }
 
 Eden.Statement.prototype.setSource = function(src, ast, stat) {
@@ -71,6 +135,8 @@ Eden.Statement.prototype.setSource = function(src, ast, stat) {
 			}
 		}
 	}
+
+	Eden.Statement.autosave();
 }
 
 Eden.Statement.prototype.activate = function() {

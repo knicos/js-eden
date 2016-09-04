@@ -123,7 +123,7 @@
 	Scope.prototype.baseCause = function() {
 		var scope = this;
 		while(scope.parent && scope.parent.parent) scope = scope.parent;
-		if (scope.cause) {
+		if (scope.cause && scope.cause.name) {
 			return scope.cause.name.slice(1);
 		} else {
 			return undefined;

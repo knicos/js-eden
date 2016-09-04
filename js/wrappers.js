@@ -75,7 +75,7 @@ Eden.Agent = function(parent, name, meta, options) {
 	// Watch to trigger whens
 	eden.root.addGlobal(function(sym, create) {
 		if (me.ast && me.executed && me.ast.script.errors.length == 0) {
-			var whens = me.ast.triggers[sym.name.slice(1)];
+			var whens = me.triggers[sym.name.slice(1)];
 			if (whens) {
 				console.log("TRIGGER WITH " + sym.name);
 				//clearExecutedState();

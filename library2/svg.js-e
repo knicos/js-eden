@@ -1,0 +1,19 @@
+_js_svg_createElement is JSFunction(function->"EdenUI.SVG.createElement", object->"EdenUI.SVG");
+_js_svg_updateAttribute is JSFunction(function->"EdenUI.SVG.updateAttribute", object->"EdenUI.SVG");
+
+Point is [x,y](x-->0,y-->0);
+Line is (self + " : " + this)(start-->Point,end-->Point,colour-->"black",width-->2);
+
+when (picture) {
+	i = 0;
+	for (e in picture) {
+		args = ["picture", i, "path"];
+		call _js_svg_createElement;
+		args = ["picture", i, "d", "M " + e.start[1] + " " + e.start[2] + " L " + e.end[1] + " " + e.end[2]];
+		call _js_svg_updateAttribute;
+		args = ["picture", i, "style", "stroke: "+e.colour+"; stroke-width: "+e.width+"px;"];
+		call _js_svg_updateAttribute;
+		i = i + 1;
+	}
+}(i-->0, args-->@)
+

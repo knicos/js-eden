@@ -280,6 +280,11 @@
 			"title": "Math Library",
 			"enabled": true
 		},
+		"lib/svg": {
+			"file": "library2/svg.js-e",
+			"title": "SVG Library",
+			"enabled": true
+		},
 		"lib/string": {
 			"file": "library2/strings.js-e",
 			"title": "String Functions",

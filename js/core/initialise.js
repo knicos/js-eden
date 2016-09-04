@@ -149,6 +149,7 @@ function initialiseJSEden(callback) {
 		edenUI.scrollBarSize2 = window.innerHeight - $(window).height();
 		//Register the view options
 		edenUI.views["ScriptView2"] = {raw: function(name,title) { return new EdenUI.ScriptView(name,title); }, dialog: EdenUI.ScriptView.createDialog, title: "Script View2", category: edenUI.viewCategories.interpretation};
+		edenUI.views["SVGView"] = {raw: function(name,title) { return new EdenUI.SVG(name,title); }, dialog: EdenUI.SVG.createDialog, title: "Graphic View", category: edenUI.viewCategories.interpretation};
 
 		$(document)
 		.on('keydown', null, 'ctrl+m', function () {
@@ -177,6 +178,8 @@ function initialiseJSEden(callback) {
 			});
 		}
 
+		Eden.Statement.reload();
+
 		var loadPlugins = function (pluginList, callback) {
 			var loadPlugin = function () {
 				if (pluginList.length > 0) {
@@ -202,6 +205,8 @@ function initialiseJSEden(callback) {
 				}
 				eden.execute2(exec, "URL", "", {name: "execute"}, function () { });
 			}
+
+			eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
 
 			if (callback) callback();
 		}
@@ -229,7 +234,12 @@ function initialiseJSEden(callback) {
 						rt.config = config;
 
 						Eden.DB.connect(Eden.DB.repositories[Eden.DB.repoindex], function() {
-							eden.execute2(bootscript);
+							//eden.execute2(bootscript);
+							if (Eden.Statement.reload()) {
+								doneLoading();
+							} else {
+								eden.execute2(bootscript);
+							}
 						});
 						Eden.DB.repoindex = (Eden.DB.repoindex + 1) % Eden.DB.repositories.length;
 

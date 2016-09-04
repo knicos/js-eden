@@ -51,9 +51,6 @@ View is self+":"+this (
 );
 
 
-createViews = [];
-views = [];
-activeDialogs = [];
 when(createViews# > 0) {
 	for (view in createViews) {
 		name = view.name;
@@ -94,6 +91,7 @@ autocalc = 0;
 
 import lib/type;
 import lib/search;
+import lib/svg;
 //import lib/core;
 //import lib/math;
 //import lib/string;
@@ -113,33 +111,39 @@ when (mobile && views# > 0) {
 
 autocalc = 1;
 
-initialViews = ${{ URLUtil.getParameterByName("views") }}$;
-if (initialViews == "" || initialViews == "default") {
-	_view_projects_x = 0;
-	_view_projects_y = 0;
-	_view_projects_width = 210;
-	_view_projects_height = screenHeight;
-	//createView = Canvas2D(name->"picture");
-	//wait 1;
-	picturecenterx is screenWidth / 2 - 30 - _view_picture_width;
-	picturecenterprojx is _view_projects_width + _views_frame_width;
-	_view_picture_x = max(a->picturecenterx, b->picturecenterprojx);
-	_view_picture_y = screenHeight / 2 - _view_picture_height / 2;
-	if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
-		//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
+when (_jseden_loaded) {
+	createViews = [];
+	views = [];
+	activeDialogs = [];
+
+	initialViews = ${{ URLUtil.getParameterByName("views") }}$;
+	if (initialViews == "" || initialViews == "default") {
+		_view_projects_x = 0;
+		_view_projects_y = 0;
+		_view_projects_width = 210;
+		_view_projects_height = screenHeight;
+		//createView = Canvas2D(name->"picture");
+		//wait 1;
+		picturecenterx is screenWidth / 2 - 30 - _view_picture_width;
+		picturecenterprojx is _view_projects_width + _views_frame_width;
+		_view_picture_x = max(a->picturecenterx, b->picturecenterprojx);
+		_view_picture_y = screenHeight / 2 - _view_picture_height / 2;
+		if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
+			//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
+		}
+		inputview is View(name->"input", type->"ScriptView2");
+		if (mobile) {
+			${{ document.body.innerHTML = "<div id='viewtabs'></div><div id='mainview'></div>"; }}$;
+			${{ edenUI.vtabs = new EdenUI.Tabs($(document.body).find("#viewtabs").get(0)); }}$;
+			setView = inputview;
+		}
+		else createViews += inputview;
+		_view_input_agent = "view/script/input";
+		_view_input_height = _view_picture_height;
+		inputcenterx is screenWidth / 2 + 30;
+		inputcenterxpic is _view_picture_x + _view_picture_width + _views_frame_width + (_view_picture_x - (_view_projects_x + _view_projects_width + _views_frame_width));
+		_view_input_x = min(a->inputcenterx,b->inputcenterxpic);
+		_view_input_y = screenHeight / 2 - _view_input_height / 2;
 	}
-	inputview is View(name->"input", type->"ScriptView2");
-	if (mobile) {
-		${{ document.body.innerHTML = "<div id='viewtabs'></div><div id='mainview'></div>"; }}$;
-		${{ edenUI.vtabs = new EdenUI.Tabs($(document.body).find("#viewtabs").get(0)); }}$;
-		setView = inputview;
-	}
-	else createViews += inputview;
-	_view_input_agent = "view/script/input";
-	_view_input_height = _view_picture_height;
-	inputcenterx is screenWidth / 2 + 30;
-	inputcenterxpic is _view_picture_x + _view_picture_width + _views_frame_width + (_view_picture_x - (_view_projects_x + _view_projects_width + _views_frame_width));
-	_view_input_x = min(a->inputcenterx,b->inputcenterxpic);
-	_view_input_y = screenHeight / 2 - _view_input_height / 2;
 }
 //forget(&initialViews);

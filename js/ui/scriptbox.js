@@ -15,7 +15,7 @@ EdenUI.ScriptBox = function(element) {
 	this.$codearea = this.contents.find('.scriptbox-codearea');
 	this.codearea = this.$codearea.get(0);
 	this.intextarea = this.contents.find('.hidden-textarea').get(0);
-	this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
+	this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
 	this.outdiv = this.contents.find('.scriptbox-output').get(0);
 	this.$codearea.sortable({revert: 100, handle: ".grippy",
 		distance: 10, axis: "y", scroll: false});
@@ -55,15 +55,15 @@ EdenUI.ScriptBox = function(element) {
 					//me.statements[stats[i].id].get(0).firstChild;
 					//console.log("CHANGE TO STAT " + stats[x].id);
 					if (stats[x].id != sym.statid) {
-						changeClass(me.statements[stats[x].id].childNodes[3], "active", false);
-						changeClass(me.statements[stats[x].id].childNodes[3], "last", false);
+						changeClass(me.statements[stats[x].id].childNodes[2], "active", false);
+						changeClass(me.statements[stats[x].id].childNodes[2], "last", false);
 					} else {
 						if (sym.definition) {
-							changeClass(me.statements[stats[x].id].childNodes[3], "active", true);
-							changeClass(me.statements[stats[x].id].childNodes[3], "last", false);
+							changeClass(me.statements[stats[x].id].childNodes[2], "active", true);
+							changeClass(me.statements[stats[x].id].childNodes[2], "last", false);
 						} else {
-							changeClass(me.statements[stats[x].id].childNodes[3], "last", true);
-							changeClass(me.statements[stats[x].id].childNodes[3], "active", false);
+							changeClass(me.statements[stats[x].id].childNodes[2], "last", true);
+							changeClass(me.statements[stats[x].id].childNodes[2], "active", false);
 						}
 					}
 				}
@@ -577,7 +577,7 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	var newout = $(this.statements[stat.id]);
 	//this.$codearea.append(newout);
 	if (this.statements[stat.id] === undefined) {
-		newout = $('<div class="scriptbox-statement" data-statement="'+(stat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky'+((stick)?" stuck":"")+'"></div><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
+		newout = $('<div class="scriptbox-statement" data-statement="'+(stat.id)+'"><div class="grippy"></div><div class="scriptbox-sticky'+((stick)?" stuck":"")+'"></div><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
 		newout.insertAfter($(this.outdiv.parentNode));
 		this.statements[stat.id] = newout.get(0);
 	}
@@ -585,7 +585,7 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
 	this.setSource(stat.source);
-	if (stat.isActive()) changeClass(this.statements[stat.id].childNodes[3],"active",true);
+	if (stat.isActive()) changeClass(this.statements[stat.id].childNodes[2],"active",true);
 }
 
 EdenUI.ScriptBox.prototype.removeStatement = function(num) {
@@ -604,6 +604,29 @@ EdenUI.ScriptBox.prototype.removeStatement = function(num) {
 			break;
 		}
 	}
+}
+
+EdenUI.ScriptBox.prototype.clearAll = function() {
+	var parent = this.outdiv.parentNode.parentNode;
+	//var dnum;
+	node = parent.firstChild;
+	while (node) {
+		//var node = parent.childNodes[i];
+		var cachenext = node.nextSibling;
+		//console.log(node);
+		var snum = parseInt(node.getAttribute("data-statement"));
+		//if (node.childNodes[2].className.indexOf("stuck") == -1) {
+			this.statements[snum] = undefined;
+			parent.removeChild(node);
+			//break;
+		//}
+		node = cachenext;
+	}
+
+	var dstat = new Eden.Statement();
+	this.currentstatement = dstat.id;
+	this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
+	this.outdiv = this.contents.find('.scriptbox-output').get(0);
 }
 
 EdenUI.ScriptBox.prototype.clearUnstuck = function() {
@@ -671,11 +694,11 @@ EdenUI.ScriptBox.prototype.setSource = function(src) {
 	this.intextarea.focus();
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(src,this.ast);
-		changeClass(this.outdiv.parentNode.childNodes[3],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
 	} else if (src == "") {
-		changeClass(this.outdiv.parentNode.childNodes[3],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
 	} else {
-		changeClass(this.outdiv.parentNode.childNodes[3],"error",true);
+		changeClass(this.outdiv.parentNode.childNodes[2],"error",true);
 	}
 	//checkScroll();
 	this.outdiv.contentEditable = true;
@@ -704,9 +727,9 @@ EdenUI.ScriptBox.prototype.updateLineHighlight = function() {
 
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
-		changeClass(this.outdiv.parentNode.childNodes[3],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
 	} else {
-		changeClass(this.outdiv.parentNode.childNodes[3],"error",true);
+		changeClass(this.outdiv.parentNode.childNodes[2],"error",true);
 	}
 }
 
@@ -751,9 +774,9 @@ EdenUI.ScriptBox.prototype.updateEntireHighlight = function(rerun) {
 
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
-		changeClass(this.outdiv.parentNode.childNodes[3],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
 	} else {
-		changeClass(this.outdiv.parentNode.childNodes[3],"error",true);
+		changeClass(this.outdiv.parentNode.childNodes[2],"error",true);
 	}
 }
 
