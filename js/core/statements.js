@@ -65,6 +65,7 @@ Eden.Statement.prototype.isActive = function() {
 Eden.Statement.reload = function() {
 	try {
 		if (window.localStorage) {
+			console.log("LOADING STATEMENTS");
 			Eden.Statement.statements = [];
 			Eden.Statement.symbols = {};
 			Eden.Statement.active = {};
@@ -94,6 +95,7 @@ Eden.Statement.autosave = function() {
 	if (Eden.Statement.timeout) clearTimeout(Eden.Statement.timeout);
 	var me = this;
 	Eden.Statement.timeout = setTimeout(function() {
+		console.log("AUTOSAVE STATEMENTS");
 		var stats = [];
 		for (var i=0; i<Eden.Statement.statements.length; i++) {
 			var stat = Eden.Statement.statements[i];
@@ -146,6 +148,8 @@ Eden.Statement.prototype.activate = function() {
 		}
 		this.statement.execute(eden.root, this.ast, this.ast, eden.root.scope);
 	}
+
+	Eden.Statement.autosave();
 }
 
 

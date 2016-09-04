@@ -123,7 +123,7 @@
 			titleBarAction = "maximize";
 		}
 		var diag = dialog(name);
-		diag.dialog({
+		/*diag.dialog({
 			closeOnEscape: false,
 			draggable: true,
 			position: position,
@@ -138,9 +138,9 @@
 				//Disabled pending fix.
 				//me.minimizeObscuredViews(name);
 			}
-		});
+		});*/
 		var dialogWindow = this.getDialogWindow(name);
-		diag.dialogExtend({
+		/*diag.dialogExtend({
 			dblclick: titleBarAction,
 			minimizable: true,
 			maximizable: true,
@@ -185,14 +185,14 @@
 					grid: [me.gridSizeX, me.gridSizeY]
 				});
 			}
-		});
+		});*/
 		this.activeDialogs[name] = type;
-		dialogWindow.draggable("option", {
+		/*dialogWindow.draggable("option", {
 			grid: [this.gridSizeX, this.gridSizeY]
 		});
 		dialogWindow.resizable("option", {
 			grid: [this.gridSizeX, this.gridSizeY]
-		});
+		});*/
 		
 		/* Initialize observables
 		 * _view_xxx_width and _view_xxx_height are the width and height respectively of the usable
@@ -226,23 +226,23 @@
  
 		widthSym = view(name, 'width');
 		if (widthSym.value() === undefined) {
-			widthSym.assign(diag.dialog("option", "width") - this.scrollBarSize, root.scope, agent);
+			//widthSym.assign(diag.dialog("option", "width") - this.scrollBarSize, root.scope, agent);
 		}
 		var heightSym = view(name, 'height');
 		if (heightSym.value() === undefined) {
-			heightSym.assign(diag.dialog("option", "height") - this.titleBarHeight, root.scope, agent);
+			//heightSym.assign(diag.dialog("option", "height") - this.titleBarHeight, root.scope, agent);
 		}
 		var topLeft = diag.closest('.ui-dialog').offset();
 		var xSym = view(name, 'x');
 		if (xSym.value() === undefined) {
-			xSym.assign(topLeft.left, root.scope, agent);
+			//xSym.assign(topLeft.left, root.scope, agent);
 		}
 		var ySym = view(name, 'y');
 		if (ySym.value() === undefined) {
-			ySym.assign(topLeft.top - desktopTop, root.scope, agent);
+			//ySym.assign(topLeft.top - desktopTop, root.scope, agent);
 		}
 		function updateVisibility(sym, state) {
-			var windowState = diag.dialogExtend("state");
+			/*var windowState = diag.dialogExtend("state");
 			if (state == "hidden") {
 				if (windowState != "minimized") {
 					me.minimizeView(name);
@@ -255,13 +255,13 @@
 				if (!diag.dialog("isOpen") || windowState == "minimized" || windowState == "collapsed") {
 					me.showView(name);
 				}
-			}
+			}*/
 		}
 		if (visibility != "visible") {
 			if (visibility === undefined) {
 				visibilitySym.assign("visible", root.scope, agent);
 			} else {
-				updateVisibility(visibilitySym, visibility);
+				//updateVisibility(visibilitySym, visibility);
 			}
 		}
 		visibilitySym.addJSObserver("changeState", updateVisibility);
@@ -280,7 +280,7 @@
 				if (info !== undefined) {
 					title = title + " (" + info + ")";
 				}
-				diag.dialog("option", "title", title);
+				//diag.dialog("option", "title", title);
 			},
 			enumerable: true
 		});
@@ -295,7 +295,7 @@
 				me.plugins.MenuBar.updateViewsMenu();
 			}
 		}
-		titleSym.addJSObserver("updateTitleBar", updateTitleBar);
+		//titleSym.addJSObserver("updateTitleBar", updateTitleBar);
 		if (title === undefined) {
 			titleSym.assign(defaultTitle, root.scope, agent);
 		} else {
@@ -303,8 +303,8 @@
 		}
 
 		//Allow mouse drags that position the dialog partially outside of the browser window but not over the menu bar.
-		diag.dialog("widget").draggable("option", "containment", [-Number.MAX_VALUE, desktopTop, Number.MAX_VALUE, Number.MAX_VALUE]);
-		diag.resizeExtend = 0;
+		//diag.dialog("widget").draggable("option", "containment", [-Number.MAX_VALUE, desktopTop, Number.MAX_VALUE, Number.MAX_VALUE]);
+		/*diag.resizeExtend = 0;
 		diag.on("dialogresize", function (event, ui) {
 			var momentumX, momentumY;
 			if (diag.previousWidth !== undefined) {
@@ -394,7 +394,7 @@
 			view(name, 'x').assign(ui.position.left, eden.root.scope, Symbol.hciAgent);
 			view(name, 'y').assign(ui.position.top - desktopTop, eden.root.scope, Symbol.hciAgent);
 			root.endAutocalcOff();
-		});
+		});*/
 
 
 		function viewEdenCode() {
@@ -413,7 +413,7 @@
 		}
 
 		// Now construct eden agents and observables for dialog control.
-		this.eden.execute2(viewEdenCode(), "createView", "", {name: "/createView"}, noop);
+		//this.eden.execute2(viewEdenCode(), "createView", "", {name: "/createView"}, noop);
 		this.eden.root.endAutocalcOff();
 		this.emit('createView', [name, type]);
 		return viewData;

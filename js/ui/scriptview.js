@@ -1,5 +1,5 @@
 EdenUI.ScriptView = function(name, title) {
-	this.contents = $('<div><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="scriptview-title">'+title+'</div><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
+	this.contents = $('<div class="scriptview-inner"><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="scriptview-title" contenteditable>'+title+'</div><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
 	this.script = new EdenUI.ScriptBox(this.contents.find(".scriptview-box").get(0));
 	this.statements = [];
 	this.name = name;
@@ -181,9 +181,9 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 EdenUI.ScriptView.createDialog = function(name, mtitle) {
 	var viewdata = new EdenUI.ScriptView(name.slice(0,-7),mtitle);
 
-	$('<div id="'+name+'"></div>')
+	var diag = $('<div id="'+name+'" class="scriptview"></div>')
 		.append(viewdata.contents)
-		.dialog({
+		/*.dialog({
 			handle: ".scriptview-bar",
 			title: mtitle,
 			width: 800,
@@ -191,7 +191,20 @@ EdenUI.ScriptView.createDialog = function(name, mtitle) {
 			minHeight: 120,
 			minWidth: 230,
 			dialogClass: "veden-dialog"
-		});
+		});*/
+		.draggable({
+			handle: ".scriptview-bar"
+		}).resizable()
+		.css("position","absolute")
+		.appendTo($(document.body));
+	diag.on("click",function() {
+		var diagjs = diag.get(0);
+		var parent = diagjs.parentNode;
+		if (parent.lastChild !== diagjs) {
+			parent.removeChild(diagjs);
+			parent.appendChild(diagjs);
+		}
+	});
 	return viewdata;
 }
 
