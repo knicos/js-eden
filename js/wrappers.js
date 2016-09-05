@@ -187,12 +187,15 @@ Eden.Agent.importAgent = function(path, tag, options, callback) {
 			}
 
 			var doexec = (options === undefined || options.indexOf("noexec") == -1);
-
+			//console.log(ag.ast);
 			// Generate statements for each...
 			for (var i=0; i<ag.ast.script.statements.length; i++) {
 				var aststat = ag.ast.script.statements[i];
 				var stat = new Eden.Statement();
-				stat.setSource(ag.ast.getSource(aststat), ag.ast, aststat);
+				var src = ag.ast.getSource(aststat);
+				if (aststat.doxyComment) src = aststat.doxyComment.content + "\n" + src;
+				console.log(src);
+				stat.setSource(src, ag.ast, aststat);
 				if (doexec) stat.activate();
 			}
 

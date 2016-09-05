@@ -42,6 +42,7 @@ span.eden-javascript-bold {
 span.eden-comment {
 	font-style: italic;
 	color: #888a85;
+	font-size: 12px;
 }
 
 span.eden-number {
@@ -66,8 +67,10 @@ span.eden-importopt {
 }
 
 span.eden-doxytag {
+	color: #888a85;
 	font-style: normal;
 	font-weight: bold;
+	font-size: 12px;
 }
 
 span.eden-doxytagerror {
@@ -107,17 +110,17 @@ div.outputcontent.inspect span.eden-pathblock:hover {
 	text-decoration: underline;
 }
 
-div.outputcontent.goto span.eden-observable {
+div.goto span.eden-observable {
 	cursor: pointer;
 }
 
-div.outputcontent.goto span.eden-observable:hover {
+div.goto span.eden-observable:hover {
 	cursor: pointer;
 	text-decoration: underline;
 	color: blue;
 }
 
-div.outputcontent.goto span.eden-pathblock:hover {
+div.goto span.eden-pathblock:hover {
 	cursor: pointer;
 	text-decoration: underline;
 }

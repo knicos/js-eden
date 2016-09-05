@@ -44,6 +44,8 @@ EdenUI.ScriptBox = function(element) {
 	this.dragvalue = 0;
 	this.draglast = 0;
 
+	this.valuedivs = {};
+
 	var me = this;
 
 	eden.root.addGlobal(function(sym, create) {
@@ -415,7 +417,7 @@ EdenUI.ScriptBox = function(element) {
 		}*/
 
 		if (me.inspectmode) {
-			var element = e.target;
+			/*var element = e.target;
 			if (element.className == "" && element.parentNode.nodeName == "SPAN") {
 				element = element.parentNode;
 			}
@@ -437,7 +439,7 @@ EdenUI.ScriptBox = function(element) {
 				element.textContent = obs;
 				element.className = "eden-observable";
 			}
-			e.preventDefault();
+			e.preventDefault();*/
 		} else if (me.gotomode) {
 			var element = e.target;
 			if (element.className == "" && element.parentNode.nodeName == "SPAN") {
@@ -454,20 +456,20 @@ EdenUI.ScriptBox = function(element) {
 				}
 			} else if (element.className == "eden-observable") {
 				var obs = element.getAttribute("data-observable");
-				//console.log("GOTO: " + obs);
-				var sym = eden.root.symbols[obs];
-				if (sym && sym.definition) {
-					var a = Eden.Agent.agents[sym.last_modified_by];
-					if (a) {
-						edenUI.gotoCode(sym.last_modified_by, a.findDefinitionLine(obs, sym.getSource()));
-						/*if (a !== scriptagent) {
-							agent.state[obs_agent] = sym.last_modified_by;
-						}
-						var lineno = a.findDefinitionLine(sym.eden_definition);
-						if (lineno >= 0) setTimeout(function() {
-							scrollToLine(lineno);
-						}, 100);*/
-						//console.log(" in " + sym.last_modified_by + "@"+lineno);
+
+				var stat = Eden.Statement.statements[me.currentstatement];
+				if ((stat.statement.type == "definition" || state.statement.type == "assignment") && stat.statement.lvalue.name == obs) {
+					console.log("SHOW VALUE FOR " + obs);
+					var sym = eden.root.symbols[obs];
+					var valdiv = $('<div class="scriptbox-value"></div>');
+					valdiv.html(Eden.edenCodeForValue(sym.value()));
+					me.outdiv.parentNode.appendChild(valdiv[0]);
+					me.valuedivs[stat.id] = valdiv[0];
+				} else {
+					console.log("GOTO: " + obs);
+					var sym = eden.root.symbols[obs];
+					if (sym && sym.statid) {
+						me.insertStatement(Eden.Statement.statements[sym.statid]);
 					}
 				}
 			}
@@ -547,6 +549,14 @@ EdenUI.ScriptBox = function(element) {
 	.on('click','.scriptbox-statement', onStatementClick);
 	
 	this.setSource("");
+
+	setInterval(function() {
+		for (var x in me.valuedivs) {
+			var stat = Eden.Statement.statements[x];
+			var sym = eden.root.lookup(stat.statement.lvalue.name);
+			me.valuedivs[x].innerHTML = Eden.edenCodeForValue(sym.value());
+		}
+	}, 500);
 }
 
 /**
@@ -581,7 +591,9 @@ EdenUI.ScriptBox.prototype.moveTo = function(num) {
 EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 	this.disable();
 	//changeClass(this.outdiv.parentNode.firstChild, "play", false);
-	if (this.outdiv) $(this.outdiv).find(".fake-caret").remove();
+	if (this.outdiv) {
+		$(this.outdiv).find(".fake-caret").remove();
+	}
 	this.outdiv = newoutput;
 	//changeClass(this.outdiv.parentNode.firstChild, "play", true);
 	this.highlighter = new EdenUI.Highlight(this.outdiv);
@@ -684,6 +696,7 @@ EdenUI.ScriptBox.prototype.activateAll = function() {
 EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 	var parent = this.outdiv.parentNode.parentNode;
 	var dnum;
+
 	node = parent.firstChild;
 	while (node) {
 		//var node = parent.childNodes[i];
@@ -697,7 +710,9 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 				} else if (node.nextSibling) {
 					dnum = parseInt(node.nextSibling.getAttribute("data-statement"));
 				} else {
-
+					this.currentstatement = undefined;
+					this.outdiv = undefined;
+					dnum = undefined;
 				}
 			}
 			this.statements[snum] = undefined;
@@ -709,11 +724,26 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 
 	if (dnum !== undefined) this.moveTo(dnum);
 
+	if (this.currentstatement === undefined) this.insertStatement();
+
 	if (this.savecb) this.savecb.call(this);
 }
 
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {
 	$(this.infobox).hide("fast");
+}
+
+EdenUI.ScriptBox.prototype.enableGotoMode = function() {
+	this.outdiv.contentEditable = false;
+	changeClass(this.outdiv, "goto", true);
+	this.gotomode = true;
+}
+
+EdenUI.ScriptBox.prototype.disableGotoMode = function() {
+	changeClass(this.outdiv, "goto", false);
+	this.gotomode = false;
+	this.updateEntireHighlight();
+	this.intextarea.focus();
 }
 
 /**
@@ -733,11 +763,13 @@ EdenUI.ScriptBox.prototype.showInfoBox = function(x, y, type, message) {
 
 EdenUI.ScriptBox.prototype.disable = function() {
 	if (!this.outdiv) return;
+	changeClass(this.outdiv, "goto", false);
+	this.gotomode = false;
 	this.outdiv.contentEditable = false;
 	changeClass(this.outdiv.parentNode, "readonly", true);
 	if (this.ast) {
 		//this.highlighter.hideComments();
-		this.highlighter.highlight(this.ast,-1,-1,this.ast.script);
+		this.highlighter.highlight(this.ast,-1,-1);
 	}
 }
 

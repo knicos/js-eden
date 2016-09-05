@@ -14,12 +14,15 @@ time is ${{ Math.floor((new Date()).getTime() / 1000) }}$;
 
 from is ${{ scope.hasCause(context.lookup("name").value(scope)) }}$;
 has is ${{ scope.hasOverride(context.lookup("name").value(scope)) }}$;
+/** Outermost observable in scope. #library */
 this is ${{ scope.baseCause() }}$;
+/** Innermost observable in scope. #library */
 self is ${{ scope.self() }}$;
 
 import lib/jsfuncs;
 
 console = [];
+/** Print lines to console. #library */
 when (console# > 0) {
 	for (message in console) {
 		message = [str(value->message)];
@@ -39,6 +42,7 @@ when (errors# > 0) {
 }
 
 
+/** Template View. #library */
 View is self+":"+this (
 	name-->this,
 	type-->"ScriptInput",
@@ -51,6 +55,7 @@ View is self+":"+this (
 );
 
 
+/** Construct views. #library */
 when(createViews# > 0) {
 	for (view in createViews) {
 		name = view.name;
@@ -69,6 +74,7 @@ when(createViews# > 0) {
 	createViews = [];
 }(name-->@,type-->@,view-->@);
 
+/** Set a main view. #library */
 when (setView) {
 	name = setView.name;
 	type = setView.type;
@@ -77,6 +83,7 @@ when (setView) {
 	${{ $(document.body).find("#mainview").append(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope)).contents); }}$;
 }
 
+/** Execute a string as script. #library */
 when (execute) {
 	${{ eden.execute2(root.value("execute",scope)); }}$;
 }
@@ -98,9 +105,12 @@ import lib/svg;
 //import lib/colour;
 //import lib/scoping;
 
+/** Maximum. #library */
 max is a if (a >= b) else b;
+/** Minimum. #library */
 min is a if (a <= b) else b;
 
+/** Is this a mobile device? #library */
 mobile is ${{ mobilecheck(); }}$;
 
 _viewname is (view.name)(view in views);

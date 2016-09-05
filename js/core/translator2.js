@@ -754,6 +754,7 @@ Eden.AST.prototype.pPRIMARY = function() {
 		// Check for '.', '[' and '('... plus 'with'
 		var primary = this.pPRIMARY_P();
 		primary.setObservable(observable);
+		this.dependencies[observable] = true;
 		return primary;
 	// Missing primary so give an error
 	} else {
@@ -2536,6 +2537,8 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	var endline = -1;
 	var stat = undefined;
 	var end = -1;
+	var doxy = this.lastDoxyComment;
+	this.lastDoxyComment = undefined;
 
 	switch (this.token) {
 	case "proc"		:	this.next(); stat = this.pACTION(); end = this.stream.position; endline = this.stream.line; this.next(); break;
@@ -2683,8 +2686,8 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	}
 	
 	stat.parent = this.parent;
-	stat.doxyComment = this.lastDoxyComment;
-	this.lastDoxyComment = undefined;
+	stat.doxyComment = doxy;
+	//this.lastDoxyComment = undefined;
 
 	// Update statements start and end so original source can be extracted.
 	if (end == -1) {

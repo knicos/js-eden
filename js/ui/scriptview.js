@@ -78,18 +78,54 @@ EdenUI.ScriptView = function(name, title) {
 		if (str != "") {
 			var words = str.split(/[ ]+/);
 			var res;
-			for (var i=0; i<words.length; i++) {
+			var i = 0;
+			var rcount = words.length;
+
+			if (words.length > 0) {
+				if (words[0] == "agents:") {
+					i = 1;
+				} else if (words[0] == "active:") {
+					i = 1;
+				} else if (words[0] == "inactive:") {
+					i = 1;
+				}
+			}
+
+			rcount -= i;
+
+			for (; i<words.length; i++) {
 				if (words[i] == "") continue;
-				if (words[i].charAt(0) == "#") {
+				if (words[i].startsWith("depends:")) {
+					// Do a dependency search
+					var deps = words[i].split(":");
+					console.log("DEPENDS: " + deps[1]);
+					res = Eden.Statement.dependSearch(edenUI.regExpFromStr(deps[1]), undefined,res);
+				} else if (words[i].charAt(0) == "#") {
 					res = Eden.Statement.tagSearch(edenUI.regExpFromStr(words[i]), undefined,res);
 				} else {
 					res = Eden.Statement.search(edenUI.regExpFromStr(words[i]), undefined,res);
 				}
 			}
 
-			res.active = reduceByCount(res.active, words.length);
-			res.inactive = reduceByCount(res.inactive, words.length);
-			res.agents = reduceByCount(res.agents, words.length);
+			if (res) {
+				if (words.length > 0) {
+					if (words[0] == "agents:") {
+						res.active = [];
+						res.inactive = [];
+					} else if (words[0] == "active:") {
+						console.log(res);
+						res.agents = [];
+						res.inactive = [];
+					} else if (words[0] == "inactive:") {
+						res.agents = [];
+						res.active = [];
+					}
+				}
+
+				res.active = reduceByCount(res.active, rcount);
+				res.inactive = reduceByCount(res.inactive, rcount);
+				res.agents = reduceByCount(res.agents, rcount);
+			}
 
 			me.lastres = res;
 			me.updateSearchResults(res, str);
@@ -214,6 +250,8 @@ EdenUI.ScriptView.prototype.save = function() {
 }
 
 EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
+	if (res === undefined) res = {active:[],inactive:[],agents:[]};
+
 	var regex = edenUI.regExpFromStr(str);
 	res.views = [];
 	for (var x in EdenUI.ScriptView.savedViews) {
@@ -222,7 +260,7 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 		}	
 	}
 
-	if (res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0) {
+	if (res && (res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0)) {
 		this.searchres.show('fast');
 		var html = "";
 		var symmax = 6;
@@ -243,10 +281,11 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 		if (res.active.length > 0) {
 			for (var i=0; i<((res.active.length > symmax)?symmax:res.active.length); i++) {
 				var stat = Eden.Statement.statements[res.active[i]];
-				var src = stat.source.substring(stat.statement.start).split("\n")[0];
+				//var src = stat.source.substring(stat.statement.start).split("\n")[0];
+				var src = stat.ast.getSource(stat.statement).split("\n")[0];
 				var com = "";
 				if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
-				html += "<div class='scriptview-result active' data-statement='"+res.active[i]+"'><span class='scriptview-resulticon'>&#xf06e;</span>"+src+"</div>\n";
+				html += "<div class='scriptview-result active' data-statement='"+res.active[i]+"'"+((com!="")?" title='"+com+"'":"")+"><span class='scriptview-resulticon'>&#xf06e;</span>"+src+"</div>\n";
 			}
 			symmax -= res.active.length;
 		}
@@ -254,10 +293,11 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 		if (res.inactive.length > 0) {
 			for (var i=0; i<((res.inactive.length > symmax)?symmax:res.inactive.length); i++) {
 				var stat = Eden.Statement.statements[res.inactive[i]];
-				var src = stat.source.substring(stat.statement.start).split("\n")[0];
+				//var src = stat.source.substring(stat.statement.start).split("\n")[0];
+				var src = stat.ast.getSource(stat.statement).split("\n")[0];
 				var com = "";
 				if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
-				html += "<div class='scriptview-result' data-statement='"+res.inactive[i]+"'><span class='scriptview-resulticon'>&#xf070;</span>"+src+"</div>\n";
+				html += "<div class='scriptview-result' data-statement='"+res.inactive[i]+"'"+((com!="")?" title='"+com+"'":"")+"><span class='scriptview-resulticon'>&#xf070;</span>"+src+"</div>\n";
 			}
 		}
 
@@ -265,11 +305,12 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 			if (res.active.length > 0 || res.inactive.length > 0) html += "<hr>";
 			for (var i=0; i<((res.agents.length > 3)?3:res.agents.length); i++) {
 				var stat = Eden.Statement.statements[res.agents[i]];
-				var ixof = stat.source.substring(stat.statement.start).indexOf("{")
-				var src = (ixof >= 0) ? stat.source.substr(0,ixof) : stat.source;
+				var bsrc = stat.ast.getSource(stat.statement);
+				var ixof = bsrc.indexOf("{")
+				var src = (ixof >= 0) ? bsrc.substr(0,ixof) : bsrc;
 				var com = "";
 				if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
-				html += "<div class='scriptview-result"+((stat.isActive())?" active":"")+"' data-statement='"+res.agents[i]+"'><span class='scriptview-resulticon'>&#xf007;</span>"+src+"</div>\n";
+				html += "<div class='scriptview-result"+((stat.isActive())?" active":"")+"' data-statement='"+res.agents[i]+"'"+((com!="")?" title='"+com+"'":"")+"><span class='scriptview-resulticon'>&#xf007;</span>"+src+"</div>\n";
 			}
 		}
 

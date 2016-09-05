@@ -1,9 +1,12 @@
 _js_svg_createElement is JSFunction(function->"EdenUI.SVG.createElement", object->"EdenUI.SVG");
 _js_svg_updateAttribute is JSFunction(function->"EdenUI.SVG.updateAttribute", object->"EdenUI.SVG");
 
+/** #library #svg */
 Point is [x,y](x-->0,y-->0);
+/** #library #svg #drawable */
 Line is (self + " : " + this)(start-->Point,end-->Point,colour-->"black",width-->2);
 
+/** Update the screen. #library */
 when (picture) {
 	i = 0;
 	for (e in picture) {

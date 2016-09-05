@@ -38,6 +38,41 @@ Eden.Statement.search = function(regex, m, prev) {
 	return {active: activeres, inactive: inactiveres, agents: agentres};
 }
 
+Eden.Statement.dependSearch = function(regex, m, prev) {
+	var maxres = (m) ? m : 10;
+	var agentres = (prev)?prev.agents:[];
+	var activeres = (prev)?prev.active:[];
+	var inactiveres = (prev)?prev.inactive:[];
+
+	for (var i=0; i<Eden.Statement.statements.length; i++) {
+		//if (results.length >= maxres) break;
+		var stat = Eden.Statement.statements[i];
+		if (stat.ast && stat.statement) {
+			if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
+				
+				for (var x in stat.ast.dependencies) {
+					if (regex.test(x)) {
+						if (stat.isActive()) {
+							activeres.push(i);
+						} else {
+							inactiveres.push(i);
+						}
+						break;
+					}
+				}
+			} else if (stat.statement.type == "when") {
+				for (var x in stat.statement.triggers) {
+					if (regex.test(x)) {
+						agentres.push(i);
+						break;
+					}
+				}
+			}
+		}
+	}
+	return {active: activeres, inactive: inactiveres, agents: agentres};
+}
+
 Eden.Statement.tagSearch = function(regex, m, prev) {
 	var maxres = (m) ? m : 10;
 	var agentres = (prev)?prev.agents:[];
