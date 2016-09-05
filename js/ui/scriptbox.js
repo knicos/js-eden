@@ -1,6 +1,7 @@
 EdenUI.ScriptBox = function(element) {
 	this.changeCB = undefined;
 	this.outer = element;
+	this.savecb = undefined;
 
 	// Construct the inner elements required.
 	this.contents = $(this.outer);
@@ -8,18 +9,18 @@ EdenUI.ScriptBox = function(element) {
 	//this.outer.appendChild(this.contents.get(0));
 
 	//this.statements = [""];
-	var dstat = new Eden.Statement();
-	this.currentstatement = dstat.id;
+	//var dstat = new Eden.Statement();
+	this.currentstatement = undefined;
 	this.statements = {};
 
 	this.$codearea = this.contents.find('.scriptbox-codearea');
 	this.codearea = this.$codearea.get(0);
 	this.intextarea = this.contents.find('.hidden-textarea').get(0);
-	this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
+	//this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
 	this.outdiv = this.contents.find('.scriptbox-output').get(0);
 	this.$codearea.sortable({revert: 100, handle: ".grippy",
 		distance: 10, axis: "y", scroll: false});
-	this.statements[dstat.id] = this.outdiv.parentNode;
+	//this.statements[dstat.id] = this.outdiv.parentNode;
 	this.infobox = this.contents.find('.info-bar').get(0);
 	this.outputbox = this.contents.find('.outputbox').get(0);
 	this.suggestions = this.contents.find('.eden_suggestions');
@@ -553,6 +554,10 @@ EdenUI.ScriptBox.prototype.setCaretToFakeCaret = function() {
 	$(me.outdiv).remove(".fake-caret");
 }
 
+EdenUI.ScriptBox.prototype.setChangeCB = function(cb) {
+	this.savecb = cb;
+}
+
 EdenUI.ScriptBox.prototype.moveTo = function(num) {
 	this.changeOutput($(this.statements[num]).find(".scriptbox-output").get(0));
 	this.currentstatement = num;
@@ -562,7 +567,7 @@ EdenUI.ScriptBox.prototype.moveTo = function(num) {
 EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 	this.disable();
 	//changeClass(this.outdiv.parentNode.firstChild, "play", false);
-	$(this.outdiv).find(".fake-caret").remove();
+	if (this.outdiv) $(this.outdiv).find(".fake-caret").remove();
 	this.outdiv = newoutput;
 	//changeClass(this.outdiv.parentNode.firstChild, "play", true);
 	this.highlighter = new EdenUI.Highlight(this.outdiv);
@@ -570,7 +575,9 @@ EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 }
 
 EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
-	Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
+	if (this.currentstatement !== undefined) {
+		Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
+	}
 	if (stat === undefined) {
 		stat = new Eden.Statement();
 	}
@@ -578,7 +585,8 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	//this.$codearea.append(newout);
 	if (this.statements[stat.id] === undefined) {
 		newout = $('<div class="scriptbox-statement" data-statement="'+(stat.id)+'"><div class="grippy"></div><div class="scriptbox-sticky'+((stick)?" stuck":"")+'"></div><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
-		newout.insertAfter($(this.outdiv.parentNode));
+		if (this.outdiv) newout.insertAfter($(this.outdiv.parentNode));
+		else newout.appendTo(this.$codearea);
 		this.statements[stat.id] = newout.get(0);
 	}
 	this.currentstatement = stat.id;
@@ -586,6 +594,8 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
 	this.setSource(stat.source);
 	if (stat.isActive()) changeClass(this.statements[stat.id].childNodes[2],"active",true);
+
+	if (this.savecb) this.savecb.call(this);
 }
 
 EdenUI.ScriptBox.prototype.removeStatement = function(num) {
@@ -607,6 +617,7 @@ EdenUI.ScriptBox.prototype.removeStatement = function(num) {
 }
 
 EdenUI.ScriptBox.prototype.clearAll = function() {
+	if (this.outdiv === undefined) return;
 	var parent = this.outdiv.parentNode.parentNode;
 	//var dnum;
 	node = parent.firstChild;
@@ -623,10 +634,33 @@ EdenUI.ScriptBox.prototype.clearAll = function() {
 		node = cachenext;
 	}
 
-	var dstat = new Eden.Statement();
-	this.currentstatement = dstat.id;
-	this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
-	this.outdiv = this.contents.find('.scriptbox-output').get(0);
+	//var dstat = new Eden.Statement();
+	this.currentstatement = undefined;
+	//this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
+	this.outdiv = undefined;
+}
+
+EdenUI.ScriptBox.prototype.unstickAll = function() {
+	var parent = this.outdiv.parentNode.parentNode;
+	for (var i=0; i<parent.childNodes.length; i++) {
+		changeClass(parent.childNodes[i].childNodes[1], "stuck", false);
+	}
+}
+
+EdenUI.ScriptBox.prototype.stickAll = function() {
+	var parent = this.outdiv.parentNode.parentNode;
+	for (var i=0; i<parent.childNodes.length; i++) {
+		changeClass(parent.childNodes[i].childNodes[1], "stuck", true);
+	}
+}
+
+EdenUI.ScriptBox.prototype.activateAll = function() {
+	var parent = this.outdiv.parentNode.parentNode;
+	for (var i=0; i<parent.childNodes.length; i++) {
+		var num = parseInt(parent.childNodes[i].getAttribute("data-statement"));
+		var stat = Eden.Statement.statements[num];
+		if (stat) stat.activate();
+	}
 }
 
 EdenUI.ScriptBox.prototype.clearUnstuck = function() {
@@ -638,7 +672,7 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 		var cachenext = node.nextSibling;
 		//console.log(node);
 		var snum = parseInt(node.getAttribute("data-statement"));
-		if (node.childNodes[2].className.indexOf("stuck") == -1) {
+		if (node.childNodes[1].className.indexOf("stuck") == -1) {
 			if (this.outdiv.parentNode === node) {
 				if (node.previousSibling) {
 					dnum = parseInt(node.previousSibling.getAttribute("data-statement"));
@@ -656,6 +690,8 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 	}
 
 	if (dnum !== undefined) this.moveTo(dnum);
+
+	if (this.savecb) this.savecb.call(this);
 }
 
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {
@@ -678,16 +714,19 @@ EdenUI.ScriptBox.prototype.showInfoBox = function(x, y, type, message) {
 }
 
 EdenUI.ScriptBox.prototype.disable = function() {
+	if (!this.outdiv) return;
 	this.outdiv.contentEditable = false;
 	changeClass(this.outdiv.parentNode, "readonly", true);
 }
 
 EdenUI.ScriptBox.prototype.enable = function() {
+	if (!this.outdiv) return;
 	this.outdiv.contentEditable = true;
 	changeClass(this.outdiv.parentNode, "readonly", false);
 }
 
 EdenUI.ScriptBox.prototype.setSource = function(src) {
+	if (this.currentstatement === undefined) return;
 	this.intextarea.value = src;
 	this.ast = new Eden.AST(src,undefined,true);
 	this.highlightContent(this.ast, -1, 0);

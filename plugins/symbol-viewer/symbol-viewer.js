@@ -77,23 +77,37 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 	this.createDialog = function (name, mtitle, type) {
 		var edenName = name.slice(0, -7);
 		var agent = root.lookup("createView");
-		var content = $('<div class="symbollist-outer"></div>');
-		content.html(generateHTML(name, type));
+		var content = $('<div class="scriptview-inner"><div class="scriptview-box" style="overflow: scroll;"></div><div class="scriptview-bar"><div class="scriptview-title" contenteditable>'+mtitle+'</div></div></div>');
+		content.find(".scriptview-box").html(generateHTML(name, type));
 
 		var symbollist = new EdenUI.plugins.SymbolViewer.SymbolList(
 			edenUI.eden.root, content.find(".symbollist-results")[0], type
 		);
 
-		$dialog = $('<div id="' + name + '"></div>')
+		var diag = $('<div id="'+name+'" class="scriptview"></div>')
 			.append(content)
-			.dialog({
+			/*.dialog({
+				handle: ".scriptview-bar",
 				title: mtitle,
-				width: 360,
-				height: 400,
-				minHeight: 200,
-				minWidth: 200,
-				dialogClass: "symbollist-dialog"
-			});
+				width: 800,
+				height: 500,
+				minHeight: 120,
+				minWidth: 230,
+				dialogClass: "veden-dialog"
+			});*/
+			.draggable({
+				handle: ".scriptview-bar"
+			}).resizable()
+			.css("position","absolute")
+			.appendTo($(document.body));
+		diag.on("click",function() {
+			var diagjs = diag.get(0);
+			var parent = diagjs.parentNode;
+			if (parent.lastChild !== diagjs) {
+				parent.removeChild(diagjs);
+				parent.appendChild(diagjs);
+			}
+		});
 
 		me.instances.push(symbollist);
 		numInstances++;

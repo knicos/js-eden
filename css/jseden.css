@@ -328,3 +328,79 @@ div.loadmessage {
   }
 }
 
+div.jseden-viewbar {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: 40px;
+	background: white;
+	/*border-bottom: 1px solid #e5e5e5;*/
+	box-sizing: border-box;
+	cursor: pointer;
+}
+
+div.jseden-viewtitle {
+	font-size: 18pt;
+	font-weight: bold;
+	position: absolute;
+	top: 10px;
+	left: 30px;
+	color: #666;
+	box-sizing: border-box;
+	border: 1px solid white;
+}
+
+div.jseden-viewtitle:hover {
+	border: 1px solid silver;
+}
+
+div.jseden-viewtitle.invalid {
+	border-color: red;
+	color: red;
+}
+
+div.jseden-viewinner {
+	position: absolute;
+	top: 6px;
+	left: 0;
+	right: 0;
+	bottom: 6px;
+}
+
+div.jseden-view {
+	position: absolute;
+	background: white;
+	border-width: 1px;
+	border-color: #777;
+	border-style: solid;
+	padding: 0;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	box-shadow: 0 0 15px #4a6887;
+	height: 350px;
+	width: 625px;
+	top: 200px;
+	left: 50px;
+	z-index: 2000;
+}
+
+div.jseden-viewcontent {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 40px;
+	bottom: 0;
+}
+
+div.jseden-viewcontent2 {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}
+
+

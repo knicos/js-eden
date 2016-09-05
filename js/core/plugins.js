@@ -114,15 +114,43 @@
 		this.viewInstances[name] = viewData;
 		var position = viewData.position;
 
+		var diag = $('<div id="'+viewData.name+'" class="jseden-view"><div class="jseden-viewinner"><div class="jseden-viewbar"></div><div class="jseden-viewtitle" contenteditable>'+defaultTitle+'</div><div class="jseden-viewcontent"></div></div></div>')
+			.draggable({
+				handle: ".jseden-viewbar"
+			}).resizable()
+			.css("position","absolute")
+			.appendTo($(document.body));
+		diag.on("click",function() {
+			var diagjs = diag.get(0);
+			var parent = diagjs.parentNode;
+			if (parent.lastChild !== diagjs) {
+				parent.removeChild(diagjs);
+				parent.appendChild(diagjs);
+			}
+		});
+		diag.on("keyup",".jseden-viewtitle",function(e) {
+			if (viewData.setTitle(e.currentTarget.textContent)) {
+				changeClass(e.currentTarget,"invalid",false);
+			} else {
+				changeClass(e.currentTarget,"invalid",true);
+			}
+		});
+
+		viewData.titlechangecb = function() {
+			diag.find(".jseden-viewtitle").html(viewData.title);
+		}
+
+		diag.find(".jseden-viewcontent").append(viewData.contents);
+
 		//Create and set behaviour for minimize, maximize and close buttons.
-		var collapseOnDblClick = edenUI.getOptionValue("optCollapseToTitleBar");
+		/*var collapseOnDblClick = edenUI.getOptionValue("optCollapseToTitleBar");
 		var titleBarAction;
 		if (collapseOnDblClick == "true") {
 			titleBarAction = "collapse";
 		} else {
 			titleBarAction = "maximize";
-		}
-		var diag = dialog(name);
+		}*/
+		//var diag = dialog(name);
 		/*diag.dialog({
 			closeOnEscape: false,
 			draggable: true,
@@ -139,7 +167,7 @@
 				//me.minimizeObscuredViews(name);
 			}
 		});*/
-		var dialogWindow = this.getDialogWindow(name);
+		//var dialogWindow = this.getDialogWindow(name);
 		/*diag.dialogExtend({
 			dblclick: titleBarAction,
 			minimizable: true,
@@ -202,7 +230,7 @@
 		 *   _view_b_x = _view_a_x + _view_a_width;
 		 * will position the windows with a slight overlap, though no information will be hidden.
 		 */
-		var typeSym = view(name, 'type');
+		/*var typeSym = view(name, 'type');
 		if (typeSym.value() != type) {
 			typeSym.removeJSObserver("changeType");
 			typeSym.assign(type, root.scope, creatingAgent);
@@ -222,9 +250,9 @@
 			}
 		} else {
 			viewListSym.assign([name], root.scope, creatingAgent);
-		}
+		}*/
  
-		widthSym = view(name, 'width');
+		/*widthSym = view(name, 'width');
 		if (widthSym.value() === undefined) {
 			//widthSym.assign(diag.dialog("option", "width") - this.scrollBarSize, root.scope, agent);
 		}
@@ -240,7 +268,7 @@
 		var ySym = view(name, 'y');
 		if (ySym.value() === undefined) {
 			//ySym.assign(topLeft.top - desktopTop, root.scope, agent);
-		}
+		}*/
 		function updateVisibility(sym, state) {
 			/*var windowState = diag.dialogExtend("state");
 			if (state == "hidden") {
@@ -257,20 +285,20 @@
 				}
 			}*/
 		}
-		if (visibility != "visible") {
+		/*if (visibility != "visible") {
 			if (visibility === undefined) {
 				visibilitySym.assign("visible", root.scope, agent);
 			} else {
 				//updateVisibility(visibilitySym, visibility);
 			}
 		}
-		visibilitySym.addJSObserver("changeState", updateVisibility);
+		visibilitySym.addJSObserver("changeState", updateVisibility);*/
 
 		/* Plug-ins can append status information to their title bar.  Only use if there is genuinely
 		 * no space to put the information inside the window (e.g. canvas) or an established precedent for
 		 * putting such information into the title bar (e.g. if other views also acquire a zoom facility).
 		 */
-		var theTitleBarInfo = viewData.titleBarInfo;
+		/*var theTitleBarInfo = viewData.titleBarInfo;
 		delete viewData.titleBarInfo;
 		Object.defineProperty(viewData, "titleBarInfo", {
 			get: function () { return theTitleBarInfo; },
@@ -283,9 +311,9 @@
 				//diag.dialog("option", "title", title);
 			},
 			enumerable: true
-		});
+		});*/
 		//Set the title bar text and allow the construal to change it later.
-		function updateTitleBar(symbol, value) {
+		/*function updateTitleBar(symbol, value) {
 			var title = value;
 			if (viewData.titleBarInfo !== undefined) {
 				title = title + " (" + viewData.titleBarInfo + ")";
@@ -294,13 +322,13 @@
 			if (me.plugins.MenuBar) {
 				me.plugins.MenuBar.updateViewsMenu();
 			}
-		}
+		}*/
 		//titleSym.addJSObserver("updateTitleBar", updateTitleBar);
-		if (title === undefined) {
+		/*if (title === undefined) {
 			titleSym.assign(defaultTitle, root.scope, agent);
 		} else {
 			updateTitleBar(titleSym, title);
-		}
+		}*/
 
 		//Allow mouse drags that position the dialog partially outside of the browser window but not over the menu bar.
 		//diag.dialog("widget").draggable("option", "containment", [-Number.MAX_VALUE, desktopTop, Number.MAX_VALUE, Number.MAX_VALUE]);

@@ -3,11 +3,11 @@ EdenUI.SVG = function(name, title, source) {
 	this.title = title;
 	this.source = (source) ? source : "picture";
 	this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	this.contents = $('<div class="scriptview-inner"><div class="scriptview-box"></div><div class="scriptview-bar"><div class="scriptview-title" contenteditable>'+title+'</div></div></div>');
+	this.contents = $('<div class="jseden-viewcontent2"></div>');
 	this.svg.setAttribute("width","100%");
 	this.svg.setAttribute("height","100%");
-	this.box = this.contents.find(".scriptview-box");
-	this.box.get(0).appendChild(this.svg);
+	//this.box = this.contents.find(".scriptview-box");
+	this.contents.get(0).appendChild(this.svg);
 
 	if (EdenUI.SVG.sources[this.source] === undefined) {
 		EdenUI.SVG.sources[this.source] = [];
@@ -60,30 +60,5 @@ EdenUI.SVG.updateAttribute = function(source, index, attrib, value) {
 
 EdenUI.SVG.createDialog = function(name, mtitle) {
 	var viewdata = new EdenUI.SVG(name.slice(0,-7),mtitle);
-
-	var diag = $('<div id="'+name+'" class="scriptview"></div>')
-		.append(viewdata.contents)
-		/*.dialog({
-			handle: ".scriptview-bar",
-			title: mtitle,
-			width: 800,
-			height: 500,
-			minHeight: 120,
-			minWidth: 230,
-			dialogClass: "veden-dialog"
-		});*/
-		.draggable({
-			handle: ".scriptview-bar"
-		}).resizable()
-		.css("position","absolute")
-		.appendTo($(document.body));
-	diag.on("click",function() {
-		var diagjs = diag.get(0);
-		var parent = diagjs.parentNode;
-		if (parent.lastChild !== diagjs) {
-			parent.removeChild(diagjs);
-			parent.appendChild(diagjs);
-		}
-	});
 	return viewdata;
 }

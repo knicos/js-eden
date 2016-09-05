@@ -148,7 +148,7 @@ function initialiseJSEden(callback) {
 		edenUI = new EdenUI(eden);
 		edenUI.scrollBarSize2 = window.innerHeight - $(window).height();
 		//Register the view options
-		edenUI.views["ScriptView2"] = {raw: function(name,title) { return new EdenUI.ScriptView(name,title); }, dialog: EdenUI.ScriptView.createDialog, title: "Script View2", category: edenUI.viewCategories.interpretation};
+		edenUI.views["ScriptView2"] = {raw: function(name,title) { return new EdenUI.ScriptView(name,title); }, dialog: EdenUI.ScriptView.createDialog, title: "Script View", category: edenUI.viewCategories.interpretation};
 		edenUI.views["SVGView"] = {raw: function(name,title) { return new EdenUI.SVG(name,title); }, dialog: EdenUI.SVG.createDialog, title: "Graphic View", category: edenUI.viewCategories.interpretation};
 
 		$(document)

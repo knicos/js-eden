@@ -1,5 +1,9 @@
 EdenUI.ScriptView = function(name, title) {
-	this.contents = $('<div class="scriptview-inner"><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="scriptview-title" contenteditable>'+title+'</div><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
+
+	EdenUI.ScriptView.init();
+
+	this.titlechangecb = undefined;
+	this.contents = $('<div class="scriptview-inner"><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
 	this.script = new EdenUI.ScriptBox(this.contents.find(".scriptview-box").get(0));
 	this.statements = [];
 	this.name = name;
@@ -17,7 +21,7 @@ EdenUI.ScriptView = function(name, title) {
 	if (mobilecheck()) {
 		this.buttons.append($('<button class="control-button control-enabled">&#xf142;</button>'));
 	} else {
-		this.buttons.append($('<button class="control-button control-enabled scriptview-but-save">&#xf0c7;</button><button class="control-button control-enabled scriptview-but-clear">&#xf05e;</button>'));
+		this.buttons.append($('<button class="scriptview-button enabled clear">&#xf006;</button><button class="scriptview-button enabled starall">&#xf005;</button><button class="scriptview-button enabled unstarall">&#xf005;</button><button class="scriptview-button enabled playall">&#xf144;</button>'));
 	}
 
 	var me = this;
@@ -26,8 +30,17 @@ EdenUI.ScriptView = function(name, title) {
 		me.menushow.hide();
 	});
 
-	this.buttons.on("click",".scriptview-but-clear",function(e) {
+	this.buttons.on("click",".clear",function(e) {
 		me.script.clearUnstuck();
+	})
+	.on("click", ".unstarall", function(e) {
+		me.script.unstickAll();
+	})
+	.on("click", ".playall", function(e) {
+		me.script.activateAll();
+	})
+	.on("click", ".starall", function(e) {
+		me.script.stickAll();
 	})
 	.on("click", ".scriptview-but-save", function(e) {
 		me.save();
@@ -48,7 +61,7 @@ EdenUI.ScriptView = function(name, title) {
 
 	this.searchres.on("click", ".scriptview-result", function(e) {
 		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
-		if (me.script.statements[num] === undefined) me.script.insertStatement(Eden.Statement.statements[num], false);
+		if (me.script.statements[num] === undefined) me.script.insertStatement(Eden.Statement.statements[num], true);
 		else me.script.moveTo(num);
 		me.searchres.hide('fast');
 		//me.bar.hide("fast");
@@ -56,7 +69,7 @@ EdenUI.ScriptView = function(name, title) {
 	});
 
 	this.searchres.on("click", ".scriptview-resultview", function(e) {
-		me.load(e.currentTarget.textContent);
+		me.load(e.currentTarget.getAttribute("data-view"));
 		me.searchres.hide('fast');
 		//me.bar.hide("fast");
 		//me.menushow.show();
@@ -82,19 +95,53 @@ EdenUI.ScriptView = function(name, title) {
 		//me.bar.hide("fast");
 		//me.menushow.show();
 	});
+
+	this.load(this.title);
+	if (this.script.codearea.childNodes.length == 0) this.script.insertStatement();
+	this.save();
+
+	this.script.setChangeCB(function() {
+		me.save();
+	});
 }
 
-EdenUI.ScriptView.savedViews = {};
+EdenUI.ScriptView.init = function() {
+	if (EdenUI.ScriptView.savedViews === undefined) {
+		var views;
+		try {
+			if (window.localStorage) {
+				views = JSON.parse(window.localStorage.getItem("scriptviews"));
+			}
+		} catch(e) {
+
+		}
+		if (!views) views = {};
+		EdenUI.ScriptView.savedViews = views;
+	}
+}
+
+//EdenUI.ScriptView.savedViews = {};
+
+EdenUI.ScriptView.prototype.setTitle = function(newtitle) {
+	if (newtitle == "") return false;
+	if (EdenUI.ScriptView.savedViews[newtitle] !== undefined) return false;
+	delete EdenUI.ScriptView.savedViews[this.title];
+	this.title = newtitle;
+	this.save();
+	return true;
+}
 
 EdenUI.ScriptView.prototype.load = function(name) {
+	console.log("LOAD VIEW " + name);
 	var listing = EdenUI.ScriptView.savedViews[name];
 	if (listing) {
 		// Clear all
+		this.title = name;
 		this.script.clearAll();
 		for (var i=0; i<listing.length; i++) {
-			this.script.insertStatement(Eden.Statement.statements[listing[i]]);
+			this.script.insertStatement(Eden.Statement.statements[listing[i]], true);
 		}
-		this.title = name;
+		if (this.titlechangecb) this.titlechangecb.call(this);
 	}
 }
 
@@ -114,6 +161,14 @@ EdenUI.ScriptView.prototype.save = function() {
 	}
 
 	EdenUI.ScriptView.savedViews[name] = listing;
+
+	try {
+		if (window.localStorage) {
+			window.localStorage.setItem("scriptviews", JSON.stringify(EdenUI.ScriptView.savedViews));
+		}
+	} catch(e) {
+
+	}
 }
 
 EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
@@ -132,8 +187,9 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 
 		if (res.views.length > 0) {
 			for (var i=0; i<((res.views.length > 3)?3:res.views.length); i++) {
-				html += "<div class='scriptview-resultview active'><span class='scriptview-resulticon'>&#xf0f6;</span>"+res.views[i]+"</div>\n";
+				html += "<div class='scriptview-resultview active' data-view='"+res.views[i]+"'><span class='scriptview-resulticon'>&#xf0f6;</span>"+res.views[i]+"</div>\n";
 			}
+			html += "<hr>";
 		}
 
 		/*for (var i=0; i<this.pastSearch.length; i++) {
@@ -180,31 +236,6 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 
 EdenUI.ScriptView.createDialog = function(name, mtitle) {
 	var viewdata = new EdenUI.ScriptView(name.slice(0,-7),mtitle);
-
-	var diag = $('<div id="'+name+'" class="scriptview"></div>')
-		.append(viewdata.contents)
-		/*.dialog({
-			handle: ".scriptview-bar",
-			title: mtitle,
-			width: 800,
-			height: 500,
-			minHeight: 120,
-			minWidth: 230,
-			dialogClass: "veden-dialog"
-		});*/
-		.draggable({
-			handle: ".scriptview-bar"
-		}).resizable()
-		.css("position","absolute")
-		.appendTo($(document.body));
-	diag.on("click",function() {
-		var diagjs = diag.get(0);
-		var parent = diagjs.parentNode;
-		if (parent.lastChild !== diagjs) {
-			parent.removeChild(diagjs);
-			parent.appendChild(diagjs);
-		}
-	});
 	return viewdata;
 }
 
