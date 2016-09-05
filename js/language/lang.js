@@ -36,8 +36,8 @@ var Language = {
 		"title": "title",
 		"author": "author",
 		"version": "version",
-		"param": "param",
-		"return": "return"
+		"shared": "shared",
+		"readonly": "readonly"
 	},
 
 	keywords: {

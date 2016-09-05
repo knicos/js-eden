@@ -150,7 +150,9 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 					// Register event handler for symbol changes.
 					edenUI.eden.root.removeGlobal(symbolChanged);
 				}
-			}
+			},
+			defaultWidth: 380,
+			defaultHeight: 500
 		};
 		return viewData;
 	};

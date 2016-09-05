@@ -272,7 +272,7 @@ Eden.AST.prototype.next = function() {
 			// at the beginning of the script then its the main doxy comment.
 			if (isDoxy) {
 				this.lastDoxyComment = new Eden.AST.DoxyComment(this.stream.code.substring(start, this.stream.position), startline, this.stream.line);
-				if (startline == 1) this.mainDoxyComment = this.lastDoxyComment;
+				//if (startline == 1) this.mainDoxyComment = this.lastDoxyComment;
 			}
 			this.token = this.stream.readToken();
 		// Skip line comments
@@ -2683,6 +2683,8 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	}
 	
 	stat.parent = this.parent;
+	stat.doxyComment = this.lastDoxyComment;
+	this.lastDoxyComment = undefined;
 
 	// Update statements start and end so original source can be extracted.
 	if (end == -1) {

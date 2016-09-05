@@ -1,3 +1,28 @@
+function sortByCount(arr) {
+	// Sort results by count.
+	var map = arr.reduce(function (p, c) {
+		p[c] = (p[c] || 0) + 1;
+		return p;
+	}, {});
+	return Object.keys(map).sort(function (a, b) {
+		return map[a] < map[b];
+	});
+}
+
+function reduceByCount(arr, num) {
+	var map = arr.reduce(function (p, c) {
+		p[c] = (p[c] || 0) + 1;
+		return p;
+	}, {});
+
+	var res = [];
+	for (var x in map) {
+		if (map[x] >= num) res.push(x);
+	}
+	return res;
+}
+
+
 EdenUI.ScriptView = function(name, title) {
 
 	EdenUI.ScriptView.init();
@@ -14,6 +39,9 @@ EdenUI.ScriptView = function(name, title) {
 	this.bar = this.contents.find(".scriptview-bar");
 	this.menushow = this.contents.find(".scriptview-menuicon");
 	this.lastres = undefined;
+
+	this.defaultWidth = 625;
+	this.defaultHeight = 350;
 
 	//this.bar.hide();
 	this.menushow.hide();
@@ -48,7 +76,21 @@ EdenUI.ScriptView = function(name, title) {
 	this.searchin.on("keyup", function() {
 		var str = me.searchin.get(0).value;
 		if (str != "") {
-			var res = Eden.Statement.search(edenUI.regExpFromStr(str));
+			var words = str.split(/[ ]+/);
+			var res;
+			for (var i=0; i<words.length; i++) {
+				if (words[i] == "") continue;
+				if (words[i].charAt(0) == "#") {
+					res = Eden.Statement.tagSearch(edenUI.regExpFromStr(words[i]), undefined,res);
+				} else {
+					res = Eden.Statement.search(edenUI.regExpFromStr(words[i]), undefined,res);
+				}
+			}
+
+			res.active = reduceByCount(res.active, words.length);
+			res.inactive = reduceByCount(res.inactive, words.length);
+			res.agents = reduceByCount(res.agents, words.length);
+
 			me.lastres = res;
 			me.updateSearchResults(res, str);
 		} else {
@@ -201,7 +243,9 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 		if (res.active.length > 0) {
 			for (var i=0; i<((res.active.length > symmax)?symmax:res.active.length); i++) {
 				var stat = Eden.Statement.statements[res.active[i]];
-				var src = stat.source.split("\n")[0];
+				var src = stat.source.substring(stat.statement.start).split("\n")[0];
+				var com = "";
+				if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
 				html += "<div class='scriptview-result active' data-statement='"+res.active[i]+"'><span class='scriptview-resulticon'>&#xf06e;</span>"+src+"</div>\n";
 			}
 			symmax -= res.active.length;
@@ -210,7 +254,9 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 		if (res.inactive.length > 0) {
 			for (var i=0; i<((res.inactive.length > symmax)?symmax:res.inactive.length); i++) {
 				var stat = Eden.Statement.statements[res.inactive[i]];
-				var src = stat.source.split("\n")[0];
+				var src = stat.source.substring(stat.statement.start).split("\n")[0];
+				var com = "";
+				if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
 				html += "<div class='scriptview-result' data-statement='"+res.inactive[i]+"'><span class='scriptview-resulticon'>&#xf070;</span>"+src+"</div>\n";
 			}
 		}
@@ -219,8 +265,10 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 			if (res.active.length > 0 || res.inactive.length > 0) html += "<hr>";
 			for (var i=0; i<((res.agents.length > 3)?3:res.agents.length); i++) {
 				var stat = Eden.Statement.statements[res.agents[i]];
-				var ixof = stat.source.indexOf("{")
+				var ixof = stat.source.substring(stat.statement.start).indexOf("{")
 				var src = (ixof >= 0) ? stat.source.substr(0,ixof) : stat.source;
+				var com = "";
+				if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
 				html += "<div class='scriptview-result"+((stat.isActive())?" active":"")+"' data-statement='"+res.agents[i]+"'><span class='scriptview-resulticon'>&#xf007;</span>"+src+"</div>\n";
 			}
 		}

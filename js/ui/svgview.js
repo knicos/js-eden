@@ -9,6 +9,9 @@ EdenUI.SVG = function(name, title, source) {
 	//this.box = this.contents.find(".scriptview-box");
 	this.contents.get(0).appendChild(this.svg);
 
+	this.defaultWidth = 500;
+	this.defaultHeight = 500;
+
 	if (EdenUI.SVG.sources[this.source] === undefined) {
 		EdenUI.SVG.sources[this.source] = [];
 	}

@@ -6,11 +6,12 @@ Eden.Statement = function() {
 	this.owned = false;
 }
 
-Eden.Statement.search = function(regex, m) {
+Eden.Statement.search = function(regex, m, prev) {
 	var maxres = (m) ? m : 10;
-	var agentres = [];
-	var activeres = [];
-	var inactiveres = [];
+	var agentres = (prev)?prev.agents:[];
+	var activeres = (prev)?prev.active:[];
+	var inactiveres = (prev)?prev.inactive:[];
+
 	for (var i=0; i<Eden.Statement.statements.length; i++) {
 		//if (results.length >= maxres) break;
 		var stat = Eden.Statement.statements[i];
@@ -29,6 +30,44 @@ Eden.Statement.search = function(regex, m) {
 					if (regex.test(x)) {
 						agentres.push(i);
 						break;
+					}
+				}
+			}
+		}
+	}
+	return {active: activeres, inactive: inactiveres, agents: agentres};
+}
+
+Eden.Statement.tagSearch = function(regex, m, prev) {
+	var maxres = (m) ? m : 10;
+	var agentres = (prev)?prev.agents:[];
+	var activeres = (prev)?prev.active:[];
+	var inactiveres = (prev)?prev.inactive:[];
+
+	for (var x in Eden.Statement.tags) {
+		if (regex.test(x)) {
+			//if (results.length >= maxres) break;
+			var stats = Eden.Statement.tags[x];
+
+			for (var i in stats) {
+				var stat = stats[i];
+				if (stat.ast && stat.statement) {
+					if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
+						//if (regex.test(stat.statement.lvalue.name)) {
+							if (stat.isActive()) {
+								activeres.push(stat.id);
+							} else {
+								inactiveres.push(stat.id);
+							}
+							//continue;
+						//}
+					} else if (stat.statement.type == "when") {
+						//for (var u in stat.statement.triggers) {
+							//if (regex.test(x)) {
+								agentres.push(stat.id);
+								//break;
+							//}
+						//}
 					}
 				}
 			}
@@ -65,9 +104,10 @@ Eden.Statement.prototype.isActive = function() {
 Eden.Statement.reload = function() {
 	try {
 		if (window.localStorage) {
-			console.log("LOADING STATEMENTS");
+			//console.log("LOADING STATEMENTS");
 			Eden.Statement.statements = [];
 			Eden.Statement.symbols = {};
+			Eden.Statement.tags = {};
 			Eden.Statement.active = {};
 
 			var stats = JSON.parse(window.localStorage.getItem("statements"));
@@ -77,7 +117,7 @@ Eden.Statement.reload = function() {
 					var stat = new Eden.Statement();
 					stat.setSource(stats[i].source, new Eden.AST(stats[i].source, undefined, true));
 					if (stats[i].active) {
-						console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
+						//console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
 						stat.activate();
 					}
 				}
@@ -95,7 +135,7 @@ Eden.Statement.autosave = function() {
 	if (Eden.Statement.timeout) clearTimeout(Eden.Statement.timeout);
 	var me = this;
 	Eden.Statement.timeout = setTimeout(function() {
-		console.log("AUTOSAVE STATEMENTS");
+		//console.log("AUTOSAVE STATEMENTS");
 		var stats = [];
 		for (var i=0; i<Eden.Statement.statements.length; i++) {
 			var stat = Eden.Statement.statements[i];
@@ -120,6 +160,16 @@ Eden.Statement.prototype.setSource = function(src, ast, stat) {
 		if (Eden.Statement.symbols[this.statement.lvalue.name] && Eden.Statement.symbols[this.statement.lvalue.name][this.id]) {
 			Eden.Statement.symbols[this.statement.lvalue.name][this.id] = undefined;
 		}
+
+		if (this.statement.doxyComment) {
+			var tags = this.statement.doxyComment.getHashTags();
+			for (var i=0; i<tags.length; i++) {
+				//if (Eden.Statement.tags[tags[i]] === undefined) Eden.Statement.tags[tags[i]] = [];
+				delete Eden.Statement.tags[tags[i]][this.id];
+				Eden.Statement.tags[tags[i]].length--;
+				if (Eden.Statement.tags[tags[i]].length == 0) delete Eden.Statement.tags[tags[i]];
+			}
+		}
 	}
 	this.source = src;
 	this.ast = ast;
@@ -134,6 +184,15 @@ Eden.Statement.prototype.setSource = function(src, ast, stat) {
 			if (sym && sym.statid == this.id) {
 				if (stat.type == "definition") sym.define(stat, this.id, this.ast);
 				//else ast.script.execute(eden.root, ast, ast, eden.root.scope);
+			}
+		}
+
+		if (stat.doxyComment) {
+			var tags = stat.doxyComment.getHashTags();
+			for (var i=0; i<tags.length; i++) {
+				if (Eden.Statement.tags[tags[i]] === undefined) Eden.Statement.tags[tags[i]] = {length:1};
+				else Eden.Statement.tags[tags[i]].length++;
+				Eden.Statement.tags[tags[i]][this.id] = this;
 			}
 		}
 	}
@@ -163,7 +222,7 @@ Eden.Statement.init = function() {
 			if (me.ast && me.statement.errors.length == 0) {
 				var whens = me.statement.triggers[sym.name.slice(1)];
 				if (whens) {
-					console.log("TRIGGER WITH " + sym.name);
+					//console.log("TRIGGER WITH " + sym.name);
 					//clearExecutedState();
 					for (var i=0; i<whens.length; i++) {
 						me.statement.execute(eden.root, undefined, me.ast, (whens[i].scope) ? whens[i].scope : eden.root.scope);
@@ -178,4 +237,5 @@ Eden.Statement.init = function() {
 
 Eden.Statement.statements = [];
 Eden.Statement.symbols = {};
+Eden.Statement.tags = {};
 Eden.Statement.active = {};

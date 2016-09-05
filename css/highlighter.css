@@ -13,6 +13,10 @@ span.eden-special {
 	font-weight: bold;
 }
 
+span.hidden {
+	display: none;
+}
+
 span.eden-constant {
 	color: #4e9a06;
 }

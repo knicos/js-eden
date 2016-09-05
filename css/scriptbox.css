@@ -389,7 +389,7 @@ div.scriptview-results {
 	display: none;
 	z-index: 2000;
 	position: absolute;
-	top: 32px;
+	top: 26px;
 	left: 30px;
 	width: 40%;
 	min-width: 280px;
@@ -401,6 +401,13 @@ div.scriptview-results {
 	border-right: 1px solid #719ECE;
 	border-bottom: 1px solid #719ECE;
 	box-shadow: 0 0 10px #719ECE;
+}
+
+span.scriptview-comment {
+	margin-left: 10px;
+	color: silver;
+	font-family: Arial;
+	font-weight: normal;
 }
 
 div.scriptview-result {

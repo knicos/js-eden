@@ -63,6 +63,26 @@ Eden.AST.DoxyComment = function(content, start, end) {
 	this.endline = end;
 }
 
+Eden.AST.DoxyComment.prototype.getHashTags = function() {
+	var words = this.content.split(/[ \n\t]+/);
+	var tags = [];
+	for (var i=0; i<words.length; i++) {
+		if (words[i].charAt(0) == "#") tags.push(words[i]);
+	}
+	return tags;
+}
+
+Eden.AST.DoxyComment.prototype.stripped = function() {
+	var words = this.content.substring(3,this.content.length-2).split(/[ \n\t]+/);
+	var res = "";
+	for (var i=0; i<words.length; i++) {
+		if (words[i].charAt(0) != "#" && words[i].charAt(0) != "@") {
+			res += words[i]+" ";
+		}
+	}
+	return res.trim();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

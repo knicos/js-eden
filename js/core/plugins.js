@@ -120,6 +120,11 @@
 			}).resizable()
 			.css("position","absolute")
 			.appendTo($(document.body));
+
+		if (viewData.defaultWidth) diag.css("width",""+viewData.defaultWidth+"px");
+		if (viewData.defaultHeight) diag.css("height",""+viewData.defaultHeight+"px");
+
+
 		diag.on("click",function() {
 			var diagjs = diag.get(0);
 			var parent = diagjs.parentNode;

@@ -321,7 +321,11 @@ EdenUI.ScriptBox = function(element) {
 					//checkScroll();
 				}
 			} else {
-				me.rebuild();
+				if (!e.ctrlKey && e.keyCode == 8 && me.intextarea.value == "") {
+					me.removeStatement();
+				} else {
+					me.rebuild();
+				}
 			}
 		}
 	}
@@ -403,12 +407,12 @@ EdenUI.ScriptBox = function(element) {
 		me.hideInfoBox();
 		//me.hideMenu();
 
-		if (e.currentTarget !== me.outdiv) {
+		/*if (e.currentTarget !== me.outdiv) {
 			//Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
 			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 			me.moveTo(num);
 			//return;
-		}
+		}*/
 
 		if (me.inspectmode) {
 			var element = e.target;
@@ -517,6 +521,15 @@ EdenUI.ScriptBox = function(element) {
 		}
 	}
 
+	function onStatementClick(e) {
+		if (e.currentTarget !== me.outdiv.parentNode) {
+			//Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
+			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
+			me.moveTo(num);
+			//return;
+		}
+	}
+
 	// Set the event handlers
 	this.contents
 	.on('input', '.hidden-textarea', onInputChanged)
@@ -530,7 +543,8 @@ EdenUI.ScriptBox = function(element) {
 	.on('focus', '.hidden-textarea', onTextFocus)
 	.on('mouseup', '.scriptbox-output', onOutputMouseUp)
 	.on('click','.scriptbox-gutter', onGutterClick)
-	.on('click','.scriptbox-sticky', onStickyClick);
+	.on('click','.scriptbox-sticky', onStickyClick)
+	.on('click','.scriptbox-statement', onStatementClick);
 	
 	this.setSource("");
 }
@@ -599,7 +613,9 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 }
 
 EdenUI.ScriptBox.prototype.removeStatement = function(num) {
-	var parent = this.outdiv.parentNode;
+	if (num === undefined) num = this.currentstatement;
+	var parent = this.outdiv.parentNode.parentNode;
+	if (parent.childNodes.length == 1) return;
 	for (var i=0; i<parent.childNodes.length; i++) {
 		var node = parent.childNodes[i];
 		var snum = parseInt(node.getAttribute("data-statement"));
@@ -614,6 +630,8 @@ EdenUI.ScriptBox.prototype.removeStatement = function(num) {
 			break;
 		}
 	}
+
+	if (this.savecb) this.savecb.call(this);
 }
 
 EdenUI.ScriptBox.prototype.clearAll = function() {
@@ -717,12 +735,20 @@ EdenUI.ScriptBox.prototype.disable = function() {
 	if (!this.outdiv) return;
 	this.outdiv.contentEditable = false;
 	changeClass(this.outdiv.parentNode, "readonly", true);
+	if (this.ast) {
+		//this.highlighter.hideComments();
+		this.highlighter.highlight(this.ast,-1,-1,this.ast.script);
+	}
 }
 
 EdenUI.ScriptBox.prototype.enable = function() {
 	if (!this.outdiv) return;
 	this.outdiv.contentEditable = true;
 	changeClass(this.outdiv.parentNode, "readonly", false);
+	if (this.ast) {
+		//this.highlighter.showComments();
+		this.highlighter.highlight(this.ast,-1,-1);
+	}
 }
 
 EdenUI.ScriptBox.prototype.setSource = function(src) {

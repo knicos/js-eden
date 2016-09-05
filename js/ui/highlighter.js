@@ -537,6 +537,9 @@
 				} else if (token == "@") {
 					this.mode = 3;
 					classes += "eden-doxytag";
+				} else if (token == "#") {
+					this.mode = 33;
+					classes += "eden-doxytag";
 				} else {
 					classes += "eden-comment";
 				}
@@ -547,6 +550,13 @@
 				} else {
 					classes += "eden-doxytagerror";
 				}
+			} else if (this.mode == 33) {
+				this.mode = 2;
+				//if (Language.doxytags[stream.data.value]) {
+					classes += "eden-doxytag";
+				//} else {
+				//	classes += "eden-doxytagerror";
+				//}
 			} else if (this.mode == 4) {
 				if (token == "OBSERVABLE" || type == "keyword") {
 					if (jskeywords.hasOwnProperty(stream.data.value)) {
@@ -628,7 +638,7 @@
 	 * an abstract syntax tree of the code, the line to highlight (or -1 for
 	 * all) and the current cursor position.
 	 */
-	EdenUI.Highlight.prototype.highlight = function(ast, hline, position) {
+	EdenUI.Highlight.prototype.highlight = function(ast, hline, position, statement) {
 		this.ast = ast;
 		this.line = 1;
 
@@ -655,6 +665,10 @@
 		}
 
 		stream.reset();
+
+		if (statement) {
+			stream.position = statement.start;
+		}
 
 		var line = undefined;
 		var lineerror = false;
