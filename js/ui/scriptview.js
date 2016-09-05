@@ -124,7 +124,7 @@ EdenUI.ScriptView.init = function() {
 
 EdenUI.ScriptView.prototype.setTitle = function(newtitle) {
 	if (newtitle == "") return false;
-	if (EdenUI.ScriptView.savedViews[newtitle] !== undefined) return false;
+	if (EdenUI.ScriptView.savedViews[newtitle] !== undefined && this.title != newtitle) return false;
 	delete EdenUI.ScriptView.savedViews[this.title];
 	this.title = newtitle;
 	this.save();

@@ -15,7 +15,7 @@
 }
 
 .symbollist-results {
-	overflow-y: auto;
+	padding-left: 30px;
 }
 
 .symbollist-results .result_scope {

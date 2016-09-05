@@ -39,30 +39,11 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 
 	var generateHTML = function (viewName, viewType) {
 		var html = "\
-			<div class=\"symbollist-search-box-outer\"> \
-				<input type=\"text\" class=\"symbollist-search symbollist-control\" /> \
-				<a class=\"symbollist-edit symbollist-control symbollist-rightmost-control\">Edit Listed</a><br/> \
-				<select id=\"" + viewName + "-category-filter\" class=\"symbollist-control\"> \
-					<option value=\"user\">Construal</option>";
-
-		var categories = Eden.getSymbolCategories(viewType);
-		for (var i = 0; i < categories.length; i++) {
-			html = html + "<option value=\"" + categories[i] + "\">" + categories[i] + "</option>";
-		}
-		html = html+"<option value=\"system\">Complete Library</option> \
-					<option value=\"all\">All Sources</option> \
-				</select>";
-		if (viewType == "obs") {
-			html = html + "\
-				<select id=\"" + viewName + "-type-filter\" class=\"symbollist-control symbollist-rightmost-control\"> \
-					<option value=\"formulas\">Dependencies</option>\
-					<option value=\"vars\">Base Observables</option>\
-					<option value=\"all\" selected=\"selected\">All Kinds</option>\
-				</select>";
-		}
+			<div class=\"scriptview-bar\"><div class=\"searchouter\"> \
+				<input type=\"text\" class=\"search\" placeholder=\"Search...\"/>";
 		html = html + "\
-			</div> \
-			<div class=\"symbollist-results\"></div>";
+			</div></div> \
+			<div class=\"scriptview-box\" style=\"overflow: auto;\"><div class=\"symbollist-results\"></div></div>";
 		return html;
 	};
 
@@ -77,37 +58,12 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 	this.createDialog = function (name, mtitle, type) {
 		var edenName = name.slice(0, -7);
 		var agent = root.lookup("createView");
-		var content = $('<div class="scriptview-inner"><div class="scriptview-box" style="overflow: scroll;"></div><div class="scriptview-bar"><div class="scriptview-title" contenteditable>'+mtitle+'</div></div></div>');
-		content.find(".scriptview-box").html(generateHTML(name, type));
+		var content = $('<div class="jseden-viewcontent2"></div>');
+		content.html(generateHTML(name, type));
 
 		var symbollist = new EdenUI.plugins.SymbolViewer.SymbolList(
 			edenUI.eden.root, content.find(".symbollist-results")[0], type
 		);
-
-		var diag = $('<div id="'+name+'" class="scriptview"></div>')
-			.append(content)
-			/*.dialog({
-				handle: ".scriptview-bar",
-				title: mtitle,
-				width: 800,
-				height: 500,
-				minHeight: 120,
-				minWidth: 230,
-				dialogClass: "veden-dialog"
-			});*/
-			.draggable({
-				handle: ".scriptview-bar"
-			}).resizable()
-			.css("position","absolute")
-			.appendTo($(document.body));
-		diag.on("click",function() {
-			var diagjs = diag.get(0);
-			var parent = diagjs.parentNode;
-			if (parent.lastChild !== diagjs) {
-				parent.removeChild(diagjs);
-				parent.appendChild(diagjs);
-			}
-		});
 
 		me.instances.push(symbollist);
 		numInstances++;
@@ -116,7 +72,7 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 			edenUI.eden.root.addGlobal(symbolChanged);
 		}
 
-		content.find(".symbollist-search-box-outer > .symbollist-edit").click(function(){
+		content.find(".searchouter > .symbollist-edit").click(function(){
 			var editorViewName = "edit_" + edenName;
 			var allVals = ["## Selection: " + searchBoxElem.value];
 			var symbol;
@@ -130,7 +86,7 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 		});
 
 		//Show different placeholder text to indicate the search syntax being used.
-		var searchBox = content.find(".symbollist-search-box-outer > .symbollist-search");
+		var searchBox = content.find(".searchouter > .search");
 		var searchBoxElem = searchBox[0];
 		var searchLangSym = root.lookup("_view_" + edenName + "_search_language");
 
@@ -142,13 +98,13 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 		function setSearchLanguage(sym, language) {
 			symbollist.search(searchBoxElem.value, makeRegExp());
 
-			if (language == "regexp") {
+			/*if (language == "regexp") {
 				searchBox.attr("placeholder", "search regular expression");
 			} else if (language == "simple") {
 				searchBox.attr("placeholder", "simple search");				
 			} else {
 				searchBox.attr("placeholder", "search");
-			}
+			}*/
 		};
 		setSearchLanguage(searchLangSym, searchLangSym.value());
 		searchLangSym.addJSObserver("refreshView", setSearchLanguage);
@@ -174,7 +130,7 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 			searchStrSym.assign(searchBoxElem.value, root.scope, Symbol.hciAgent);
 		});
 
-		document.getElementById(name + "-category-filter").addEventListener("change", function (event) {
+		/*document.getElementById(name + "-category-filter").addEventListener("change", function (event) {
 			symbollist.search(searchBoxElem.value, makeRegExp(), event.target.value);
 		});
 
@@ -182,9 +138,10 @@ EdenUI.plugins.SymbolViewer = function (edenUI, success) {
 			document.getElementById(name + "-type-filter").addEventListener("change", function (event) {
 				symbollist.search(searchBoxElem.value, makeRegExp(), undefined, event.target.value);
 			});
-		}
+		}*/
 
 		var viewData = {
+			contents: content,
 			destroy: function () {
 				var index = me.instances.indexOf(symbollist);
 				me.instances.splice(index, 1);
