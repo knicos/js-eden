@@ -454,17 +454,17 @@ EdenUI.ScriptBox = function(element) {
 				} else {
 					//openTab(path[0], path[1]);
 				}
-			} else if (element.className == "eden-observable") {
+			} else if (element.className == "eden-observable" || element.className == "eden-function") {
 				var obs = element.getAttribute("data-observable");
 
 				var stat = Eden.Statement.statements[me.currentstatement];
 				if ((stat.statement.type == "definition" || state.statement.type == "assignment") && stat.statement.lvalue.name == obs) {
 					console.log("SHOW VALUE FOR " + obs);
-					var sym = eden.root.symbols[obs];
-					var valdiv = $('<div class="scriptbox-value"></div>');
-					valdiv.html(Eden.edenCodeForValue(sym.value()));
+					//var sym = eden.root.symbols[obs];
+					var valdiv = $('<div class="scriptbox-value"><div class="scriptbox-valueclose">&#xf00d;</div><div class="scriptbox-valuecontent"></div></div>');
+					valdiv.find(".scriptbox-valuecontent").html("...");
 					me.outdiv.parentNode.appendChild(valdiv[0]);
-					me.valuedivs[stat.id] = valdiv[0];
+					me.valuedivs[stat.id] = valdiv;
 				} else {
 					console.log("GOTO: " + obs);
 					var sym = eden.root.symbols[obs];
@@ -532,6 +532,13 @@ EdenUI.ScriptBox = function(element) {
 		}
 	}
 
+	function onValueClose(e) {
+		var node = e.currentTarget.parentNode.parentNode;
+		var num = parseInt(node.getAttribute("data-statement"));
+		node.removeChild(me.valuedivs[num][0]);
+		delete me.valuedivs[num];
+	}
+
 	// Set the event handlers
 	this.contents
 	.on('input', '.hidden-textarea', onInputChanged)
@@ -546,6 +553,7 @@ EdenUI.ScriptBox = function(element) {
 	.on('mouseup', '.scriptbox-output', onOutputMouseUp)
 	.on('click','.scriptbox-gutter', onGutterClick)
 	.on('click','.scriptbox-sticky', onStickyClick)
+	.on('click','.scriptbox-valueclose', onValueClose)
 	.on('click','.scriptbox-statement', onStatementClick);
 	
 	this.setSource("");
@@ -553,8 +561,36 @@ EdenUI.ScriptBox = function(element) {
 	setInterval(function() {
 		for (var x in me.valuedivs) {
 			var stat = Eden.Statement.statements[x];
-			var sym = eden.root.lookup(stat.statement.lvalue.name);
-			me.valuedivs[x].innerHTML = Eden.edenCodeForValue(sym.value());
+			var active = stat.isActive();
+
+			if (active) {
+				var sym = eden.root.lookup(stat.statement.lvalue.name);
+				me.valuedivs[x].find(".scriptbox-valuecontent").html(Eden.edenCodeForValue(sym.value()));
+				me.valuedivs[x].removeClass("inactive");
+			} else {
+				if (stat.statement.type == "definition" || stat.statement.type == "assignment") {
+					var dummyctx = {scopes: [], dependencies: {}};
+					var rhs = "(function(context,scope) { \n";
+					var express = stat.statement.expression.generate(dummyctx, "scope",true);
+
+					// Generate array of all scopes used in this definition (if any).
+					if (dummyctx.scopes.length > 0) {
+						//rhs += "\tvar _scopes = [];\n";
+						for (var i=0; i<dummyctx.scopes.length; i++) {
+							rhs += "\tvar scope" + (i+1) + " = " + dummyctx.scopes[i];
+							rhs += ";\n";
+						}
+					}
+
+					rhs += "return " + express;
+					rhs += ";})";
+
+					var val = eval(rhs).call(dummyctx,eden.root,eden.root.scope);
+					if (val instanceof BoundValue) val = val.value;
+					me.valuedivs[x].find(".scriptbox-valuecontent").html(Eden.edenCodeForValue(val));
+				}
+				me.valuedivs[x].addClass("inactive");
+			}
 		}
 	}, 500);
 }
@@ -639,9 +675,16 @@ EdenUI.ScriptBox.prototype.removeStatement = function(num) {
 				else break;
 			}
 			parent.removeChild(node);
+
+			// Now actually delete the statement
+			var stat = Eden.Statement.statements[snum];
+			if (stat.source == "") Eden.Statement.statements[snum] = undefined;
+
 			break;
 		}
 	}
+
+	if (this.valuedivs[num]) delete this.valuedivs[num];
 
 	if (this.savecb) this.savecb.call(this);
 }
@@ -661,6 +704,9 @@ EdenUI.ScriptBox.prototype.clearAll = function() {
 			parent.removeChild(node);
 			//break;
 		//}
+		// Now actually delete the statement
+		var stat = Eden.Statement.statements[snum];
+		if (stat.source == "") Eden.Statement.statements[snum] = undefined;
 		node = cachenext;
 	}
 
@@ -668,6 +714,8 @@ EdenUI.ScriptBox.prototype.clearAll = function() {
 	this.currentstatement = undefined;
 	//this.$codearea.append($('<div class="scriptbox-statement" data-statement="'+(dstat.id)+'"><div class="grippy"></div><input type="checkbox" class="scriptbox-check"></input><div class="scriptbox-sticky stuck"></div><div class="scriptbox-gutter" data-statement="'+dstat.id+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+dstat.id+'"></div></div>'));
 	this.outdiv = undefined;
+
+	this.valuedivs = {};
 }
 
 EdenUI.ScriptBox.prototype.unstickAll = function() {
@@ -704,11 +752,11 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 		//console.log(node);
 		var snum = parseInt(node.getAttribute("data-statement"));
 		if (node.childNodes[1].className.indexOf("stuck") == -1) {
-			if (this.outdiv.parentNode === node) {
+			if (this.outdiv && this.outdiv.parentNode === node) {
 				if (node.previousSibling) {
 					dnum = parseInt(node.previousSibling.getAttribute("data-statement"));
-				} else if (node.nextSibling) {
-					dnum = parseInt(node.nextSibling.getAttribute("data-statement"));
+				//} else if (node.nextSibling) {
+				//	dnum = parseInt(node.nextSibling.getAttribute("data-statement"));
 				} else {
 					this.currentstatement = undefined;
 					this.outdiv = undefined;
@@ -717,14 +765,19 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 			}
 			this.statements[snum] = undefined;
 			parent.removeChild(node);
-			//break;
+
+			// Now actually delete the statement
+			var stat = Eden.Statement.statements[snum];
+			if (stat.source == "") Eden.Statement.statements[snum] = undefined;
+
+			if (this.valuedivs[snum]) delete this.valuedivs[snum];
 		}
 		node = cachenext;
 	}
 
 	if (dnum !== undefined) this.moveTo(dnum);
 
-	if (this.currentstatement === undefined) this.insertStatement();
+	if (parent.childNodes.length == 0) this.insertStatement();
 
 	if (this.savecb) this.savecb.call(this);
 }

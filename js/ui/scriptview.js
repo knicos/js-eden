@@ -1,28 +1,3 @@
-function sortByCount(arr) {
-	// Sort results by count.
-	var map = arr.reduce(function (p, c) {
-		p[c] = (p[c] || 0) + 1;
-		return p;
-	}, {});
-	return Object.keys(map).sort(function (a, b) {
-		return map[a] < map[b];
-	});
-}
-
-function reduceByCount(arr, num) {
-	var map = arr.reduce(function (p, c) {
-		p[c] = (p[c] || 0) + 1;
-		return p;
-	}, {});
-
-	var res = [];
-	for (var x in map) {
-		if (map[x] >= num) res.push(x);
-	}
-	return res;
-}
-
-
 EdenUI.ScriptView = function(name, title) {
 
 	EdenUI.ScriptView.init();
@@ -49,7 +24,7 @@ EdenUI.ScriptView = function(name, title) {
 	if (mobilecheck()) {
 		this.buttons.append($('<button class="control-button control-enabled">&#xf142;</button>'));
 	} else {
-		this.buttons.append($('<button class="scriptview-button enabled clear">&#xf006;</button><button class="scriptview-button enabled starall">&#xf005;</button><button class="scriptview-button enabled unstarall">&#xf005;</button><button class="scriptview-button enabled playall">&#xf144;</button>'));
+		this.buttons.append($('<button class="scriptview-button enabled clear">&#xf006;</button><button class="scriptview-button enabled starall">&#xf006;</button><button class="scriptview-button enabled unstarall">&#xf005;</button><button class="scriptview-button enabled playall">&#xf144;</button>'));
 	}
 
 	var me = this;
@@ -76,57 +51,7 @@ EdenUI.ScriptView = function(name, title) {
 	this.searchin.on("keyup", function() {
 		var str = me.searchin.get(0).value;
 		if (str != "") {
-			var words = str.split(/[ ]+/);
-			var res;
-			var i = 0;
-			var rcount = words.length;
-
-			if (words.length > 0) {
-				if (words[0] == "agents:") {
-					i = 1;
-				} else if (words[0] == "active:") {
-					i = 1;
-				} else if (words[0] == "inactive:") {
-					i = 1;
-				}
-			}
-
-			rcount -= i;
-
-			for (; i<words.length; i++) {
-				if (words[i] == "") continue;
-				if (words[i].startsWith("depends:")) {
-					// Do a dependency search
-					var deps = words[i].split(":");
-					console.log("DEPENDS: " + deps[1]);
-					res = Eden.Statement.dependSearch(edenUI.regExpFromStr(deps[1]), undefined,res);
-				} else if (words[i].charAt(0) == "#") {
-					res = Eden.Statement.tagSearch(edenUI.regExpFromStr(words[i]), undefined,res);
-				} else {
-					res = Eden.Statement.search(edenUI.regExpFromStr(words[i]), undefined,res);
-				}
-			}
-
-			if (res) {
-				if (words.length > 0) {
-					if (words[0] == "agents:") {
-						res.active = [];
-						res.inactive = [];
-					} else if (words[0] == "active:") {
-						console.log(res);
-						res.agents = [];
-						res.inactive = [];
-					} else if (words[0] == "inactive:") {
-						res.agents = [];
-						res.active = [];
-					}
-				}
-
-				res.active = reduceByCount(res.active, rcount);
-				res.inactive = reduceByCount(res.inactive, rcount);
-				res.agents = reduceByCount(res.agents, rcount);
-			}
-
+			var res = Eden.Statement.search(str);
 			me.lastres = res;
 			me.updateSearchResults(res, str);
 		} else {

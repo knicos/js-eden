@@ -6,7 +6,7 @@
  * See LICENSE.txt
  */
 
-// Debugging flags.
+/** Debugging flags. */
 debug = ${{ {jsExceptions: edenUI.getOptionValue("developer") == "true" } }}$;
 
 // Todo, needs to always be marked out-of-date.

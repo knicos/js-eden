@@ -166,7 +166,7 @@ Eden.AST.Literal.prototype.execute = function(root, ctx, base, scope) {
 	case "LIST"		:	var rhs = "(function(context,scope) { return ";
 						rhs += this.generate(ctx, "scope");
 						rhs += ";})";
-						return eval(rhs)(root,scope);
+						return eval(rhs).call(ctx,root,scope);
 	case "JAVASCRIPT"	: return eval(this.value);
 	}
 }
@@ -467,7 +467,7 @@ Eden.AST.Scope.prototype.execute = function(root, ctx, base, scope, bound) {
 	var rhs = "(function(context,scope) { return ";
 	rhs += this.generate(ctx, "scope",bound);
 	rhs += ";})";
-	return eval(rhs)(root,scope);
+	return eval(rhs).call(ctx,root,scope);
 }
 
 
@@ -565,7 +565,7 @@ Eden.AST.ScopePath.prototype.execute = function(root, ctx, base, scope, bound) {
 	var rhs = "(function(context,scope) { return ";
 	rhs += this.generate(ctx, "scope",bound);
 	rhs += ";})";
-	return eval(rhs)(root,scope);
+	return eval(rhs).call(ctx,root,scope);
 }
 
 Eden.AST.ScopePath.prototype.error = fnEdenASTerror;
@@ -649,7 +649,7 @@ Eden.AST.UnaryOp.prototype.execute = function(root, ctx, base, scope) {
 	var rhs = "(function(context,scope) { return ";
 	rhs += this.generate(ctx, "scope");
 	rhs += ";})";
-	return eval(rhs)(root,scope);
+	return eval(rhs).call(ctx,root,scope);
 }
 
 
@@ -731,7 +731,7 @@ Eden.AST.TernaryOp.prototype.execute = function(root, ctx, base, scope) {
 	var rhs = "(function(context,scope) { return ";
 	rhs += this.generate(ctx, "scope");
 	rhs += ";})";
-	return eval(rhs)(root,scope);
+	return eval(rhs).call(ctx,root,scope);
 }
 
 
@@ -793,7 +793,7 @@ Eden.AST.BinaryOp.prototype.execute = function(root, ctx, base, scope) {
 	var rhs = "(function(context,scope) { return ";
 	rhs += this.generate(ctx, "scope");
 	rhs += ";})";
-	return eval(rhs)(root,scope);
+	return eval(rhs).call(ctx,root,scope);
 }
 
 

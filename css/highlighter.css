@@ -120,6 +120,16 @@ div.goto span.eden-observable:hover {
 	color: blue;
 }
 
+div.goto span.eden-function {
+	cursor: pointer;
+}
+
+div.goto span.eden-function:hover {
+	cursor: pointer;
+	text-decoration: underline;
+	color: blue;
+}
+
 div.goto span.eden-pathblock:hover {
 	cursor: pointer;
 	text-decoration: underline;

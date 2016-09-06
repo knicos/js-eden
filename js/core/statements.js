@@ -1,12 +1,130 @@
+function sortByCount(arr) {
+	// Sort results by count.
+	var map = arr.reduce(function (p, c) {
+		p[c] = (p[c] || 0) + 1;
+		return p;
+	}, {});
+	return Object.keys(map).sort(function (a, b) {
+		return map[a] < map[b];
+	});
+}
+
+function reduceByCount(arr, num) {
+	var map = arr.reduce(function (p, c) {
+		p[c] = (p[c] || 0) + 1;
+		return p;
+	}, {});
+
+	var res = [];
+	for (var x in map) {
+		if (map[x] >= num) res.push(x);
+	}
+	return res;
+}
+
+function negativeFilter(arr, neg) {
+	var map = neg.reduce(function (p, c) {
+		p[c] = (p[c] || 0) + 1;
+		return p;
+	}, {});
+
+	var res = [];
+	for (var i=0; i<arr.length; i++) {
+		if (!map[arr[i]]) res.push(arr[i]);
+	}
+	return res;
+}
+
 Eden.Statement = function() {
-	Eden.Statement.statements.push(this);
-	this.id = Eden.Statement.statements.length-1;
+	var ffree = Eden.Statement.findFree();
+	if (ffree == -1) {
+		Eden.Statement.statements.push(this);
+		this.id = Eden.Statement.statements.length-1;
+	} else {
+		this.id = ffree;
+		Eden.Statement.statements[ffree] = this;
+	}
 	this.source = "";
 	this.ast = undefined;
 	this.owned = false;
 }
 
-Eden.Statement.search = function(regex, m, prev) {
+Eden.Statement.findFree = function() {
+	for (var i=0; i<Eden.Statement.statements.length; i++) {
+		if (Eden.Statement.statements[i] === undefined) return i;
+	}
+	return -1;
+}
+
+Eden.Statement.search = function(str) {
+	var words = str.split(/[ ]+/);
+	var res;
+	var i = 0;
+	var rcount = words.length;
+
+	if (words.length > 0) {
+		if (words[0] == "agents:") {
+			i = 1;
+		} else if (words[0] == "active:") {
+			i = 1;
+		} else if (words[0] == "inactive:") {
+			i = 1;
+		}
+	}
+
+	rcount -= i;
+
+	for (; i<words.length; i++) {
+		if (words[i] == "") continue;
+		if (words[i].startsWith("depends:")) {
+			// Do a dependency search
+			var deps = words[i].split(":");
+			if (deps[1] == "") continue;
+			//console.log("DEPENDS: " + deps[1]);
+			res = Eden.Statement.dependSearch(edenUI.regExpFromStr(deps[1]), undefined,res);
+		} else if (words[i].charAt(0) == "#") {
+			res = Eden.Statement.tagSearch(edenUI.regExpFromStr(words[i]), undefined,res);
+		} else if (words[i].charAt(0) == "-") {
+			var nres;
+			var theword = words[i].substring(1);
+			if (theword == "") continue;
+			if (words[i].charAt(1) == "#") {
+				nres = Eden.Statement.tagSearch(edenUI.regExpFromStr(theword));
+			} else {
+				nres = Eden.Statement._search(edenUI.regExpFromStr(theword));
+			}
+			res.active = negativeFilter(res.active, nres.active);
+			res.inactive = negativeFilter(res.inactive, nres.inactive);
+			res.agents = negativeFilter(res.agents, nres.agents);
+			rcount--;
+		} else {
+			res = Eden.Statement._search(edenUI.regExpFromStr(words[i]), undefined,res);
+		}
+	}
+
+	if (res) {
+		if (words.length > 0) {
+			if (words[0] == "agents:") {
+				res.active = [];
+				res.inactive = [];
+			} else if (words[0] == "active:") {
+				res.agents = [];
+				res.inactive = [];
+			} else if (words[0] == "inactive:") {
+				res.agents = [];
+				res.active = [];
+			}
+		}
+
+		res.active = reduceByCount(res.active, rcount);
+		res.inactive = reduceByCount(res.inactive, rcount);
+		res.agents = reduceByCount(res.agents, rcount);
+
+		return res;
+	}
+}
+
+Eden.Statement._search = function(regex, m, prev) {
 	var maxres = (m) ? m : 10;
 	var agentres = (prev)?prev.agents:[];
 	var activeres = (prev)?prev.active:[];
@@ -149,11 +267,15 @@ Eden.Statement.reload = function() {
 
 			if (stats && Array.isArray(stats) && stats.length > 0) {
 				for (var i=0; i<stats.length; i++) {
-					var stat = new Eden.Statement();
-					stat.setSource(stats[i].source, new Eden.AST(stats[i].source, undefined, true));
-					if (stats[i].active) {
-						//console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
-						stat.activate();
+					if (stats[i]) {
+						var stat = new Eden.Statement();
+						stat.setSource(stats[i].source, new Eden.AST(stats[i].source, undefined, true));
+						if (stats[i].active) {
+							//console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
+							stat.activate();
+						}
+					} else {
+						Eden.Statement.statements.push(undefined);
 					}
 				}
 				return true;
@@ -174,7 +296,11 @@ Eden.Statement.autosave = function() {
 		var stats = [];
 		for (var i=0; i<Eden.Statement.statements.length; i++) {
 			var stat = Eden.Statement.statements[i];
-			stats.push({source: stat.source, active: stat.isActive()});
+			if (stat === undefined) {
+				stats.push(undefined);
+			} else {
+				stats.push({source: stat.source, active: stat.isActive()});
+			}
 		}
 
 		try {

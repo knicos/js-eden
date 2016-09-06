@@ -26,6 +26,7 @@ Eden.AST = function(code, imports, singleton) {
 	this.definitions = {};		// Definitions mapping
 	this.imports = (imports) ? imports : [];
 	this.dependencies = {};		// Dummy dependency record
+	this.scopes = [];
 	this.warnings = [];
 	this.agent = undefined;
 	this.statid = undefined;

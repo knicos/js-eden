@@ -581,7 +581,7 @@
 				// Left text
 				var parentspan = document.createElement('span');
 				parentspan.className = classes;
-				if (classes == "eden-observable") {
+				if (classes == "eden-observable" || classes == "eden-function") {
 					parentspan.setAttribute("data-observable", tokentext);
 				}
 

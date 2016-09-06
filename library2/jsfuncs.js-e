@@ -6,6 +6,7 @@
  * See LICENSE.txt
  */
 
+/** Javascript Function Template. #library */
 JSFunction is (self + ":" + function)(
 	object-->@,
 	function-->@,
