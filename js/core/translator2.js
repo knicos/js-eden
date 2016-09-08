@@ -46,6 +46,8 @@ Eden.AST = function(code, imports, singleton) {
 	}
 }
 
+Eden.AST.strict = true;
+
 
 
 /**
@@ -665,6 +667,11 @@ Eden.AST.prototype.pFACTOR_SIMPLE = function() {
 		var lit = new Eden.AST.Literal("NUMBER", this.data.value);
 		this.next();
 		return lit
+	// Should NOT be encountered here anymore!!!?
+	} else if (this.token == "JAVASCRIPT") {
+		var lit = new Eden.AST.Literal("JAVASCRIPT", this.data.value);
+		this.next();
+		return lit;
 	// Unary negation operator
 	} else if (this.token == "-") {
 		this.next();
@@ -1147,7 +1154,7 @@ Eden.AST.prototype.pSCOPE_P = function() {
 	if (this.token == "-->") isdefault = true;
 
 	this.next();
-	var expression = (isin) ? this.pEXPRESSION() : this.pFACTOR_SIMPLE();
+	var expression = (isin || !Eden.AST.strict) ? this.pEXPRESSION() : this.pFACTOR_SIMPLE();
 	if (expression.errors.length > 0) {
 		var scope = new Eden.AST.Scope();
 		obs.setStart(expression);

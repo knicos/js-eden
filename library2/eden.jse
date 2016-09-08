@@ -102,6 +102,18 @@ when (execute) {
 	${{ eden.execute2(root.value("execute",scope)); }}$;
 }
 
+when (menu_new_graphicview) {
+	createViews += View(name->${{makeRandomName()}}$,type->"SVGView");
+}
+
+when (menu_new_scriptview) {
+	createViews += View(name->${{makeRandomName()}}$,type->"ScriptView2");
+}
+
+when (menu_new_obslist) {
+	createViews += View(name->${{makeRandomName()}}$,type->"ObservableList");
+}
+
 
 // Autocalc compatibility
 autocalc = 1;

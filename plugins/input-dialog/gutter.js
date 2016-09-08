@@ -1,27 +1,5 @@
 
-function changeClassString(str, c, add) {
-	var list = str.split(" ");
-	var ix = list.indexOf(c);
-	if (ix == -1) {
-		if (add) {
-			list.push(c);
-			return list.join(" ");
-		}
-	} else {
-		if (!add) {
-			list.splice(ix,1);
-			return list.join(" ");
-		}
-	}
-	return str;
-}
 
-function changeClass(ele, c, add) {
-	var res = changeClassString(ele.className, c, add);
-	if (res != ele.className) {
-		ele.className = res;
-	}
-}
 
 function EdenScriptGutter(parent, infob) {
 	var me = this;

@@ -24,15 +24,15 @@ var rt = {
 		var values = [];
 		for (var i=0; i<list.length; i++) {
 			if (list[i] instanceof BoundValue) {
-				scopes.push(list[i].scope);
+				if (list[i].scope !== scope && list[i].scope.parent) scopes.push(list[i].scope);
 				values.push(list[i].value);
 			} else {
-				scopes.push(scope);
+				//scopes.push(scope);
 				values.push(list[i]);
 			}
 		}
 
-		return new BoundValue(values, scope, scopes);
+		return new BoundValue(values, scope, (scopes.length == values.length && scopes.length > 0) ? scopes : undefined);
 	},
 
 	index: function (ix) {

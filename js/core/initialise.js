@@ -82,7 +82,7 @@ function initialiseJSEden(callback) {
 
 	var defaultPlugins = [
 		"PluginManager",
-		"ScriptInput",
+		//"ScriptInput",
 		"SymbolLookUpTable",
 		"SymbolViewer"
 	];
@@ -103,14 +103,14 @@ function initialiseJSEden(callback) {
 		}
 
 		if (views == "" || views == "default") {
-			plugins.push("Canvas2D");
+			//plugins.push("Canvas2D");
 			plugins.push("ProjectList");
-			plugins.push("ScriptInput");
+			//plugins.push("ScriptInput");
 		}
 	}
 
 	if (menuBar) {
-		plugins.unshift("MenuBar");
+		//plugins.unshift("MenuBar");
 	}
 
 	$(document).ready(function () {
@@ -150,6 +150,10 @@ function initialiseJSEden(callback) {
 		//Register the view options
 		edenUI.views["ScriptView2"] = {raw: function(name,title) { return new EdenUI.ScriptView(name,title); }, dialog: EdenUI.ScriptView.createDialog, title: "Script View", category: edenUI.viewCategories.interpretation};
 		edenUI.views["SVGView"] = {raw: function(name,title) { return new EdenUI.SVG(name,title); }, dialog: EdenUI.SVG.createDialog, title: "Graphic View", category: edenUI.viewCategories.interpretation};
+
+		if (menubar) {
+			edenUI.menu = new EdenUI.MenuBar();
+		}
 
 		$(document)
 		.on('keydown', null, 'ctrl+m', function () {

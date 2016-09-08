@@ -1,49 +1,119 @@
-/**
- * @title Jugs Display
- */
 
 active_tab = "canvas";
 
+/** #jugs #nick */
 jugwidth = 60;
+/** #jugs #nick */
 base = 200;
+/** #jugs #nick */
 scale = 20;
+/** #jugs #nick */
 left = 50;
 
-jugA_left is Line(left,base,left,base - (scale * capA));
-jugA_right is Line(left+jugwidth,base,left+jugwidth,base - (scale * capA));
-jugA_base is Line(left,base,left+jugwidth,base);
+/** #jugs #nick */
+jugA_bottomleft is Point(x->jugA_left,y->base);
+/** #jugs #nick */
+jugA_bottomright is Point(x->jugA_right,y->base);
+/** #jugs #nick */
+jugA_top is base - (scale * capA);
+/** #jugs #nick */
+jugA_topleft is Point(x->jugA_left,y->jugA_top);
+/** #jugs #nick */
+jugA_topright is Point(x->jugA_right,y->jugA_top);
+/** #jugs #nick */
+jugA_left = 50;
+/** #jugs #nick */
+jugA_right is jugA_left + jugwidth;
 
-##picture is [jugA_left,jugA_right,jugA_base];
+/** #jugs #nick */
+jugA_leftline is Line(start->jugA_bottomleft,end->jugA_topleft);
+/** #jugs #nick */
+jugA_rightline is Line(start->jugA_bottomright,end->jugA_topright);
+/** #jugs #nick */
+jugA_baseline is Line(start->jugA_bottomleft,end->jugA_bottomright);
 
+//picture is [jugA_left,jugA_right,jugA_base];
+
+/** #jugs #nick */
 spacing = 30;
+/** #jugs #nick */
 right is left+jugwidth+spacing;
 
-jugB_left is Line(right,base,right,base - (scale * capB));
-jugB_right is Line(right+jugwidth,base,right+jugwidth,base - (scale * capB));
-jugB_base is Line(right,base,right+jugwidth,base);
+/** #jugs #nick */
+jugB_bottomleft is Point(x->jugB_left,y->base);
+/** #jugs #nick */
+jugB_bottomright is Point(x->jugB_right,y->base);
+/** #jugs #nick */
+jugB_top is base - (scale * capB);
+/** #jugs #nick */
+jugB_topleft is Point(x->jugB_left,y->jugB_top);
+/** #jugs #nick */
+jugB_topright is Point(x->jugB_right,y->jugB_top);
+/** #jugs #nick */
+jugB_left is jugA_right + spacing;
+/** #jugs #nick */
+jugB_right is jugB_left + jugwidth;
 
-picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base];
+/** #jugs #nick */
+jugB_leftline is Line(start->jugB_bottomleft,end->jugB_topleft);
+/** #jugs #nick */
+jugB_rightline is Line(start->jugB_bottomright,end->jugB_topright);
+/** #jugs #nick */
+jugB_baseline is Line(start->jugB_bottomleft,end->jugB_bottomright);
 
+/** #jugs #nick */
+picture is [jugA_leftline,jugA_rightline,jugA_baseline,jugB_leftline,jugB_rightline,jugB_baseline];
+
+/** #jugs #nick */
 linewidth = 0;
 
-jugA_water is Rectangle(left+linewidth,base - (scale * contentA),jugwidth-(2*linewidth),scale * contentA,"blue");
+/** #jugs #nick */
+jugA_watertop is base - scale * contentA;
+/** #jugs #nick */
+jugA_waterscale is scale * contentA;
+/** #jugs #nick */
+jugA_watertopleft is Point(x->jugA_left,y->jugA_watertop);
+/** #jugs #nick */
+jugA_watersize is Point(x->jugwidth,y->jugA_waterscale);
+/** #jugs #nick */
+jugA_water is Rectangle(position->jugA_watertopleft,size->jugA_watersize);
 
-picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water];
+//jugA_water is Rectangle(left+linewidth,base - (scale * contentA),jugwidth-(2*linewidth),scale * contentA,"blue");
 
-jugB_water is Rectangle(right+linewidth,base - (scale * contentB),jugwidth-(2*linewidth),scale * contentB,"blue");
+//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water];
 
-picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water];
+/** #jugs #nick */
+jugB_watertop is base - scale * contentB;
+/** #jugs #nick */
+jugB_waterscale is scale * contentB;
+/** #jugs #nick */
+jugB_watertopleft is Point(x->jugB_left,y->jugB_watertop);
+/** #jugs #nick */
+jugB_watersize is Point(x->jugwidth,y->jugB_waterscale);
+/** #jugs #nick */
+jugB_water is Rectangle(position->jugB_watertopleft,size->jugB_watersize);
 
-statuslabel is Text(targ // " " // totstat, 250, base - ((capB * scale) / 2), "black");
+//jugA_water is Rectangle(left+linewidth,base - (scale * contentA),jugwidth-(2*linewidth),scale * contentA,"blue");
 
-picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water,statuslabel];
+//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water];
 
-but1 is Button(menu[1], 50, base+30, valid1);
-but2 is Button(menu[2], 50+70, base+30, valid2);
-but3 is Button(menu[3], 50+150, base+30, valid3);
-but4 is Button(menu[4], 50+250, base+30, valid4);
-but5 is Button(menu[5], 50+340, base+30, valid5);
+/** #jugs #nick */
+picture is [jugA_water, jugB_water,jugA_leftline,jugA_rightline,jugA_baseline,jugB_leftline,jugB_rightline,jugB_baseline];
 
-picture is [but1,but2,but3,but4,but5,jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water,statuslabel];
+//jugB_water is Rectangle(right+linewidth,base - (scale * contentB),jugwidth-(2*linewidth),scale * contentB,"blue");
 
-}
+//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water];
+
+//statuslabel is Text(targ // " " // totstat, 250, base - ((capB * scale) / 2), "black");
+
+//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water,statuslabel];
+
+//but1 is Button(menu[1], 50, base+30, valid1);
+//but2 is Button(menu[2], 50+70, base+30, valid2);
+//but3 is Button(menu[3], 50+150, base+30, valid3);
+//but4 is Button(menu[4], 50+250, base+30, valid4);
+//but5 is Button(menu[5], 50+340, base+30, valid5);
+
+//picture is [but1,but2,but3,but4,but5,jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water,statuslabel];
+
+//}

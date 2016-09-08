@@ -565,7 +565,7 @@ EdenUI.ScriptBox = function(element) {
 
 			if (active) {
 				var sym = eden.root.lookup(stat.statement.lvalue.name);
-				me.valuedivs[x].find(".scriptbox-valuecontent").html(Eden.edenCodeForValue(sym.value()));
+				me.valuedivs[x].find(".scriptbox-valuecontent").html(Eden.edenCodeForValue(sym.boundValue(eden.root.scope)));
 				me.valuedivs[x].removeClass("inactive");
 			} else {
 				if (stat.statement.type == "definition" || stat.statement.type == "assignment") {
@@ -586,7 +586,7 @@ EdenUI.ScriptBox = function(element) {
 					rhs += ";})";
 
 					var val = eval(rhs).call(dummyctx,eden.root,eden.root.scope);
-					if (val instanceof BoundValue) val = val.value;
+					//if (val instanceof BoundValue) val = val.value;
 					me.valuedivs[x].find(".scriptbox-valuecontent").html(Eden.edenCodeForValue(val));
 				}
 				me.valuedivs[x].addClass("inactive");

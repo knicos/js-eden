@@ -541,7 +541,7 @@ EdenUI.plugins.SymbolViewer.Symbol = function (symbol, name, type, accentuation,
 		}, 350);
 	});
 	if (type == "obs") {
-		this.element.dblclick(function () {
+		/*this.element.dblclick(function () {
 			singleClickPerformed = false;
 			if (EdenUI.plugins.SymbolViewer.inlineEditorSymbol === me) {
 				return;
@@ -643,7 +643,7 @@ EdenUI.plugins.SymbolViewer.Symbol = function (symbol, name, type, accentuation,
 			} else {
 				me.symbol.assign(true, eden.root.scope, Symbol.hciAgent, true);
 			}
-		});
+		});*/
 	}
 
 	this.update();
@@ -686,8 +686,10 @@ EdenUI.plugins.SymbolViewer.Symbol.prototype.updateFunction = function () {
 };
 
 function _formatVal(value) {
-	var str = Eden.prettyPrintValue("", value, 200, false, false);
-	switch (typeof(value)) {
+	//var str = Eden.prettyPrintValue("", value, 200, false, false);
+	var str = Eden.edenCodeForValue(value);
+	return EdenUI.Highlight.html(str);
+	/*switch (typeof(value)) {
 	case "boolean":
 		return "<span class='special_text'>" + str + "</span>";
 	case "undefined":
@@ -698,7 +700,7 @@ function _formatVal(value) {
 		return "<span class='numeric_text'>" + str + "</span>";
 	default:
 		return str;
-	}
+	}*/
 };
 
 /**
@@ -708,7 +710,7 @@ function _formatVal(value) {
 EdenUI.plugins.SymbolViewer.Symbol.prototype.updateObservable = function () {
 	var bval = this.symbol.boundValue(this.scope);
 	var val = bval.value;
-	var valhtml = _formatVal(val);
+	var valhtml = (bval.scope !== this.scope) ? _formatVal(bval) : _formatVal(bval.value);
 	var isoverride = this.isoverride;
 	var over;
 	if (isoverride) {
@@ -749,7 +751,7 @@ EdenUI.plugins.SymbolViewer.Symbol.prototype.updateObservable = function () {
 		var overrides = {};
 		var normals = {};
 
-		var thescope = (bval.scopes) ? bval.scopes[0] : bval.scope;
+		var thescope = (bval.scopes && bval.scopes.length > 0) ? bval.scopes[0] : bval.scope;
 
 		while (thescope && thescope.parent) {
 			for (var x in thescope.cache) {

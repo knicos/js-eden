@@ -7,6 +7,30 @@
 
 function noop() {}
 
+function changeClassString(str, c, add) {
+	var list = str.split(" ");
+	var ix = list.indexOf(c);
+	if (ix == -1) {
+		if (add) {
+			list.push(c);
+			return list.join(" ");
+		}
+	} else {
+		if (!add) {
+			list.splice(ix,1);
+			return list.join(" ");
+		}
+	}
+	return str;
+}
+
+function changeClass(ele, c, add) {
+	var res = changeClassString(ele.className, c, add);
+	if (res != ele.className) {
+		ele.className = res;
+	}
+}
+
 function listenTo(eventName, target, callback) {
 	if (!this.listeners[eventName]) {
 		this.listeners[eventName] = [];
@@ -1002,6 +1026,11 @@ function concatAndResolveUrl(url, concat) {
 	 * @returns {string} The EDEN code that produces the given value.
 	 */
 	Eden.edenCodeForValue = function (value, refStack) {
+		var scope;
+		if (value instanceof BoundValue) {
+			scope = value.scope;
+			value = value.value;
+		}
 		var type = typeof(value);
 		var code = "";
 		if (type == "undefined") {
@@ -1085,6 +1114,32 @@ function concatAndResolveUrl(url, concat) {
 		} else {
 			code = String(value);
 		}
+
+		if (scope && scope.parent !== undefined) {
+			code += "(";
+			//while (scope && scope.parent) {
+			var overs = scope.allOverrides();
+			for (var i=0; i<overs.length; i++) {
+				//if (x == "/this" || x == "/has" || x == "/from") continue;
+				//var name = x.slice(1);
+				var scache = scope.lookup("/"+overs[i].name);
+				// Only add it if it has been used in generating the value
+				if (scache.up_to_date) {
+					if (overs[i].isin) {
+						code += overs[i].name + " in [...]";
+					} else if (overs[i].range) {
+						code += overs[i].name + "in ?..?";
+					} else {
+						code += overs[i].name + "->"+Eden.edenCodeForValue(scache.value);
+					}
+					if (i < overs.length-1) code += ", ";
+				}
+			}
+				//scope = scope.parent;
+			//}
+			code += ")";
+		}
+
 		return code;
 	}
 

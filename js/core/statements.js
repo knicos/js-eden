@@ -65,7 +65,7 @@ Eden.Statement.search = function(str) {
 	var inittoken = false;
 
 	if (words.length > 0) {
-		if (words[0].indexOf(":") != -1) {
+		if (words[0].charAt(words[0].length-1) == ":") {
 			i = 1;
 			inittoken = true;
 		} else if (words[0].charAt(0) == "#") {
@@ -98,6 +98,12 @@ Eden.Statement.search = function(str) {
 			if (deps[1] == "") continue;
 			//console.log("DEPENDS: " + deps[1]);
 			res = Eden.Statement.dependSearch(edenUI.regExpFromStr(deps[1]), undefined,res);
+		} else if (words[i].startsWith("determines:")) {
+			// Do a dependency search
+			var deps = words[i].split(":");
+			if (deps[1] == "") continue;
+			//console.log("DEPENDS: " + deps[1]);
+			res = Eden.Statement.determineSearch(edenUI.regExpFromStr(deps[1]), undefined,res);
 		} else if (words[i].charAt(0) == "#") {
 			res = Eden.Statement.tagSearch(edenUI.regExpFromStr(words[i]), undefined,res);
 		} else if (words[i].charAt(0) == "-") {
@@ -224,6 +230,50 @@ Eden.Statement.dependSearch = function(regex, m, prev) {
 			}
 		}
 	}
+	return {active: activeres, inactive: inactiveres, agents: agentres};
+}
+
+Eden.Statement.determineSearch = function(regex, m, prev) {
+	var maxres = (m) ? m : 10;
+	var agentres = (prev)?prev.agents:[];
+	var activeres = (prev)?prev.active:[];
+	var inactiveres = (prev)?prev.inactive:[];
+
+	// Find all matching symbols
+	// For each, get all dependencies recursively
+	// For each dependency extract the origin statement (including agents).
+	var syms = [];
+	for (var s in eden.root.symbols) {
+		//var name = s.slice(1);
+		if (regex.test(s)) syms.push(eden.root.symbols[s]);
+	}
+
+	//console.log(syms);
+
+	var done = {};
+
+	for (var i=0; i<syms.length; i++) {
+		if (done[syms[i].name] === undefined) {
+			for (var d in syms[i].dependencies) {
+				syms.push(syms[i].dependencies[d]);
+			}
+			done[syms[i].name] = syms[i];
+		}
+	}
+
+	for (var x in done) {
+		var statid = done[x].statid;
+		if (statid !== undefined) {
+			var stat = Eden.Statement.statements[statid];
+			if (stat.statement.type == "when") {
+				agentres.push(statid);
+			} else {
+				activeres.push(statid);
+			}
+		}
+	}
+
+	
 	return {active: activeres, inactive: inactiveres, agents: agentres};
 }
 

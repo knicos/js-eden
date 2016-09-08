@@ -33,6 +33,9 @@
 		return $("#"+viewName+"-dialog");
 	}
 
+	EdenUI.prototype.lastX = 100;
+	EdenUI.prototype.lastY = 100;
+
 	//Dimensions of various UI components.
 	EdenUI.prototype.menuBarHeight = 30;
 	EdenUI.prototype.dialogBorderWidth = 3.133;
@@ -128,6 +131,10 @@
 
 		if (viewData.defaultWidth) diag.css("width",""+viewData.defaultWidth+"px");
 		if (viewData.defaultHeight) diag.css("height",""+viewData.defaultHeight+"px");
+		diag.css("left", ""+this.lastX+"px");
+		diag.css("top", ""+this.lastY+"px");
+		this.lastX += 50;
+		this.lastY += 40;
 
 
 		diag.on("click",function() {

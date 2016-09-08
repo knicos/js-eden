@@ -43,6 +43,7 @@
 		this.value = value;
 		this.scope = scope;
 		this.scopes = undefined;
+		this.owner = undefined;
 	}
 
 	function BoundValue(value,scope,scopes) {
@@ -57,9 +58,11 @@
 		this.start = start;
 		this.end = (options && options.range) ? options.end : undefined;
 		this.increment = (options) ? options.increment : undefined;
+		this.isin = options && options.isin;
+
 		if (this.start instanceof BoundValue) {
 			this.current = (options && options.isin && !options.range && Array.isArray(start.value) && start.value.length > 0) ? start.value[0] : start.value;
-			if (this.start.scopes && Array.isArray(this.start.scopes) && this.start.scopes.length > 0) {
+			if (this.isin && this.start.scopes && Array.isArray(this.start.scopes) && this.start.scopes.length > 0) {
 				this.currentscope = this.start.scopes[0];
 			} else {
 				this.currentscope = this.start.scope;
@@ -68,7 +71,7 @@
 			this.current = (options && options.isin && !options.range && Array.isArray(start) && start.length > 0) ? start[0] : start;
 			this.currentscope = undefined;
 		}
-		this.isin = options && options.isin;
+
 		//if (this.isin) console.log(this.currentscope);
 		this.index = 1;
 		this.isdefault = (options) ? options.isdefault : false;
@@ -148,7 +151,19 @@
 	}
 
 	Scope.prototype.allOverrides = function() {
-		
+		var map = {};
+		var scope = this;
+		while (scope) {
+			for (var i=0; i<scope.overrides.length; i++) {
+				map[scope.overrides[i].name] = scope.overrides[i];
+			}
+			scope = scope.parent;
+		}
+		var res = [];
+		for (var x in map) {
+			res.push(map[x]);
+		}
+		return res;
 	}
 
 	Scope.prototype.hasOverride = function(override) {
@@ -273,6 +288,7 @@
 			} else {
 				//console.log("Symbol without cache: " + name);
 				this.cache[name] = new ScopeCache(true, undefined);
+				this.cache[name].owner = this;
 				return this.cache[name];
 			}
 		}
@@ -280,6 +296,7 @@
 
 	Scope.prototype.add = function(name) {
 		var cache = new ScopeCache( false, undefined, this);
+		cache.owner = this;
 		this.cache[name] = cache;
 		return cache;
 	}
@@ -322,6 +339,7 @@
 
 		if (this.cache[name] === undefined) {
 			this.cache[name] = new ScopeCache( true, currentval, currentscope );
+			this.cache[name].owner = this;
 		} else {
 			this.cache[name].value = currentval;
 			this.cache[name].scope = currentscope;
@@ -333,6 +351,7 @@
 		//console.log("Adding scope subscriber...: " + name);
 		if (this.cache[name] === undefined) {
 			this.cache[name] = new ScopeCache( false, undefined, this);
+			this.cache[name].owner = this;
 		} else {
 			this.cache[name].up_to_date = false;
 			this.cache[name].value = undefined;
@@ -815,6 +834,7 @@
 		this.name = name;
 
 		this.cache = (context) ? context.scope.add(name) : new ScopeCache( true, undefined );
+		this.cache.owner = context.scope;
 
 		this.definition = undefined;
 		this.causecount = 0;
@@ -912,7 +932,7 @@
 
 			if (this.definition) {
 				if (!cache.up_to_date) {
-					this.evaluate(scope, cache);
+					this.evaluate(cache.owner, cache);
 				}
 			}
 			return cache.value;

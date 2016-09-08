@@ -15,11 +15,11 @@ _js_svg_updateAttribute_args_rect_style is ["picture", i, "style", "color: \"" +
 /** #library #svg */
 Point is [x,y](x-->0,y-->0);
 /** #library #svg #drawable */
-Line is (self + " : " + this)(start-->Point,end-->Point,colour-->"black",width-->2);
+Line is self(start-->Point,end-->Point,colour-->"black",width-->2);
 /** #library #svg #drawable */
-Text is (self + " : " + this)(position-->Point,text-->"Text",colour-->"black",size-->12,family->"Arial",weight->"normal");
+Text is self(position-->Point,text-->"Text",colour-->"black",size-->12,family->"Arial",weight->"normal");
 /** #library #svg #drawable */
-Rectangle is (self + " : " + this)(start-->Point,size-->Point,colour-->"black",border-->"black",borderSize-->2);
+Rectangle is self(start-->Point,size-->Point,colour-->"black",border-->"black",borderSize-->2);
 
 /** Update the screen. #library */
 when (picture) {
