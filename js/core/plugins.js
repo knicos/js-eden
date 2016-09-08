@@ -51,8 +51,13 @@
 	EdenUI.prototype.minimumWindowWidthShowing = 72 + EdenUI.prototype.dialogBorderWidth;
 
 	EdenUI.prototype.createRawView = function(name, type) {
-		var viewData = this.views[type].raw(name + "-dialog", name);
-		return viewData;
+		if (this.viewInstances[name] === undefined) {
+			var viewData = this.views[type].raw(name + "-dialog", name);
+			this.viewInstances[name] = viewData;
+			return viewData;
+		} else {
+			return this.viewInstances[name];
+		}
 	}
 
 	/**

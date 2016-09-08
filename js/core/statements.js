@@ -61,6 +61,7 @@ Eden.Statement.search = function(str) {
 	var res;
 	var i = 0;
 	var rcount = words.length;
+	var tagres;
 
 	if (words.length > 0) {
 		if (words[0] == "agents:") {
@@ -69,13 +70,30 @@ Eden.Statement.search = function(str) {
 			i = 1;
 		} else if (words[0] == "inactive:") {
 			i = 1;
+		} else if (words[0].charAt(0) == "#") {
+			tagres = [];
+			var regex = edenUI.regExpFromStr(words[0]);
+			// Generate some hashtag results
+			for (var x in Eden.Statement.tags) {
+				if (regex.test(x)) {
+					tagres.push(x);
+				}
+			}
+
+			tagres.sort(function(a,b) {
+				return Eden.Statement.tags[a].length < Eden.Statement.tags[b].length;
+			});
+			console.log(tagres);
 		}
 	}
 
 	rcount -= i;
 
 	for (; i<words.length; i++) {
-		if (words[i] == "") continue;
+		if (words[i] == "") {
+			rcount--;
+			continue;
+		}
 		if (words[i].startsWith("depends:")) {
 			// Do a dependency search
 			var deps = words[i].split(":");
@@ -119,8 +137,11 @@ Eden.Statement.search = function(str) {
 		res.active = reduceByCount(res.active, rcount);
 		res.inactive = reduceByCount(res.inactive, rcount);
 		res.agents = reduceByCount(res.agents, rcount);
+		if (tagres) res.tags = tagres;
 
 		return res;
+	} else if (tagres) {
+		return {tags: tagres};
 	}
 }
 
@@ -133,6 +154,7 @@ Eden.Statement._search = function(regex, m, prev) {
 	for (var i=0; i<Eden.Statement.statements.length; i++) {
 		//if (results.length >= maxres) break;
 		var stat = Eden.Statement.statements[i];
+		if (stat === undefined) continue;
 		if (stat.ast && stat.statement) {
 			if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
 				if (regex.test(stat.statement.lvalue.name)) {
@@ -165,7 +187,7 @@ Eden.Statement.dependSearch = function(regex, m, prev) {
 	for (var i=0; i<Eden.Statement.statements.length; i++) {
 		//if (results.length >= maxres) break;
 		var stat = Eden.Statement.statements[i];
-		if (stat.ast && stat.statement) {
+		if (stat && stat.ast && stat.statement) {
 			if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
 				
 				for (var x in stat.ast.dependencies) {
@@ -316,6 +338,7 @@ Eden.Statement.autosave = function() {
 }
 
 Eden.Statement.prototype.setSource = function(src, ast, stat) {
+	if (ast === undefined) ast = new Eden.AST(src,undefined, true);
 	if (ast && stat === undefined) stat = ast.script;
 	if (this.ast && this.statement && (this.statement.type == "definition" || this.statement.type == "assignment")) {
 		if (Eden.Statement.symbols[this.statement.lvalue.name] && Eden.Statement.symbols[this.statement.lvalue.name][this.id]) {

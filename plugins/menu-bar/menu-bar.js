@@ -60,7 +60,8 @@ EdenUI.plugins.MenuBar = function (edenUI, success) {
 		//Reset search box
 		var newWindowMenu = $("#menubar-mainitem-views");
 		newWindowMenu.children().css("display", "");
-		document.getElementById("menubar-view-type-search").value = "";
+		var searchbox = document.getElementById("menubar-view-type-search");
+		if (searchbox) searchbox.value = "";
 	}
 
 	function showMenu(name) {

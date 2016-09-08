@@ -251,11 +251,25 @@ button.scriptview-button:hover {
 }
 
 button.scriptview-button.starall {
-	color: black;
-	/*text-shadow: 0px 0px 2px black;*/
+	color: yellow;
+	text-shadow: 0px 0px 2px black;
 }
 
-button.scriptview-button.starall:after {
+/*button.scriptview-button.starall:after {
+	color: black;
+	font-family: "FontAwesome";
+	font-size: 12px;
+	content: '\f006';
+	position: relative;
+	left: -9px;
+	top: 3px;
+}*/
+
+button.scriptview-button.unstarall {
+	color: black;
+}
+
+/*button.scriptview-button.unstarall:after {
 	color: yellow;
 	text-shadow: 0px 0px 2px black;
 	font-family: "FontAwesome";
@@ -264,24 +278,8 @@ button.scriptview-button.starall:after {
 	position: relative;
 	left: -9px;
 	top: 3px;
-}
-
-button.scriptview-button.unstarall {
-	color: yellow;
-	text-shadow: 0px 0px 2px black;
-}
-
-button.scriptview-button.unstarall:after {
-	color: black;
-	text-shadow: none;
-	font-family: "FontAwesome";
-	font-size: 12px;
-	content: '\f006';
-	position: relative;
-	left: -9px;
-	top: 3px;
 	font-weight: bold;
-}
+}*/
 
 button.scriptview-button.playall {
 	color: #00ff00;
@@ -299,16 +297,33 @@ button.scriptview-button.playall:after {
 	top: 3px;
 }
 
-button.scriptview-button.clear {
+button.scriptview-button.hashtag {
 	color: black;
+	/*text-shadow: 0px 0px 2px black;*/
 }
 
-button.scriptview-button.clear:after {
-	color: red;
+button.scriptview-button.hashtag:after {
+	color: yellow;
 	text-shadow: 0px 0px 2px black;
 	font-family: "FontAwesome";
 	font-size: 12px;
-	content: '\f05e';
+	content: '\f005';
+	position: relative;
+	left: -7px;
+	top: 3px;
+}
+
+button.scriptview-button.clear {
+	color: red;
+	text-shadow: 0px 0px 2px black;
+}
+
+button.scriptview-button.clear:after {
+	color: black;
+	/*text-shadow: 0px 0px 2px black;*/
+	font-family: "FontAwesome";
+	font-size: 12px;
+	content: '\f006';
 	position: relative;
 	left: -9px;
 	top: 3px;
@@ -464,6 +479,17 @@ div.scriptview-resultview {
 	overflow: hidden;
 }
 
+div.scriptview-resulttag {
+	padding: 5px;
+	/*border-top: 1px solid #e5e5e5;
+	border-bottom: 1px solid #e5e5e5;*/
+	margin-bottom: 2px;
+	font: 12px Arial;
+	background: white;
+	cursor: pointer;
+	overflow: hidden;
+}
+
 div.scriptview-results hr {
 	border: 0;
     height: 0;
@@ -485,7 +511,7 @@ div.scriptview-resultsearch {
 
 div.scriptview-result.active {
 	/*background: #eeffee;*/
-	font-weight: bold;
+	/*font-weight: bold;*/
 }
 
 div.scriptview-result:hover {
@@ -497,6 +523,10 @@ div.scriptview-resultsearch:hover {
 }
 
 div.scriptview-resultview:hover {
+	background: #f5f5f5;
+}
+
+div.scriptview-resulttag:hover {
 	background: #f5f5f5;
 }
 

@@ -10,41 +10,65 @@ autocalc = 0;
 
 /*func max { return $1<$2 ? $2 : $1; };*/
 
+/** #jugs #nick */
 target=1;
+/** #jugs #nick */
 capA = 5;
+/** #jugs #nick */
 capB = 7;
+/** #jugs #nick */
 Afull is capA==contentA;
+/** #jugs #nick */
 Bfull is capB==contentB;
+/** #jugs #nick */
 contentA = 0;
+/** #jugs #nick */
 contentB = 0;
 
+/** #jugs #nick */
 height is max(a->capA,b->capB)+2;
 
+/** #jugs #nick */
 widthB = 5;
+/** #jugs #nick */
 widthA = 5;
+/** #jugs #nick */
 menu is ["1:Fill A","2:Fill B","3:Empty A","4:Empty B","5:Pour"];
+/** #jugs #nick */
 menustatus is [valid1, valid2, valid3, valid4, valid5, valid6, valid7];
-				/* two invisible options 6 & 7 */
+/** #jugs #nick */
 valid1 is !Afull;
+/** #jugs #nick */
 valid2 is !Bfull;
+/** #jugs #nick */
 valid3 is contentA != 0;
+/** #jugs #nick */
 valid4 is contentB != 0;
+/** #jugs #nick */
 valid5 is valid6 || valid7;
+/** #jugs #nick */
 valid6 is valid3 && valid2;
+/** #jugs #nick */
 valid7 is valid4 && valid1;
 
 /* specifying the control information */
 
-Error=0; updating=0;
+/** #jugs #nick */
+Error=0;
+/** #jugs #nick */
+updating=0;
+/** #jugs #nick */
 finish is ((contentA==target)||(contentB==target))&&!updating;
-
+/** #jugs #nick */
 avail is menustatus[opt];
-
+/** #jugs #nick */
 status is (Error)?"invalid option": ((updating)?"updating":"awaiting input");
+/** #jugs #nick */
 totstat is (finish) ? "Success!" : status;
+/** #jugs #nick */
 targ is ("Target is " + str(value->target) + " : ");
 
-
+/** #jugs #nick */
 viscosity = 100;
 
 autocalc = 1;

@@ -20,6 +20,9 @@
 			"file": "models/MENACE/worksheet.js-e",
 			"title": "MENACE Worksheet"
 		},
+		"nick/triangle": {
+			"file": "models/nick/triangle.js-e"
+		},
 		"nick/circuit/bulb": {
 			"file": "models/nick/simple-circuit/bulb.js-e",
 			"title": "Bulb Circuit Element"

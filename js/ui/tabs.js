@@ -1,12 +1,28 @@
-EdenUI.Tabs = function(element) {
+EdenUI.Tabs = function(element, name) {
+	this.statement = new Eden.Statement();
 	this.tabs = element;
 	this.scrollix = 0;
 	this.maxtabs = 3;
+	this.name = name;
+
+	var me = this;
+	$(this.tabs).on("click",".agent-tab",function(e) {
+		var name = e.currentTarget.getAttribute("data-name");
+		//console.log("Clicked on tab " + name);
+		//me.statement.setSource("tabs_"+me.name+"_current = \"" + name+"\";");
+		//me.statement.activate();
+		eden.root.lookup("tabs_"+me.name+"_current").assign(name, eden.root.scope);
+	})
+	.on("click", ".agent-newtab", function(e) {
+		eden.root.lookup("tabs_"+me.name+"_new").assign(true, eden.root.scope);
+	});
 }
 
 EdenUI.Tabs.prototype.build = function(agents, current) {
 	// Remove existing tabs
 	while (this.tabs.firstChild) this.tabs.removeChild(this.tabs.firstChild);
+
+	console.log("BUILD TABS: " + JSON.stringify(agents) + "@"+current);
 
 	// Add scroll left
 	var left = document.createElement("div");

@@ -1,0 +1,14 @@
+/** #nick #triangle */
+mypt1 is Point(x->10,y->10);
+/** #nick #triangle */
+mypt2 is Point(x->50,y->200);
+/** #nick #triangle */
+mypt3 is Point(x->150,y->100);
+/** #nick #triangle */
+myline1 is Line(start->mypt1,end->mypt2);
+/** #nick #triangle */
+myline2 is Line(start->mypt2,end->mypt3);
+/** #nick #triangle */
+myline3 is Line(start->mypt3,end->mypt1);
+/** #nick #triangle */
+picture is [myline1,myline2,myline3];

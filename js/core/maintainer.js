@@ -69,6 +69,7 @@
 			this.currentscope = undefined;
 		}
 		this.isin = options && options.isin;
+		//if (this.isin) console.log(this.currentscope);
 		this.index = 1;
 		this.isdefault = (options) ? options.isdefault : false;
 		this.oneshot = (options) ? options.oneshot : false;
@@ -232,6 +233,7 @@
 		for (var i = 0; i < this.overrides.length; i++) {
 			var nov = new ScopeOverride(this.overrides[i].name, this.overrides[i].start, this.overrides[i].options);
 			nov.current = this.overrides[i].current;
+			nov.currentscope = this.overrides[i].currentscope;
 			nover.push(nov);
 		}
 
@@ -315,7 +317,7 @@
 		} else {
 			//console.log(override.current);
 			currentval = override.current;
-			currentscope = (this.currentscope) ? this.currentscope : this;
+			currentscope = (override.currentscope) ? override.currentscope : this;
 		}
 
 		if (this.cache[name] === undefined) {
@@ -350,9 +352,11 @@
 	Scope.prototype.first = function() {
 		for (var i = this.overrides.length-1; i >= 0; i--) {
 			var over = this.overrides[i];
+			var isbound = over.start instanceof BoundValue;
 			if (!over.isin && !over.range) continue;
 
-			if (!over.range) return over.start.length != 0;
+			//console.log("VALIDIN: " + ((isbound) ? over.start.value.length != 0 : over.start.length != 0));
+			if (!over.range) return (isbound) ? over.start.value.length != 0 : over.start.length != 0;
 
 			if ((over.increment > 0 || over.increment === undefined) && over.current < over.end) {
 				return true;
@@ -377,14 +381,18 @@
 			if (!over.isin && !over.range) continue;
 
 			if (!over.range) {
+				//console.log("NAME: " + over.currentscope.lookup("/name").value);
 				if (over.index < length) {
 					if (isbound) {
 						over.current = over.start.value[over.index];
+						//console.log("IN SCOPE BOUNDCURRENT = " + over.current);
 						if (over.start.scopes) {
 							over.currentscope = over.start.scopes[over.index];
+							//console.log(over.currentscope);
 						}
 					} else {
 						over.current = over.start[over.index];
+						//console.log("IN SCOPE CURRENT = " + over.current);
 					}
 					over.index++;
 					this.updateOverride(over);
@@ -392,6 +400,11 @@
 				} else {
 					over.index = 1;
 					over.current = (isbound) ? over.start.value[0] : over.start[0];
+					if (over.start.scopes) {
+						over.currentscope = over.start.scopes[0];
+					} else {
+						over.currentscope = over.start.scope;
+					}
 					this.updateOverride(over);
 				}
 			} else {
@@ -1481,7 +1494,7 @@
 	Symbol.prototype.removeSubscriber = function (name) {
 		delete this.subscribers[name];
 		if (this.last_modified_by === undefined && this.statid === undefined && this.canSafelyBeForgotten()) {
-			this.forget();
+			//this.forget();
 		}
 	};
 
@@ -1500,7 +1513,7 @@
 		this.clearEvalIDs();
 		this.evalResolved = true;
 		this.definition = undefined;
-		//console.trace("FORGET : " + this.name);
+		console.trace("FORGET : " + this.name);
 		this.cache.value = undefined;
 		this.cache.up_to_date = true;
 		this.clearObservees();
@@ -1542,7 +1555,7 @@
 	Symbol.prototype.removeObserver = function (name) {
 		delete this.observers[name];
 		if (this.last_modified_by === undefined && this.statid === undefined && this.canSafelyBeForgotten()) {
-			this.forget();
+			//this.forget();
 		}
 	};
 

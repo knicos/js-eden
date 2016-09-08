@@ -1752,6 +1752,10 @@ Eden.AST.Assignment.prototype.execute = function(root, ctx, base, scope) {
 				if (cache) cache.scopes = this.value.scopes;
 			} else {
 				sym.assign(this.value,scope, base.statid);
+				if (scope) {
+					var cache = scope.lookup(sym.name);
+					if (cache) cache.scopes = undefined;
+				}
 			}
 		}
 	} catch(e) {
@@ -1939,8 +1943,7 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 		this.scopes = [];
 
 		/*console.log(_scopes);
-		console.log(this.scopes);
-		console.log(rhs);*/
+		console.log(this.scopes);*/
 
 		var rhseval;
 		try {
@@ -1972,8 +1975,9 @@ Eden.AST.Modify.prototype.execute = function(root, ctx, base, scope) {
 				if (Array.isArray(value.value) && this.kind == "+=") {
 					if (cache.scopes === undefined) cache.scopes = [];
 					cache.scopes.push(rhseval.scope);
+					//console.log(rhseval.scope);
 				}
-				cache.scope = scope;
+				//cache.scope = scope;
 			}
 			switch (this.kind) {
 			case "+="	: sym.assign(rt.addAssign(value.value, rhseval.value), scope); break;
@@ -2765,6 +2769,10 @@ Eden.AST.For.prototype.execute = function(root, ctx, base, scope) {
 					sym.assign(list[i],scope);
 				}
 				this.statement.execute(root,ctx,base,scope);
+				if (ctx.tobreak) {
+					ctx.tobreak = false;
+					break;
+				}
 			}
 		} else if (list instanceof BoundValue) {
 			for (var i=0; i<list.value.length; i++) {
@@ -2785,6 +2793,10 @@ Eden.AST.For.prototype.execute = function(root, ctx, base, scope) {
 					}
 				}
 				this.statement.execute(root,ctx,base,scope);
+				if (ctx.tobreak) {
+					ctx.tobreak = false;
+					break;
+				}
 			}
 		}
 	} else {
@@ -2800,6 +2812,10 @@ Eden.AST.For.prototype.execute = function(root, ctx, base, scope) {
 
 		for (; expfunc(root,scope); this.inc.execute(root,ctx,base,scope)) {
 			this.statement.execute(root,ctx,base,scope);
+			if (ctx.tobreak) {
+				ctx.tobreak = false;
+				break;
+			}
 		}
 	}
 }
@@ -2905,6 +2921,10 @@ Eden.AST.Break.prototype.setSource = function(start, end) {
 
 Eden.AST.Break.prototype.generate = function(ctx, scope) {
 	return "break; ";
+}
+
+Eden.AST.Break.prototype.execute = function(root,ctx,base,scope) {
+	ctx.tobreak = true;
 }
 
 

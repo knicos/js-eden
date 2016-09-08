@@ -524,7 +524,7 @@ EdenUI.ScriptBox = function(element) {
 	}
 
 	function onStatementClick(e) {
-		if (e.currentTarget !== me.outdiv.parentNode) {
+		if (me.outdiv === undefined || e.currentTarget !== me.outdiv.parentNode) {
 			//Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
 			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 			me.moveTo(num);

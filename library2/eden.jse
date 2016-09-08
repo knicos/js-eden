@@ -43,7 +43,7 @@ when (errors# > 0) {
 
 
 /** Template View. #library */
-View is self+":"+this (
+View is ("View:")(
 	name-->this,
 	type-->"ScriptInput",
 	visibility-->"visible",
@@ -65,23 +65,37 @@ when(createViews# > 0) {
 			//view.visibility = "visible";
 			name = [name];
 			call _js_brieflyHightlightView(args->name);
-			return;
+			//return;
 		}
 
 		views += view;
-		${{ edenUI.createView(root.lookup("name").value(scope),root.lookup("type").value(scope)); }}$;
+		if (mobile) {
+			${{ $(document.body).find("#mainview").html("").append(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope)).contents); }}$;
+		} else {
+			${{ edenUI.createView(root.lookup("name").value(scope),root.lookup("type").value(scope)); }}$;
+		}
 	}
 	createViews = [];
 }(name-->@,type-->@,view-->@);
 
-/** Set a main view. #library */
-when (setView) {
-	name = setView.name;
-	type = setView.type;
-	views += setView;
-	${{ $(document.body).find("#mainview").css("height","calc(100% + 100px)"); }}$;
-	${{ $(document.body).find("#mainview").append(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope)).contents); }}$;
+when (tabs_views_new) {
+	console += "NEW TAB";
+	nview is View(name->"randomname",type->"ScriptView2");
+	createViews += nview;
 }
+
+when (tabs_views_current) {
+	if (mobile) {
+		for (v in views) {
+			if (tabs_views_current == v.name) {
+				${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("i").value(scope)); }}$;
+				${{ $(document.body).find("#mainview").html("").append(edenUI.createRawView(root.lookup("tabs_views_current").value(scope),undefined).contents); }}$;
+				//break;
+			}
+			i++;
+		}
+	}
+}(v-->@,i-->1)
 
 /** Execute a string as script. #library */
 when (execute) {
@@ -144,10 +158,11 @@ when (_jseden_loaded) {
 		inputview is View(name->"input", type->"ScriptView2");
 		if (mobile) {
 			${{ document.body.innerHTML = "<div id='viewtabs'></div><div id='mainview'></div>"; }}$;
-			${{ edenUI.vtabs = new EdenUI.Tabs($(document.body).find("#viewtabs").get(0)); }}$;
-			setView = inputview;
+			${{ edenUI.vtabs = new EdenUI.Tabs($(document.body).find("#viewtabs").get(0), "views"); }}$;
+			//views += inputview;
+			//create = inputview;
 		}
-		else createViews += inputview;
+		createViews += inputview;
 		_view_input_agent = "view/script/input";
 		_view_input_height = _view_picture_height;
 		inputcenterx is screenWidth / 2 + 30;
