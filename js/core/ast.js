@@ -267,9 +267,9 @@ Eden.AST.ScopePattern.prototype.unparse = function() {
 Eden.AST.ScopePattern.prototype.generate = function(ctx, scope) {
 	var startstr = this.start.generate(ctx,scope,true);
 	if (this.range) {
-		if (this.start.doesReturnBound && this.start.doesReturnBound()) {
-			startstr += ".value";
-		}
+		//if (this.start.doesReturnBound && this.start.doesReturnBound()) {
+		//	startstr += ".value";
+		//}
 	}
 	var optstr = "{";
 	if (this.end) {

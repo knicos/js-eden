@@ -62,14 +62,12 @@ Eden.Statement.search = function(str) {
 	var i = 0;
 	var rcount = words.length;
 	var tagres;
+	var inittoken = false;
 
 	if (words.length > 0) {
-		if (words[0] == "agents:") {
+		if (words[0].indexOf(":") != -1) {
 			i = 1;
-		} else if (words[0] == "active:") {
-			i = 1;
-		} else if (words[0] == "inactive:") {
-			i = 1;
+			inittoken = true;
 		} else if (words[0].charAt(0) == "#") {
 			tagres = [];
 			var regex = edenUI.regExpFromStr(words[0]);
@@ -83,7 +81,7 @@ Eden.Statement.search = function(str) {
 			tagres.sort(function(a,b) {
 				return Eden.Statement.tags[a].length < Eden.Statement.tags[b].length;
 			});
-			console.log(tagres);
+			//console.log(tagres);
 		}
 	}
 
@@ -121,16 +119,32 @@ Eden.Statement.search = function(str) {
 	}
 
 	if (res) {
-		if (words.length > 0) {
-			if (words[0] == "agents:") {
-				res.active = [];
-				res.inactive = [];
-			} else if (words[0] == "active:") {
-				res.agents = [];
-				res.inactive = [];
-			} else if (words[0] == "inactive:") {
-				res.agents = [];
-				res.active = [];
+		if (inittoken) {
+			var tokens = words[0].split(":");
+			console.log(tokens);
+			for (var i=0; i<tokens.length; i++) {
+				if (tokens[i] == "agents") {
+					res.active = [];
+					res.inactive = [];
+				} else if (tokens[i] == "active") {
+					//res.agents = [];
+					var aagents = [];
+					for (var j=0; j<res.agents.length; j++) {
+						if (Eden.Statement.statements[res.agents[j]].isActive()) aagents.push(res.agents[j]);
+					}
+					res.agents = aagents;
+					res.inactive = [];
+				} else if (tokens[i] == "inactive") {
+					//res.agents = [];
+					var aagents = [];
+					for (var j=0; j<res.agents.length; j++) {
+						if (!Eden.Statement.statements[res.agents[j]].isActive()) aagents.push(res.agents[j]);
+					}
+					res.agents = aagents;
+					res.active = [];
+				} else if (tokens[i] == "defs") {
+					res.agents = [];
+				}
 			}
 		}
 

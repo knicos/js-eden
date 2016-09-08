@@ -88,14 +88,14 @@ when (tabs_views_current) {
 	if (mobile) {
 		for (v in views) {
 			if (tabs_views_current == v.name) {
-				${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("i").value(scope)); }}$;
+				${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("tabs_views_current").value(scope)); }}$;
 				${{ $(document.body).find("#mainview").html("").append(edenUI.createRawView(root.lookup("tabs_views_current").value(scope),undefined).contents); }}$;
 				//break;
 			}
 			i++;
 		}
 	}
-}(v-->@,i-->1)
+}(v-->@,i-->0)
 
 /** Execute a string as script. #library */
 when (execute) {
@@ -129,7 +129,8 @@ mobile is ${{ mobilecheck(); }}$;
 
 _viewname is (view.name)(view in views);
 when (mobile && views# > 0) {
-	${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), undefined); }}$;
+	if (views# == 1) tabs_views_current = views[1].name;
+	${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("tabs_views_current").value(scope)); }}$;
 }
 
 

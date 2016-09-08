@@ -1,6 +1,17 @@
 _js_svg_createElement is JSFunction(function->"EdenUI.SVG.createElement", object->"EdenUI.SVG");
 _js_svg_updateAttribute is JSFunction(function->"EdenUI.SVG.updateAttribute", object->"EdenUI.SVG");
 
+_js_svg_createElement_args_line is ["picture", i, "path"];
+_js_svg_updateAttribute_args_line_d is ["picture", i, "d", "M " + e.start.x + " " + e.start.y + " L " + e.end.x + " " + e.end.y];
+_js_svg_updateAttribute_args_line_style is ["picture", i, "style", "stroke: "+e.colour+"; stroke-width: "+e.width+"px;"];
+
+_js_svg_createElement_args_rect is ["picture", i, "rect"];
+_js_svg_updateAttribute_args_rect_x is ["picture", i, "x", ""+ e.position.x];
+_js_svg_updateAttribute_args_rect_y is ["picture", i, "y", ""+ e.position.y];
+_js_svg_updateAttribute_args_rect_width is ["picture", i, "width", ""+ e.size.x];
+_js_svg_updateAttribute_args_rect_height is ["picture", i, "height", ""+ e.size.y];
+_js_svg_updateAttribute_args_rect_style is ["picture", i, "style", "color: \"" + e.colour + "\"; stroke: \"" + e.border+ "\"; stroke-width: " + e.borderSize+";"];
+
 /** #library #svg */
 Point is [x,y](x-->0,y-->0);
 /** #library #svg #drawable */
@@ -8,19 +19,26 @@ Line is (self + " : " + this)(start-->Point,end-->Point,colour-->"black",width--
 /** #library #svg #drawable */
 Text is (self + " : " + this)(position-->Point,text-->"Text",colour-->"black",size-->12,family->"Arial",weight->"normal");
 /** #library #svg #drawable */
-Rectangle is (self + " : " + this)(start-->Point,size-->Point,colour-->"black",border->"black",borderSize->2);
+Rectangle is (self + " : " + this)(start-->Point,size-->Point,colour-->"black",border-->"black",borderSize-->2);
 
 /** Update the screen. #library */
 when (picture) {
 	i = 0;
 	for (e in picture) {
-		args = ["picture", i, "path"];
-		call _js_svg_createElement;
-		args = ["picture", i, "d", "M " + e.start[1] + " " + e.start[2] + " L " + e.end[1] + " " + e.end[2]];
-		call _js_svg_updateAttribute;
-		args = ["picture", i, "style", "stroke: "+e.colour+"; stroke-width: "+e.width+"px;"];
-		call _js_svg_updateAttribute;
-		i = i + 1;
+		if (e.self == "Line") {
+			call _js_svg_createElement(args->_js_svg_createElement_args_line);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_line_d);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_line_style);
+			i = i + 1;
+		} else if (e.self == "Rectangle") {
+			call _js_svg_createElement(args->_js_svg_createElement_args_rect);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_x);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_y);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_width);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_height);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_style);
+			i = i + 1;
+		}
 	}
-}(i-->0, args-->@)
+}(i-->0)
 

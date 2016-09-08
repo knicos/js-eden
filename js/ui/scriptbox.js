@@ -458,7 +458,7 @@ EdenUI.ScriptBox = function(element) {
 				var obs = element.getAttribute("data-observable");
 
 				var stat = Eden.Statement.statements[me.currentstatement];
-				if ((stat.statement.type == "definition" || state.statement.type == "assignment") && stat.statement.lvalue.name == obs) {
+				if ((stat.statement.type == "definition" || stat.statement.type == "assignment") && stat.statement.lvalue.name == obs) {
 					console.log("SHOW VALUE FOR " + obs);
 					//var sym = eden.root.symbols[obs];
 					var valdiv = $('<div class="scriptbox-value"><div class="scriptbox-valueclose">&#xf00d;</div><div class="scriptbox-valuecontent"></div></div>');

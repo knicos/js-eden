@@ -224,6 +224,8 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 			}
 		}*/
 
+		if (res.agents.length == 0) symmax += 2;
+
 		if (res.active.length > 0) {
 			for (var i=0; i<((res.active.length > symmax)?symmax:res.active.length); i++) {
 				var stat = Eden.Statement.statements[res.active[i]];
