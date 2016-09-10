@@ -1,7 +1,7 @@
 input = @;
 opt = @;
 
-// Init Pour Agent
+/** #nick #jugs */
 when (input) {
 	updating = 1;
 	if (input == 5) {
@@ -13,36 +13,43 @@ when (input) {
 	}
 }
 
+/** #nick #jugs */
 when (opt == 1 && valid1) {
 	wait viscosity;
 	contentA++;
 }
 
+/** #nick #jugs */
 when (opt == 2 && valid2) {
 	wait viscosity;
 	contentB++;
 }
 
+/** #nick #jugs */
 when (opt == 3 && valid3) {
 	wait viscosity;
 	contentA--;
 }
 
+/** #nick #jugs */
 when (opt == 4 && valid4) {
 	wait viscosity;
 	contentB--;
 }
 
+/** #nick #jugs */
 when (opt == 6 && valid6) {
 	wait viscosity;
 	contentA--;
 }
 
+/** #nick #jugs */
 when (opt == 7 && valid7) {
 	wait viscosity;
 	contentA++;
 }
 
+/** #nick #jugs */
 when (menustatus[opt] == false && updating == 1) {
 	contentA = contentA;
 	contentB = contentB;

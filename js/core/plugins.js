@@ -33,8 +33,117 @@
 		return $("#"+viewName+"-dialog");
 	}
 
-	EdenUI.prototype.lastX = 100;
-	EdenUI.prototype.lastY = 100;
+	function ViewSpace(x,y,w,h) {
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
+		if (x >= 0 && y >= 0 && w > 0 && h > 0) {
+			//ViewSpace.spaces.push(this);
+		}
+		this.size = w * h;
+	}
+
+	ViewSpace.prototype.contains = function(x,y) {
+		return this.x <= x && (this.x+this.w) >= x && this.y <= y && (this.y+this.h) >= y;
+	}
+
+	ViewSpace.spaces = [];
+	new ViewSpace(0,70,1920,1024);
+
+	ViewSpace.extract = function(nx, ny, nw, nh) {
+		console.log("Extract: " + nx + "," + ny + " " + nw + "," + nh);
+		var vs;
+		var toremove = [];
+		var oldspaces = ViewSpace.spaces;
+		ViewSpace.spaces = [];
+		for (var i=0; i<oldspaces.length; i++) {
+			if (oldspaces[i].contains(nx,ny)) {
+				console.log("EXTRACT");
+				vs = oldspaces[i];
+				var tl = new ViewSpace(vs.x, vs.y, nx - vs.x, ny - vs.y); // TOP LEFT
+				var ml = new ViewSpace(vs.x, ny, nx - vs.x, nh); // MIDDLE LEFT
+				var bl = new ViewSpace(vs.x, ny+nh, nx - vs.x, vs.h - (ny - vs.y) - nh); // BOTTOM LEFT
+				var tm = new ViewSpace(nx, vs.y, nw, ny - vs.y); // TOP MIDDLE
+				var rt = new ViewSpace(nx+nw, vs.y, vs.w - (nx - vs.x) - nw, ny - vs.y); // RIGHT TOP
+				var rm = new ViewSpace(nx+nw, ny, vs.w - (nx - vs.x) - nw, nh); // RIGHT MIDDLE
+				var rb = new ViewSpace(nx+nw, ny+nh, vs.w - (nx - vs.x) - nw, vs.h - (ny - vs.y) - nh); // RIGHT BOTTOM
+				var bm = new ViewSpace(nx, ny + nh, nw, vs.h - (ny - vs.y) - nh); // BOTTOM MIDDLE
+
+				var tmerge = tl.size + tm.size + rt.size;
+				var lmerge = tl.size + ml.size + bl.size;
+				var rmerge = rt.size + rb.size + rm.size;
+				var bmerge = bl.size + rb.size + bm.size;
+
+				var vmerge = lmerge + rmerge;
+				var hmerge = tmerge + bmerge;
+				if (vmerge > hmerge) {
+					var n1 = new ViewSpace(tl.x,tl.y,ml.w,tl.h+ml.h+bl.h);
+					var n2 = new ViewSpace(rt.x,rt.y,rm.w,rt.h+rm.h+rb.h);
+					if (n1.size > 0) ViewSpace.spaces.push(n1);
+					if (n2.size > 0) ViewSpace.spaces.push(n2);
+					if (tm.size > 0) ViewSpace.spaces.push(tm);
+					if (bm.size > 0) ViewSpace.spaces.push(bm);
+				} else {
+					var n1 = new ViewSpace(tl.x,tl.y,tl.w+tm.w+rt.w,tm.h);
+					var n2 = new ViewSpace(bl.x,bl.y,rb.w+bm.w+bl.w,bm.h);
+					if (n1.size > 0) ViewSpace.spaces.push(n1);
+					if (n2.size > 0) ViewSpace.spaces.push(n2);
+					if (ml.size > 0) ViewSpace.spaces.push(ml);
+					if (rm.size > 0) ViewSpace.spaces.push(rm);
+				}
+			} else {
+				ViewSpace.spaces.push(oldspaces[i]);
+			}
+		}
+
+		// Todo merge spaces if the merge produces a greater size...
+		
+		// Sort spaces by size.
+		ViewSpace.spaces.sort(function(a,b) {
+			return a.size < b.size;
+		});
+		return {x: nx, y: ny, w: nw, h: nh};
+	}
+
+	ViewSpace.request = function(nw,nh) {
+		var vs;
+
+		// Find smallest that fits
+		for (var i=ViewSpace.spaces.length-1; i>=0; i--) {
+			var space = ViewSpace.spaces[i];
+			if (space.w >= nw && space.h >= nh) {
+				vs = space;
+				break;
+			}
+		}
+
+		if (!vs) vs = ViewSpace.spaces[0];
+
+		var nx = vs.x; // + 50; //(this.w / 2 - nw / 2);
+		var ny = vs.y; // + 50; //(this.h / 2 - nh / 2);
+		if (nx < 0) nx = 0;
+		if (ny < 70) ny = 70;
+		/*new ViewSpace(vs.x, vs.y, nx - vs.x, vs.h);
+		new ViewSpace(nx, vs.y, nw, vs.h - ny - vs.y);
+		new ViewSpace(nx+nw, vs.y, vs.w - nx - nw, vs.h);
+		new ViewSpace(nx, vs.y + nh, nw, ny - vs.y);
+		// Remove self.
+		var newspaces = [];
+		for (var i=0; i<ViewSpace.spaces.length; i++) if (ViewSpace.spaces[i] !== vs) newspaces.push(ViewSpace.spaces[i]);
+		// Sort spaces by size.
+		newspaces.sort(function(a,b) {
+			return a.size < b.size;
+		});
+		console.log(newspaces);
+		ViewSpace.spaces = newspaces;*/
+		return {x: nx, y: ny, w: nw, h: nh};
+	}
+
+	// Todo, rebuild spaces for each request
+	// Todo, merge neighbour spaces...
+
+	EdenUI.viewSpacing = 10;
 
 	//Dimensions of various UI components.
 	EdenUI.prototype.menuBarHeight = 30;
@@ -76,7 +185,7 @@
 	 * @param {string} name Unique identifier for the view.
 	 * @param {string} type Used to group different types of views.
 	 */
-	EdenUI.prototype.createView = function (name, type, creatingAgent) {
+	EdenUI.prototype.createView = function (name, type, title) {
 		if (!(type in this.views)) {
 			this.eden.error(new Error("View type " + type + " is unavailable.  Check that the associated plug-in is loaded."));
 			return;
@@ -94,7 +203,7 @@
 		var visibilitySym = view(name, "visibility");
 		var visibility = visibilitySym.value();
 		var titleSym = view(name, "title");
-		var title = titleSym.value();
+		//var title = titleSym.value();
 
 		if (currentType == type) {
 			if (visibility != "visible") {
@@ -107,14 +216,14 @@
 
 		this.eden.root.beginAutocalcOff();
 		if (currentType !== undefined) {
-			if (title == this.views[currentType].title) {
-				title = undefined;
-			}
+			//if (title == this.views[currentType].title) {
+			//	title = undefined;
+			//}
 			this.destroyView(name, false);
 		}
 
 		var desktopTop = this.plugins.MenuBar? this.menuBarHeight : 0;
-		var defaultTitle = this.views[type].title;
+		var defaultTitle = (title) ? title : this.views[type].title;
 		var viewData = this.views[type].dialog(name + "-dialog", defaultTitle);
 		if (viewData === undefined) {
 			viewData = {};
@@ -131,10 +240,61 @@
 
 		if (viewData.defaultWidth) diag.css("width",""+viewData.defaultWidth+"px");
 		if (viewData.defaultHeight) diag.css("height",""+viewData.defaultHeight+"px");
-		diag.css("left", ""+this.lastX+"px");
-		diag.css("top", ""+this.lastY+"px");
-		this.lastX += 50;
-		this.lastY += 40;
+
+		// Rebuild view spaces...
+		ViewSpace.spaces = [new ViewSpace(10,70,$(document).width()-10,$(document).height()-70)];
+		for (var v in this.viewInstances) {
+			if (v == name) continue;
+			var ele = $("#"+this.viewInstances[v].name);
+			var left = parseInt(ele.css("left").replace(/px/,""))-10;
+			var top = parseInt(ele.css("top").replace(/px/,""))-10;
+			var width = parseInt(ele.css("width").replace(/px/,""))+20;
+			var height = parseInt(ele.css("height").replace(/px/,""))+20;
+			ViewSpace.extract(left,top,width,height);
+		}
+
+		var genpos = ViewSpace.request(viewData.defaultWidth, viewData.defaultHeight);
+		console.log(genpos);
+		diag.css("left", ""+(genpos.x+10)+"px");
+		diag.css("top", ""+(genpos.y+10)+"px");
+
+		// TEMPORARY
+		EdenUI.drawspaces = function() {
+		ViewSpace.spaces = [new ViewSpace(10,70,$(document).width()-10,$(document).height()-70)];
+		for (var v in this.viewInstances) {
+			//if (v == name) continue;
+			var ele = $("#"+this.viewInstances[v].name);
+			var left = parseInt(ele.css("left").replace(/px/,""))-10;
+			var top = parseInt(ele.css("top").replace(/px/,""))-10;
+			var width = parseInt(ele.css("width").replace(/px/,""))+20;
+			var height = parseInt(ele.css("height").replace(/px/,""))+20;
+			ViewSpace.extract(left,top,width,height);
+		}
+
+		var svg = $(document.body).find("svg")[0];
+		if (!svg) {
+			svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			svg.setAttribute("width","100%");
+			svg.setAttribute("height","100%");
+			svg.setAttribute("style", "position: absolute; left: 0; right: 0; top: 0; bottom: 0;");
+			document.body.appendChild(svg);
+		}
+		while (svg.firstChild) svg.removeChild(svg.firstChild);
+		for (var i=0; i<ViewSpace.spaces.length; i++) {
+			var ele = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+			ele.setAttribute("x",""+(ViewSpace.spaces[i].x+2)+"px");
+			ele.setAttribute("y",""+(ViewSpace.spaces[i].y+2)+"px");
+			ele.setAttribute("width",""+(ViewSpace.spaces[i].w-4)+"px");
+			ele.setAttribute("height",""+(ViewSpace.spaces[i].h-4)+"px");
+			ele.setAttribute("stroke-width", "2px");
+			ele.setAttribute("stroke","red");
+			ele.setAttribute("fill","transparent");
+			svg.appendChild(ele);
+		}
+		}
+		//EdenUI.drawspaces.call(edenUI);
+
+		// END
 
 
 		diag.on("click",function() {

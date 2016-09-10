@@ -14,8 +14,8 @@ Eden.DB = {
 	userid: undefined,
 	// Note: reverse order, last is popped off to try first
 	repositories: [
-		//"http://jseden.dcs.warwick.ac.uk/projectmanager",
-		//"http://localhost:18880"
+		"http://jseden.dcs.warwick.ac.uk/projectmanager",
+		"http://localhost:18880"
 	],
 	repoindex: 0,
 	retrycount: 0,

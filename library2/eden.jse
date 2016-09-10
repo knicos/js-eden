@@ -54,12 +54,15 @@ View is ("View:")(
 	y-->10
 );
 
+ScriptView is View(title-->"Script View",type->"ScriptView2");
+
 
 /** Construct views. #library */
 when(createViews# > 0) {
 	for (view in createViews) {
 		name = view.name;
 		type = view.type;
+		title = view.title;
 		curtype = activeDialogs[name];
 		if (curtype == type) {
 			//view.visibility = "visible";
@@ -72,11 +75,11 @@ when(createViews# > 0) {
 		if (mobile) {
 			${{ $(document.body).find("#mainview").html("").append(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope)).contents); }}$;
 		} else {
-			${{ edenUI.createView(root.lookup("name").value(scope),root.lookup("type").value(scope)); }}$;
+			${{ edenUI.createView(root.lookup("name").value(scope),root.lookup("type").value(scope),root.lookup("title").value(scope)); }}$;
 		}
 	}
 	createViews = [];
-}(name-->@,type-->@,view-->@);
+}(name-->@,type-->@,view-->@,title-->@);
 
 when (tabs_views_new) {
 	console += "NEW TAB";
@@ -103,15 +106,15 @@ when (execute) {
 }
 
 when (menu_new_graphicview) {
-	createViews += View(name->${{makeRandomName()}}$,type->"SVGView");
+	createViews += View(name->${{makeRandomName()}}$,type->"SVGView",title->"Graphic View");
 }
 
 when (menu_new_scriptview) {
-	createViews += View(name->${{makeRandomName()}}$,type->"ScriptView2");
+	createViews += ScriptView(name->${{makeRandomName()}}$);
 }
 
 when (menu_new_obslist) {
-	createViews += View(name->${{makeRandomName()}}$,type->"ObservableList");
+	createViews += View(name->${{makeRandomName()}}$,type->"ObservableList",title->"Observable List");
 }
 
 
@@ -168,7 +171,7 @@ when (_jseden_loaded) {
 		if ((picture == @ || picture == []) && ${{ "logo" in edenUI.branding }}$) {
 			//picture is [Image(_view_picture_width / 2 - ${{edenUI.branding.logo.width}}$ / 2, _view_picture_height / 2 - ${{edenUI.branding.logo.height}}$ / 2, ${{edenUI.branding.logo.url}}$)];
 		}
-		inputview is View(name->"input", type->"ScriptView2");
+		inputview is ScriptView(name->"input");
 		if (mobile) {
 			${{ document.body.innerHTML = "<div id='viewtabs'></div><div id='mainview'></div>"; }}$;
 			${{ edenUI.vtabs = new EdenUI.Tabs($(document.body).find("#viewtabs").get(0), "views"); }}$;

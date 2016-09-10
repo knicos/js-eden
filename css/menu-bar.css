@@ -15,11 +15,48 @@
 	box-shadow: 0 0 15px black; /*#4a6887*/
 }
 
+div.menubar-sharebox {
+	position: absolute;
+	top: 65px;
+	right: 150px;
+	width: 400px;
+	height: 200px;
+	background: #f5f5f5;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+	box-shadow: 0 0 15px #4a6887;
+	font-size: 12pt;
+	color: black;
+}
+
+div.menubar-sharebox-title {
+	font-size: 18pt;
+	font-weight: bold;
+	margin-top: 20px;
+	margin-left: 50px;
+	color: #666;
+}
+
+div.menubar-sharebox-content {
+	margin: 20px;
+}
+
+div.menubar-sharebox-content .projecturl {
+	white-space: pre;
+	padding: 8px;
+	border: 1px solid silver;
+	background: white;
+	margin-top: 20px;
+	margin-bottom: 10px;
+	width: 90%;
+	overflow-x: auto;
+}
+
 div.menubar-buttons {
 	position: absolute;
-	right: 0;
+	right: 100px;
 	top: 20px;
-	width: 200px;
+	width: 300px;
 	display: inline-block;
 }
 
@@ -38,6 +75,11 @@ button.menubar-button {
 button.menubar-button:hover {
 	background: #29454B;
 	color: white;
+}
+
+button.menubar-button.share {
+	color: white;
+	margin-right: 30px;
 }
 
 button.menubar-button.new {
@@ -293,9 +335,10 @@ div.jseden-title:hover {
 	float: right;
 	padding-top: 8px;
 	color: #e0e0e0;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: bold;
 	cursor: pointer;
+	margin-top: 15px;
 }
 
 #menubar-login:hover {
@@ -310,8 +353,9 @@ div.jseden-title:hover {
 #menubar-login span.icon {
 	/*content: "\f090";*/
 	font-family: "FontAwesome";
-	font-size: 10pt;
+	font-size: 12pt;
 	padding-right: 5px;
+	text-shadow: 0 0 2px white;
 }
 
 #menubar-obscurer {
