@@ -1,4 +1,4 @@
-EdenUI.ScriptBox = function(element) {
+EdenUI.ScriptBox = function(element, options) {
 	this.changeCB = undefined;
 	this.outer = element;
 	this.savecb = undefined;
@@ -43,6 +43,7 @@ EdenUI.ScriptBox = function(element) {
 	this.dragline = -1;
 	this.dragvalue = 0;
 	this.draglast = 0;
+	this.showstars = (options && options.nobuttons !== undefined) ? !options.nobuttons : true;
 
 	this.valuedivs = {};
 
@@ -58,15 +59,15 @@ EdenUI.ScriptBox = function(element) {
 					//me.statements[stats[i].id].get(0).firstChild;
 					//console.log("CHANGE TO STAT " + stats[x].id);
 					if (stats[x].id != sym.statid) {
-						changeClass(me.statements[stats[x].id].childNodes[2], "active", false);
-						changeClass(me.statements[stats[x].id].childNodes[2], "last", false);
+						changeClass(me.statements[stats[x].id].childNodes[(me.showstars)?2:1], "active", false);
+						changeClass(me.statements[stats[x].id].childNodes[(me.showstars)?2:1], "last", false);
 					} else {
 						if (sym.definition) {
-							changeClass(me.statements[stats[x].id].childNodes[2], "active", true);
-							changeClass(me.statements[stats[x].id].childNodes[2], "last", false);
+							changeClass(me.statements[stats[x].id].childNodes[(me.showstars)?2:1], "active", true);
+							changeClass(me.statements[stats[x].id].childNodes[(me.showstars)?2:1], "last", false);
 						} else {
-							changeClass(me.statements[stats[x].id].childNodes[2], "last", true);
-							changeClass(me.statements[stats[x].id].childNodes[2], "active", false);
+							changeClass(me.statements[stats[x].id].childNodes[(me.showstars)?2:1], "last", true);
+							changeClass(me.statements[stats[x].id].childNodes[(me.showstars)?2:1], "active", false);
 						}
 					}
 				}
@@ -348,8 +349,8 @@ EdenUI.ScriptBox = function(element) {
 				// Ignore Ctrl and Ctrl+C.
 			// If not shift selecting...
 			} else if (!(e.shiftKey && (e.keyCode == 37 || e.keyCode == 38 || e.keyCode == 39 || e.keyCode == 40 || e.keyCode == 35 || e.keyCode == 36))) {
-				var end = getCaretCharacterOffsetWithin(me.outdiv);
-				var start = getStartCaretCharacterOffsetWithin(me.outdiv);
+				var end = getCaretCharacterOffsetWithin(me.outdiv,me.shadow);
+				var start = getStartCaretCharacterOffsetWithin(me.outdiv,me.shadow);
 
 				me.intextarea.focus();
 				me.intextarea.selectionEnd = end;
@@ -477,8 +478,8 @@ EdenUI.ScriptBox = function(element) {
 		} else {
 			// To prevent false cursor movement when dragging numbers...
 			if (document.activeElement === me.outdiv) {
-				var end = getCaretCharacterOffsetWithin(me.outdiv);
-				var start = getStartCaretCharacterOffsetWithin(me.outdiv);
+				var end = getCaretCharacterOffsetWithin(me.outdiv,me.shadow);
+				var start = getStartCaretCharacterOffsetWithin(me.outdiv,me.shadow);
 				if (start != end) {
 					// Fix to overcome current line highlight bug on mouse select.
 					me.refreshentire = true;
@@ -646,7 +647,8 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	var newout = $(this.statements[stat.id]);
 	//this.$codearea.append(newout);
 	if (this.statements[stat.id] === undefined) {
-		newout = $('<div class="scriptbox-statement" data-statement="'+(stat.id)+'"><div class="grippy"></div><div class="scriptbox-sticky'+((stick)?" stuck":"")+'"></div><div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
+		var stars = (this.showstars) ? '<div class="scriptbox-sticky'+((stick)?" stuck":"")+'"></div>' : "";
+		newout = $('<div class="scriptbox-statement" data-statement="'+(stat.id)+'"><div class="grippy"></div>'+stars+'<div class="scriptbox-gutter" data-statement="'+(stat.id)+'"></div><div spellcheck="false" tabindex="2" contenteditable class="scriptbox-output" data-statement="'+(stat.id)+'"></div></div>');
 		if (this.outdiv) newout.insertAfter($(this.outdiv.parentNode));
 		else newout.appendTo(this.$codearea);
 		this.statements[stat.id] = newout.get(0);
@@ -655,7 +657,7 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
 	this.setSource(stat.source);
-	if (stat.isActive()) changeClass(this.statements[stat.id].childNodes[2],"active",true);
+	if (stat.isActive()) changeClass(this.statements[stat.id].childNodes[(this.showstars)?2:1],"active",true);
 
 	if (this.savecb) this.savecb.call(this);
 }
@@ -844,11 +846,11 @@ EdenUI.ScriptBox.prototype.setSource = function(src) {
 	this.intextarea.focus();
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(src,this.ast);
-		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",false);
 	} else if (src == "") {
-		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",false);
 	} else {
-		changeClass(this.outdiv.parentNode.childNodes[2],"error",true);
+		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",true);
 	}
 	//checkScroll();
 	this.outdiv.contentEditable = true;
@@ -877,9 +879,9 @@ EdenUI.ScriptBox.prototype.updateLineHighlight = function() {
 
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
-		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",false);
 	} else {
-		changeClass(this.outdiv.parentNode.childNodes[2],"error",true);
+		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",true);
 	}
 }
 
@@ -924,9 +926,9 @@ EdenUI.ScriptBox.prototype.updateEntireHighlight = function(rerun) {
 
 	if (this.ast.script && this.ast.script.errors.length == 0) {
 		Eden.Statement.statements[this.currentstatement].setSource(this.intextarea.value,this.ast);
-		changeClass(this.outdiv.parentNode.childNodes[2],"error",false);
+		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",false);
 	} else {
-		changeClass(this.outdiv.parentNode.childNodes[2],"error",true);
+		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",true);
 	}
 }
 

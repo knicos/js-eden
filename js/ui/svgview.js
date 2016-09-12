@@ -6,6 +6,7 @@ EdenUI.SVG = function(name, title, source) {
 	this.contents = $('<div class="jseden-viewcontent2"></div>');
 	this.svg.setAttribute("width","100%");
 	this.svg.setAttribute("height","100%");
+	this.svg.setAttribute("style", "background: white;");
 	//this.box = this.contents.find(".scriptview-box");
 	this.contents.get(0).appendChild(this.svg);
 
@@ -45,6 +46,13 @@ EdenUI.SVG.prototype.updateAttribute = function(index, attrib, value) {
 	}
 }
 
+EdenUI.SVG.prototype.updateContent = function(index, value) {
+	var node = this.svg.childNodes[index];
+	if (node) {
+		node.textContent = value;
+	}
+}
+
 EdenUI.SVG.createElement = function(source, index, type) {
 	if (EdenUI.SVG.sources[source] === undefined) return;
 
@@ -58,6 +66,14 @@ EdenUI.SVG.updateAttribute = function(source, index, attrib, value) {
 
 	for (var i=0; i<EdenUI.SVG.sources[source].length; i++) {
 		EdenUI.SVG.sources[source][i].updateAttribute(index,attrib,value);
+	}
+}
+
+EdenUI.SVG.updateContent = function(source, index, value) {
+	if (EdenUI.SVG.sources[source] === undefined) return;
+
+	for (var i=0; i<EdenUI.SVG.sources[source].length; i++) {
+		EdenUI.SVG.sources[source][i].updateContent(index,value);
 	}
 }
 

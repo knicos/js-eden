@@ -115,11 +115,11 @@ Symbol.Definition.prototype.compile = function() {
 			while (baseexp.type == "scope") baseexp = baseexp.expression;
 
 			if (scopeindex == "") {
-				result += "cache.scope.baseScope().addOverride(new ScopeOverride(\""+ext.ast.lvalue.lvaluep[0].observable+"\","+over+"));\n";
+				result += "cache.scope.baseScope().addOverrideEXP(new ScopeOverride(\""+ext.ast.lvalue.lvaluep[0].observable+"\","+over+"));\n";
 				var express2 = baseexp.generate(this, "cache.scope", false);
 				result += "result = "+express2+";\n";
 			} else {
-				result += "cache.scopes"+scopeindex+".baseScope().addOverride(new ScopeOverride(\""+ext.ast.lvalue.lvaluep[0].observable+"\","+over+"));\n";
+				result += "cache.scopes"+scopeindex+".baseScope().addOverrideEXP(new ScopeOverride(\""+ext.ast.lvalue.lvaluep[0].observable+"\","+over+"));\n";
 				var express = baseexp.generate(this, "cache.scopes"+scopeindex, false);
 				result += "result"+scopeindex+" = "+express+";\n";
 			}

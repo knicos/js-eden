@@ -301,18 +301,24 @@
 		return cache;
 	}
 
+	Scope.prototype.addOverrideEXP = function(override) {
+		this.addOverride(override);
+		this.expireScope();
+	}
+
 	Scope.prototype.addOverride = function(override) {
 		if (override.isdefault) {
 			if (this.parent && this.parent.lookup("/"+override.name).value !== undefined) return;
 		}
 
 		this.updateOverride(override);
-		if (this.context) {
-			var sym = this.context.lookup(override.name);
-			//console.log(sym);
-			for (var d in sym.subscribers) {
-				this.updateSubscriber(d);
-			}
+	}
+
+	Scope.prototype.expireScope = function() {
+		var s = this;
+		while (s && s.cause) {
+			eden.root.expireSymbol(s.cause);
+			s = s.parent;
 		}
 	}
 	
@@ -345,6 +351,16 @@
 			this.cache[name].scope = currentscope;
 			this.cache[name].up_to_date = true;
 		}
+
+		if (this.context) {
+			var sym = this.context.lookup(override.name);
+			//console.log(sym);
+			for (var d in sym.subscribers) {
+				this.updateSubscriber(d);
+			}
+		}
+
+		//eden.root.notifyGlobals(eden.root.lookup(override.name), false, this);
 	}
 
 	Scope.prototype.updateSubscriber = function(name) {
@@ -361,6 +377,8 @@
 		for (var d in sym.subscribers) {
 			this.updateSubscriber(d);
 		}
+
+		//eden.root.notifyGlobals(sym, false, this);
 	}
 
 	Scope.prototype.invalidate = function(name) {
@@ -663,10 +681,11 @@
 	 * @param {Symbol} symbol The symbol that changed.
 	 * @param {boolean} create 
 	 */
-	Folder.prototype.notifyGlobals = function (symbol, create) {
+	Folder.prototype.notifyGlobals = function (symbol, create, scope) {
+		if (scope === undefined) scope = this.scope;
 		for (var i = 0; i < this.globalobservers.length; i++) {
 			if (this.globalobservers[i] !== undefined) {
-				this.globalobservers[i].call(this, symbol, create);
+				this.globalobservers[i].call(this, symbol, create, scope);
 			}
 		}
 	};

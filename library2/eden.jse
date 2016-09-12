@@ -1,10 +1,3 @@
-/**
- * @title Eden Base Library
- * Copyright (c) 2013, Empirical Modelling Group
- * All rights reserved.
- *
- * See LICENSE.txt
- */
 
 /** Debugging flags. */
 debug = ${{ {jsExceptions: edenUI.getOptionValue("developer") == "true" } }}$;
@@ -19,7 +12,7 @@ this is ${{ scope.baseCause() }}$;
 /** Innermost observable in scope. #library */
 self is ${{ scope.self() }}$;
 
-import lib/jsfuncs;
+import jseden2/lib/jsfuncs;
 
 console = [];
 /** Print lines to console. #library */
@@ -55,6 +48,7 @@ View is ("View:")(
 );
 
 ScriptView is View(title-->"Script View",type->"ScriptView2");
+GraphicView is View(title-->"Graphic View",type->"SVGView");
 
 
 /** Construct views. #library */
@@ -73,7 +67,7 @@ when(createViews# > 0) {
 
 		views += view;
 		if (mobile) {
-			${{ $(document.body).find("#mainview").html("").append(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope)).contents); }}$;
+			${{ edenUI.vtabs.add(edenUI.createRawView(root.lookup("name").value(scope),root.lookup("type").value(scope),root.lookup("title").value(scope))); }}$;
 		} else {
 			${{ edenUI.createView(root.lookup("name").value(scope),root.lookup("type").value(scope),root.lookup("title").value(scope)); }}$;
 		}
@@ -91,8 +85,8 @@ when (tabs_views_current) {
 	if (mobile) {
 		for (v in views) {
 			if (tabs_views_current == v.name) {
-				${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("tabs_views_current").value(scope)); }}$;
-				${{ $(document.body).find("#mainview").html("").append(edenUI.createRawView(root.lookup("tabs_views_current").value(scope),undefined).contents); }}$;
+				//${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("tabs_views_current").value(scope)); }}$;
+				//${{ $(document.body).find("#mainview").append(edenUI.createRawView(root.lookup("tabs_views_current").value(scope),undefined).contents); }}$;
 				//break;
 			}
 			i++;
@@ -125,9 +119,9 @@ autocalc = 1;
 
 autocalc = 0;
 
-import lib/type;
-import lib/search;
-import lib/svg;
+import jseden2/lib/type;
+import jseden2/lib/search;
+import jseden2/lib/svg;
 //import lib/core;
 //import lib/math;
 //import lib/string;
@@ -145,7 +139,7 @@ mobile is ${{ mobilecheck(); }}$;
 _viewname is (view.name)(view in views);
 when (mobile && views# > 0) {
 	if (views# == 1) tabs_views_current = views[1].name;
-	${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("tabs_views_current").value(scope)); }}$;
+	//${{ edenUI.vtabs.build(root.lookup("_viewname").value(scope), root.lookup("tabs_views_current").value(scope)); }}$;
 }
 
 
@@ -173,8 +167,8 @@ when (_jseden_loaded) {
 		}
 		inputview is ScriptView(name->"input");
 		if (mobile) {
-			${{ document.body.innerHTML = "<div id='viewtabs'></div><div id='mainview'></div>"; }}$;
-			${{ edenUI.vtabs = new EdenUI.Tabs($(document.body).find("#viewtabs").get(0), "views"); }}$;
+			${{ $(document.body).append($("<div id='viewtabs'></div><div id='mainview'></div>")); }}$;
+			${{ edenUI.vtabs = new EdenUI.MobileTabs($(document.body).find("#viewtabs").get(0), $(document.body).find("#mainview").get(0)); }}$;
 			//views += inputview;
 			//create = inputview;
 		}
@@ -186,5 +180,7 @@ when (_jseden_loaded) {
 		_view_input_x = min(a->inputcenterx,b->inputcenterxpic);
 		_view_input_y = screenHeight / 2 - _view_input_height / 2;
 	}
+
+	loaded = true;
 }
 //forget(&initialViews);

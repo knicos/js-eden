@@ -462,7 +462,7 @@ Eden.Statement.prototype.activate = function() {
 
 // Watch to trigger whens
 Eden.Statement.init = function() {
-	eden.root.addGlobal(function(sym, create) {
+	eden.root.addGlobal(function(sym, create, scope) {
 		for (var x in Eden.Statement.active) {
 			if (!Eden.Statement.active[x]) continue;
 			//console.log("TRIGGER");
@@ -473,7 +473,7 @@ Eden.Statement.init = function() {
 					//console.log("TRIGGER WITH " + sym.name);
 					//clearExecutedState();
 					for (var i=0; i<whens.length; i++) {
-						me.statement.execute(eden.root, undefined, me.ast, (whens[i].scope) ? whens[i].scope : eden.root.scope);
+						me.statement.execute(eden.root, undefined, me.ast, (whens[i].scope) ? whens[i].scope : scope);
 					}
 					//gutter.generate(this.ast,-1);
 					//me.clearExecutedState();

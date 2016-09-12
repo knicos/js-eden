@@ -1,5 +1,5 @@
 
-active_tab = "canvas";
+
 
 /** #jugs #nick */
 jugwidth = 60;
@@ -31,8 +31,6 @@ jugA_leftline is Line(start->jugA_bottomleft,end->jugA_topleft);
 jugA_rightline is Line(start->jugA_bottomright,end->jugA_topright);
 /** #jugs #nick */
 jugA_baseline is Line(start->jugA_bottomleft,end->jugA_bottomright);
-
-//picture is [jugA_left,jugA_right,jugA_base];
 
 /** #jugs #nick */
 spacing = 30;
@@ -76,11 +74,8 @@ jugA_watertopleft is Point(x->jugA_left,y->jugA_watertop);
 /** #jugs #nick */
 jugA_watersize is Point(x->jugwidth,y->jugA_waterscale);
 /** #jugs #nick */
-jugA_water is Rectangle(position->jugA_watertopleft,size->jugA_watersize);
+jugA_water is Rectangle(position->jugA_watertopleft,size->jugA_watersize,colour->"blue");
 
-//jugA_water is Rectangle(left+linewidth,base - (scale * contentA),jugwidth-(2*linewidth),scale * contentA,"blue");
-
-//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water];
 
 /** #jugs #nick */
 jugB_watertop is base - scale * contentB;
@@ -91,22 +86,21 @@ jugB_watertopleft is Point(x->jugB_left,y->jugB_watertop);
 /** #jugs #nick */
 jugB_watersize is Point(x->jugwidth,y->jugB_waterscale);
 /** #jugs #nick */
-jugB_water is Rectangle(position->jugB_watertopleft,size->jugB_watersize);
-
-//jugA_water is Rectangle(left+linewidth,base - (scale * contentA),jugwidth-(2*linewidth),scale * contentA,"blue");
-
-//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water];
+jugB_water is Rectangle(position->jugB_watertopleft,size->jugB_watersize,colour->"blue");
 
 /** #jugs #nick */
 picture is [jugA_water, jugB_water,jugA_leftline,jugA_rightline,jugA_baseline,jugB_leftline,jugB_rightline,jugB_baseline];
 
-//jugB_water is Rectangle(right+linewidth,base - (scale * contentB),jugwidth-(2*linewidth),scale * contentB,"blue");
+statustext is targ + " " + totstat;
+statusy is base - ((capB * scale) / 2);
+statuspos is Point(x->250,y->statusy);
+statuslabel is Text(text->statustext, position->statuspos, colour->"black");
 
-//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water];
+picture is [jugA_water, jugB_water,jugA_leftline,jugA_rightline,jugA_baseline,jugB_leftline,jugB_rightline,jugB_baseline,statuslabel];
 
-//statuslabel is Text(targ // " " // totstat, 250, base - ((capB * scale) / 2), "black");
-
-//picture is [jugA_left,jugA_right,jugA_base,jugB_left,jugB_right,jugB_base,jugA_water,jugB_water,statuslabel];
+when (loaded) {
+	createViews += GraphicView(name->"picture",title->"Jugs");
+}
 
 //but1 is Button(menu[1], 50, base+30, valid1);
 //but2 is Button(menu[2], 50+70, base+30, valid2);

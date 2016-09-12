@@ -61,29 +61,31 @@ var confirmUnload = function (event) {
  * exec: A piece of JS-EDEN code to execute after the included construal has been loaded.
  * lang: Human language to use for parser and UI. E.g. lang=en for English.
 */
-function initialiseJSEden(callback) {
+function Construit(options,callback) {
 	root = new Folder();
 	eden = new Eden(root);
 	Eden.Statement.init();
 	
-	var menuBar = URLUtil.getParameterByName("menus") != "false";
-	var pluginsStr = URLUtil.getParameterByName("plugins");
-	var views = URLUtil.getParameterByName("views");
-	var include = URLUtil.getArrayParameterByName("include");
-	var exec = URLUtil.getParameterByName("exec");
+	var menuBar = (URLUtil.getParameterByName("menu")) ? URLUtil.getParameterByName("menu") != "false" : ((options) ? options.menu : true);
+	var developer = URLUtil.getParameterByName("developer") != "" && URLUtil.getParameterByName("developer") != "false";
 	var lang = URLUtil.getParameterByName("lang");
-	var imports = URLUtil.getArrayParameterByName("import");
+	//var imports = URLUtil.getArrayParameterByName("import");
+
+	if (developer) {
+		menuBar = true;
+	}
 
 	if (lang == "") {
 		lang = "en";
 	}
 
 	var plugins;
+	var pluginsStr = "";
 
 	var defaultPlugins = [
-		"PluginManager",
+		//"PluginManager",
 		//"ScriptInput",
-		"SymbolLookUpTable",
+		//"SymbolLookUpTable",
 		"SymbolViewer"
 	];
 
@@ -104,7 +106,7 @@ function initialiseJSEden(callback) {
 
 		if (views == "" || views == "default") {
 			//plugins.push("Canvas2D");
-			plugins.push("ProjectList");
+			//plugins.push("ProjectList");
 			//plugins.push("ScriptInput");
 		}
 	}
@@ -151,7 +153,7 @@ function initialiseJSEden(callback) {
 		edenUI.views["ScriptView2"] = {raw: function(name,title) { return new EdenUI.ScriptView(name,title); }, dialog: EdenUI.ScriptView.createDialog, title: "Script View", category: edenUI.viewCategories.interpretation};
 		edenUI.views["SVGView"] = {raw: function(name,title) { return new EdenUI.SVG(name,title); }, dialog: EdenUI.SVG.createDialog, title: "Graphic View", category: edenUI.viewCategories.interpretation};
 
-		if (menubar) {
+		if (menuBar) {
 			edenUI.menu = new EdenUI.MenuBar();
 		}
 
@@ -163,10 +165,13 @@ function initialiseJSEden(callback) {
 			edenUI.stopViewCycling();
 		})
 		.on('keydown', null, 'backspace', function (e) {
-			var elem = e.target;
-			var tagName = elem.tagName.toUpperCase();
-			if (tagName != "INPUT" && tagName != "TEXTAREA" && !elem.isContentEditable) {
-				e.preventDefault();
+			var elem = e.currentTarget;
+			if (elem.tagName) {
+				var tagName = elem.tagName.toUpperCase();
+				if (tagName != "INPUT" && tagName != "TEXTAREA" && !elem.isContentEditable) {
+					console.log("PREVENT BACKSPACE FOR: "+tagName);
+					e.preventDefault();
+				}
 			}
 		});
 		
@@ -203,12 +208,12 @@ function initialiseJSEden(callback) {
 			// Remove spinning loader and message
 			edenUI.finishedLoading();
 
-			if (exec) {
+			/*if (exec) {
 				if (exec.slice(-1) != ";") {
 					exec = exec + ";";
 				}
 				eden.execute2(exec, "URL", "", {name: "execute"}, function () { });
-			}
+			}*/
 
 			eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
 
@@ -223,10 +228,10 @@ function initialiseJSEden(callback) {
 			librarySource = "library/jseden-lib.min.jse";
 		}*/
 
-		var bootscript = "import lib;\n";
-		for (var i=0; i<imports.length; i++) {
+		var bootscript = "import jseden2/lib;\n";
+		/*for (var i=0; i<imports.length; i++) {
 			bootscript += "import " + imports[i]+";\n" 
-		}
+		}*/
 		bootscript += "${{ doneLoading(); }}$;\n";
 		console.log("BOOTSCRIPT: " + bootscript);
 
@@ -240,6 +245,7 @@ function initialiseJSEden(callback) {
 						Eden.DB.connect(Eden.DB.repositories[Eden.DB.repoindex], function() {
 							//eden.execute2(bootscript);
 							if (Eden.Statement.reload()) {
+								console.log("Reloaded statements...");
 								doneLoading();
 							} else {
 								eden.execute2(bootscript);

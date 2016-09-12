@@ -2,10 +2,10 @@
  * Support function to get the caret position within the syntax highlighted
  * div. Used when clicking or selecting the highlighted script.
  */
-function getCaretCharacterOffsetWithin(element) {
+function getCaretCharacterOffsetWithin(element, shadow) {
 	var caretOffset = 0;
 	var doc = element.ownerDocument || element.document;
-	var win = doc.defaultView || doc.parentWindow;
+	var win = shadow || doc.defaultView || doc.parentWindow;
 	var sel;
 	if (typeof win.getSelection != "undefined") {
 	    sel = win.getSelection();
@@ -31,10 +31,10 @@ function getCaretCharacterOffsetWithin(element) {
 /**
  * Support function to get the start of a selection of the highlighted script.
  */
-function getStartCaretCharacterOffsetWithin(element) {
+function getStartCaretCharacterOffsetWithin(element, shadow) {
 	var caretOffset = 0;
 	var doc = element.ownerDocument || element.document;
-	var win = doc.defaultView || doc.parentWindow;
+	var win = shadow || doc.defaultView || doc.parentWindow;
 	var sel;
 	if (typeof win.getSelection != "undefined") {
 	    sel = win.getSelection();
@@ -55,13 +55,13 @@ function getStartCaretCharacterOffsetWithin(element) {
 	return caretOffset;
 }
 
-EdenUI.ScriptView = function(name, title) {
+EdenUI.ScriptView = function(name, title, options) {
 
 	EdenUI.ScriptView.init();
 
 	this.titlechangecb = undefined;
 	this.contents = $('<div class="scriptview-inner"><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
-	this.script = new EdenUI.ScriptBox(this.contents.find(".scriptview-box").get(0));
+	this.script = new EdenUI.ScriptBox(this.contents.find(".scriptview-box").get(0), options);
 	this.statements = [];
 	this.name = name;
 	this.title = title;
@@ -71,43 +71,100 @@ EdenUI.ScriptView = function(name, title) {
 	this.bar = this.contents.find(".scriptview-bar");
 	this.menushow = this.contents.find(".scriptview-menuicon");
 	this.lastres = undefined;
+	this.searchreshidden = true;
+	this.nobuttons = (options && options.nobuttons !== undefined) ? options.nobuttons : false;
 
 	this.defaultWidth = 625;
 	this.defaultHeight = 350;
-
-	//this.bar.hide();
 	this.menushow.hide();
 
-	if (mobilecheck()) {
-		this.buttons.append($('<button class="control-button control-enabled">&#xf142;</button>'));
-	} else {
-		this.buttons.append($('<button class="scriptview-button enabled starall">&#xf005;</button><button class="scriptview-button enabled unstarall">&#xf006;</button><button class="scriptview-button enabled clear">&#xf05e;</button><button class="scriptview-button enabled playall">&#xf144;</button><button class="scriptview-button enabled hashtag">&#xf292;</button>'));
-	}
+	//this.bar.hide();
+	if (!this.nobuttons) {
+		var me = this;
 
-	var me = this;
-	this.menushow.on("click", function() {
-		me.bar.show("fast");
-		me.menushow.hide();
-	});
+		if (mobilecheck()) {
+			this.buttons.append($('<button class="scriptview-button enabled mobilemore">&#xf142;</button>'));
+			var ctx = new EdenUI.ContextMenu(this.buttons.get(0).childNodes[0]);
+			ctx.addItem("&#xf005;", "Star All", true, function(e) { me.script.stickAll(); });
+			ctx.addItem("&#xf006;", "Unstar All", true, function(e) { me.script.unstickAll(); });
+			ctx.addItem("&#xf05e;", "Clear Unstarred", true, function(e) { me.script.clearUnstuck(); });
+			ctx.addItem("&#xf144;", "Play Starred", true, function(e) { me.script.activateAll(); });
+			this.buttons.on("click",function(e) {
+				me.buttons.get(0).childNodes[0].oncontextmenu(e);
+			});
+		} else {
+			this.buttons.append($('<button class="scriptview-button enabled starall">&#xf005;</button><button class="scriptview-button enabled unstarall">&#xf006;</button><button class="scriptview-button enabled clear">&#xf05e;</button><button class="scriptview-button enabled playall">&#xf144;</button><button class="scriptview-button enabled hashtag">&#xf292;</button>'));
+		}
 
-	this.buttons.on("click",".clear",function(e) {
-		me.script.clearUnstuck();
-	})
-	.on("click", ".unstarall", function(e) {
-		me.script.unstickAll();
-	})
-	.on("click", ".playall", function(e) {
-		me.script.activateAll();
-	})
-	.on("click", ".starall", function(e) {
-		me.script.stickAll();
-	})
-	.on("click", ".scriptview-but-save", function(e) {
-		me.save();
-	});
-	this.searchin.on("keyup", function(e) {
-		var str = me.searchin.get(0).value;
-		if (str != "" && e.keyCode == 13) {
+		this.menushow.on("click", function() {
+			me.bar.show("fast");
+			me.menushow.hide();
+		});
+
+		this.buttons.on("click",".clear",function(e) {
+			me.script.clearUnstuck();
+		})
+		.on("click", ".unstarall", function(e) {
+			me.script.unstickAll();
+		})
+		.on("click", ".playall", function(e) {
+			me.script.activateAll();
+		})
+		.on("click", ".starall", function(e) {
+			me.script.stickAll();
+		})
+		.on("click", ".scriptview-but-save", function(e) {
+			me.save();
+		});
+		this.searchin.on("keyup", function(e) {
+			var str = me.searchin.get(0).value;
+			if (str != "" && e.keyCode == 13) {
+				for (var i=0; i<me.lastres.active.length; i++) {
+					me.script.insertStatement(Eden.Statement.statements[me.lastres.active[i]], false);
+				}
+				for (var i=0; i<me.lastres.inactive.length; i++) {
+					me.script.insertStatement(Eden.Statement.statements[me.lastres.inactive[i]], false);
+				}
+				for (var i=0; i<me.lastres.agents.length; i++) {
+					me.script.insertStatement(Eden.Statement.statements[me.lastres.agents[i]], false);
+				}
+				me.searchres.hide();
+				me.searchreshidden = true;
+			} else if (str != "") {
+				var res = Eden.Statement.search(str);
+				me.lastres = res;
+				me.updateSearchResults(res, str);
+			} else {
+				me.searchres.hide();
+				me.searchreshidden = true;
+			}
+		});
+		this.searchin.on("click", function() {
+			if (me.searchin.get(0).value != "" && me.searchreshidden) {
+				me.searchres.show('fast');
+				me.searchreshidden = false;
+			}
+		})
+
+		this.searchres.on("click", ".scriptview-result", function(e) {
+			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
+			if (me.script.statements[num] === undefined) me.script.insertStatement(Eden.Statement.statements[num], true);
+			else me.script.moveTo(num);
+			me.searchres.hide();
+			me.searchreshidden = true;
+			//me.bar.hide("fast");
+			//me.menushow.show();
+		});
+
+		this.searchres.on("click", ".scriptview-resultview", function(e) {
+			me.load(e.currentTarget.getAttribute("data-view"));
+			me.searchres.hide();
+			me.searchreshidden = true;
+			//me.bar.hide("fast");
+			//me.menushow.show();
+		});
+
+		this.searchres.on("click", ".scriptview-resultsearch", function(e) {
 			for (var i=0; i<me.lastres.active.length; i++) {
 				me.script.insertStatement(Eden.Statement.statements[me.lastres.active[i]], false);
 			}
@@ -117,55 +174,22 @@ EdenUI.ScriptView = function(name, title) {
 			for (var i=0; i<me.lastres.agents.length; i++) {
 				me.script.insertStatement(Eden.Statement.statements[me.lastres.agents[i]], false);
 			}
-			me.searchres.hide('fast');
-		} else if (str != "") {
-			var res = Eden.Statement.search(str);
-			me.lastres = res;
-			me.updateSearchResults(res, str);
-		} else {
-			me.searchres.hide('fast');
-		}
-	});
-	this.searchin.on("click", function() {
-		if (me.searchin.get(0).value != "") me.searchres.show('fast');
-	})
+			me.searchres.hide();
+			me.searchreshidden = true;
+			//me.bar.hide("fast");
+			//me.menushow.show();
+		});
 
-	this.searchres.on("click", ".scriptview-result", function(e) {
-		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
-		if (me.script.statements[num] === undefined) me.script.insertStatement(Eden.Statement.statements[num], true);
-		else me.script.moveTo(num);
-		me.searchres.hide('fast');
-		//me.bar.hide("fast");
-		//me.menushow.show();
-	});
-
-	this.searchres.on("click", ".scriptview-resultview", function(e) {
-		me.load(e.currentTarget.getAttribute("data-view"));
-		me.searchres.hide('fast');
-		//me.bar.hide("fast");
-		//me.menushow.show();
-	});
-
-	this.searchres.on("click", ".scriptview-resultsearch", function(e) {
-		for (var i=0; i<me.lastres.active.length; i++) {
-			me.script.insertStatement(Eden.Statement.statements[me.lastres.active[i]], false);
-		}
-		for (var i=0; i<me.lastres.inactive.length; i++) {
-			me.script.insertStatement(Eden.Statement.statements[me.lastres.inactive[i]], false);
-		}
-		for (var i=0; i<me.lastres.agents.length; i++) {
-			me.script.insertStatement(Eden.Statement.statements[me.lastres.agents[i]], false);
-		}
-		me.searchres.hide('fast');
-		//me.bar.hide("fast");
-		//me.menushow.show();
-	});
-
-	this.script.$codearea.on("click",function() {
-		me.searchres.hide('fast');
-		//me.bar.hide("fast");
-		//me.menushow.show();
-	});
+		this.script.$codearea.on("click",function() {
+			me.searchres.hide();
+			me.searchreshidden = true;
+			//me.bar.hide("fast");
+			//me.menushow.show();
+		});
+	} else {
+		this.bar.hide();
+		this.contents.find(".scriptview-box").css("top","0");
+	}
 
 	this.load(this.title);
 	if (this.script.codearea.childNodes.length == 0) this.script.insertStatement();
@@ -254,7 +278,10 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 	}
 
 	if (res && ((res.tags && res.tags.length > 0) || res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0)) {
-		this.searchres.show('fast');
+		if (this.searchreshidden) {
+			this.searchres.show('fast');
+			this.searchreshidden = false;
+		}
 		var html = "";
 		var symmax = 5;
 
@@ -324,7 +351,8 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 
 		this.searchres.html(html);
 	} else {
-		this.searchres.hide('fast');
+		this.searchres.hide();
+		this.searchreshidden = true;
 	}
 }
 
@@ -332,4 +360,40 @@ EdenUI.ScriptView.createDialog = function(name, mtitle) {
 	var viewdata = new EdenUI.ScriptView(name.slice(0,-7),mtitle);
 	return viewdata;
 }
+
+//================================
+// Custom HTML Tag
+//================================
+
+EdenUI.ScriptView.xProto = Object.create(HTMLElement.prototype);
+
+EdenUI.ScriptView.xProto.createdCallback = function() {
+	var shadow = this.createShadowRoot();
+	var sv = new EdenUI.ScriptView(this.getAttribute("data-name"), this.getAttribute("data-title"), {
+		nobuttons: this.getAttribute("data-nobuttons")
+	});
+	sv.shadow = shadow;
+	sv.script.shadow = shadow;
+
+	var link;
+	link = document.createElement("style");
+	link.textContent = "@import \"css/scriptbox.css\";\n@import \"css/highlighter.css\";";
+	shadow.appendChild(link);
+
+	shadow.appendChild(sv.contents[0]);
+
+	/*$(shadow).on('keydown', null, 'backspace', function (e) {
+		var elem = e.target;
+		var tagName = elem.tagName.toUpperCase();
+		if (tagName != "INPUT" && tagName != "TEXTAREA" && !elem.isContentEditable) {
+			e.preventDefault();
+		}
+	});*/
+}
+
+EdenUI.ScriptView.xProduct = document.registerElement("x-construit-script", {
+	prototype: EdenUI.ScriptView.xProto
+});
+
+
 

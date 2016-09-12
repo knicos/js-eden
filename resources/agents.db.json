@@ -244,7 +244,7 @@
 			"file": "plugins/input-dialog/scriptview.js-e",
 			"title": "Script View Extras"
 		},
-		"lib": {
+		"jseden2/lib": {
 			"file": "library2/eden.jse",
 			"title": "Eden Base Library",
 			"enabled": true
@@ -254,12 +254,12 @@
 			"title": "Colour functions",
 			"enabled": true
 		},
-		"lib/jsfuncs": {
+		"jseden2/lib/jsfuncs": {
 			"file": "library2/jsfuncs.js-e",
 			"title": "Javascript functions",
 			"enabled": true
 		},
-		"lib/search": {
+		"jseden2/lib/search": {
 			"file": "library2/search.js-e",
 			"title": "Symbol Search functions",
 			"enabled": true
@@ -273,7 +273,7 @@
 			"title": "Core Library",
 			"enabled": true
 		},
-		"lib/type": {
+		"jseden2/lib/type": {
 			"file": "library2/types.js-e",
 			"title": "Type Check Functions",
 			"enabled": true
@@ -283,7 +283,7 @@
 			"title": "Math Library",
 			"enabled": true
 		},
-		"lib/svg": {
+		"jseden2/lib/svg": {
 			"file": "library2/svg.js-e",
 			"title": "SVG Library",
 			"enabled": true

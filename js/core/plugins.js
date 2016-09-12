@@ -162,9 +162,10 @@
 	//Case when a window is moved off to the left of the screen.
 	EdenUI.prototype.minimumWindowWidthShowing = 72 + EdenUI.prototype.dialogBorderWidth;
 
-	EdenUI.prototype.createRawView = function(name, type) {
+	EdenUI.prototype.createRawView = function(name, type, title) {
 		if (this.viewInstances[name] === undefined) {
-			var viewData = this.views[type].raw(name + "-dialog", name);
+			var defaultTitle = (title) ? title : this.views[type].title;
+			var viewData = this.views[type].raw(name, defaultTitle);
 			this.viewInstances[name] = viewData;
 			return viewData;
 		} else {

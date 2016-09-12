@@ -164,11 +164,16 @@ div.scriptbox-gutter.error:before {
 	color: #2b4957;/*#233b46;*/
 	/*padding-top: 8px;
 	padding-left: 5px;*/
-	background-color: white;
+	/*background-color: white;*/
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-font-smoothing: antialiased;
 	-webkit-transform: translate3d(0,0,0);
+}
+
+.hidden-textarea {
+	position: relative;
+	left: -300px;
 }
 
 div.scriptview {
@@ -208,10 +213,11 @@ div.scriptview-bar {
 	left: 0;
 	right: 0;
 	top: 0;
-	height: 35px;
-	background: white;
+	height: 40px;
+	/*background: white;*/
 	/*border-bottom: 1px solid #e5e5e5;*/
 	box-sizing: border-box;
+	padding-top: 7px;
 }
 
 div.scriptview-title {
@@ -228,7 +234,7 @@ div.scriptview-box {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	top: 35px;
+	top: 40px;
 }
 
 div.scriptview-inputhider {
@@ -330,6 +336,10 @@ button.scriptview-button.clear:after {
 	font-weight: bold;
 }
 
+button.scriptview-button.mobilemore {
+	color: white;
+}
+
 div.searchouter {
 	/*display: inline-block;*/
 	float: left;
@@ -341,6 +351,8 @@ div.searchouter {
 
 div.scriptview-buttons {
 	display: inline-block;
+	float: right;
+	margin-right: 30px;
 }
 
 input.search {
@@ -351,6 +363,7 @@ input.search {
 	font-size: 10pt;
 	width: 250px;
 	outline: none;
+	box-sizing: border-box;
 }
 
 div.grippy {
@@ -424,7 +437,7 @@ div.searchouter:after {
 	/*opacity: 0.8;*/
 	content: "\f002";
 	position: relative;
-	left: -275px;
+	left: -240px;
 	background: none;
 	top: 1px;
 	margin-top: 0;
@@ -435,7 +448,7 @@ div.scriptview-results {
 	display: none;
 	z-index: 2000;
 	position: absolute;
-	top: 26px;
+	top: 32px;
 	left: 30px;
 	width: 40%;
 	min-width: 280px;

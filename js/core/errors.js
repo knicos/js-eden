@@ -563,7 +563,7 @@ Eden.SyntaxError.prototype.buildSuggestion = function() {
 
 Eden.SyntaxError.prototype.messageText = function() {
 	var err = Eden.SyntaxError.db[this.errno];
-	var txt = Language.errors[this.errno][err.message.call(this)]
+	var txt = (Language.errors[this.errno]) ? Language.errors[this.errno][err.message.call(this)] : "NO TEXT";
 	if (this.extra === undefined) {
 		return txt;
 	} else {

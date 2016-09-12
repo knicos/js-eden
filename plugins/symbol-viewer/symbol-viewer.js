@@ -384,10 +384,10 @@ EdenUI.plugins.SymbolViewer.SymbolList.prototype.addSymbol = function (symbol, n
 		if (!Eden.isitCategory(name, this.category, this.type)) {
 			matches = false;
 		}
-	} else if (Eden.isitSystemSymbol(name)) {
-		if (this.category == "user") {
-			matches = false;
-		}
+	//} else if (Eden.isitSystemSymbol(name)) {
+	//	if (this.category == "user") {
+	//		matches = false;
+	//	}
 	} else if (this.category == "system") {
 		matches = false;
 	}

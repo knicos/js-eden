@@ -1,0 +1,51 @@
+div.mobile-tableft {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 50px;
+	font-family: "FontAwesome";
+	font-size: 18px;
+	color: white;
+}
+
+div.mobile-tableft:after {
+	content: "\f053";
+	font-family: "FontAwesome";
+	font-size: 25px;
+	position: relative;
+	left: 10px;
+	top: 11px;
+}
+
+div.mobile-tabright {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 50px;
+	font-family: "FontAwesome";
+	font-size: 18px;
+	color: white;
+}
+
+div.mobile-tabright:after {
+	content: "\f054";
+	font-family: "FontAwesome";
+	font-size: 25px;
+	position: relative;
+	left: 16px;
+	top: 11px;
+}
+
+div.mobile-title {
+	position: absolute;
+	left: 50px;
+	right: 50px;
+	top: 0;
+	bottom: 0;
+	color: white;
+	font-size: 20px;
+	text-align: center;
+	padding-top: 15px;
+}

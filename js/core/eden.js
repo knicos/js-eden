@@ -192,7 +192,7 @@ function concatAndResolveUrl(url, concat) {
 			if (err) {
 				var msg = ((err.type == "runtime")?"Runtime error" : "Syntax error") + " in " + agent.name + ":" + ((err.line != -1)?err.line:"") + " -> " + err.messageText();
 				var htmlmsg = ((err.type == "runtime")?"<span class='error-icon'>&#xf06a</span>" : "<span class='error-icon'>&#xf06a</span>") + " <a href=\"javascript:edenUI.gotoCode('" + agent.name + "',"+err.line+");\">" + agent.name + ":" + ((err.line != -1)?(err.line+1):"") + "</a> " + err.messageText();
-				console.error(msg);
+				console.error(err);
 				if (!(agent.owned && err.type == "syntax")) {
 					//edenUI.showMessage("error", htmlmsg);
 					var formattedError = $("<pre class=\"error-item\">"+
@@ -683,7 +683,7 @@ function concatAndResolveUrl(url, concat) {
 	};
 
 	Eden.prototype.captureInitialState = function () {
-		this.initialDefinitions = {};
+		/*this.initialDefinitions = {};
 		for (var i = 0; i < Eden.initiallyDefined.length; i++) {
 			var name = Eden.initiallyDefined[i];
 			if (name in this.root.symbols) {
@@ -696,7 +696,7 @@ function concatAndResolveUrl(url, concat) {
 			}
 		}
 		this.included = {};
-		this.inInitialState = true;
+		this.inInitialState = true;*/
 	}
 
 	Eden.prototype.initialDefinition = function (name) {
