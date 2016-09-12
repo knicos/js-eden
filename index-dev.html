@@ -30,6 +30,65 @@ See LICENSE.txt
 		.ui-front {
 			z-index: 10000 !important;
 		}
+
+		div.jseden-dialog-plisting {
+			box-sizing: border-box;
+			padding-top: 40px;
+			padding-bottom: 40px;
+			padding-left: 80px;
+			padding-right: 80px;
+			/*border: 1px solid #eee;*/
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			justify-content: center;
+			overflow-y: auto;
+		}
+
+		div.cadence-plisting-entry {
+			width: 200px;
+			height: 142px;
+			margin: 5px;
+			background-repeat: no-repeat;
+			cursor: pointer;
+			color: #132023;
+		}
+
+		div.cadence-plisting-icon {
+			border: 1px solid #eee;
+			font-family: "FontAwesome";
+			font-size: 60px;
+			background: #f5f5f5;
+			cursor: pointer;
+			text-align: center;
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+
+		div.cadence-plisting-title {
+			font-weight: bold;
+			font-family: Roboto,Arial,sans-serif;
+			color: #424249;
+			font-size: 14px;
+			line-height: 16px;
+			padding-left: 2px;
+			margin-top: 8px;
+		}
+
+		div.cadence-plisting-subtitle {
+			font-family: Roboto,Arial,sans-serif;
+			color: #525259;
+			font-size: 12px;
+			line-height: 16px;
+			padding-left: 2px;
+		}
+
+		div.cadence-plisting-entry:hover {
+			color: #29454B;
+		}
+
 	</style>
 </head>
 <body>
@@ -72,13 +131,62 @@ See LICENSE.txt
 
 
 <script type="text/javascript">
-	Construit();
+	Construit(undefined, function(loaded) {
+		$(".loaddialog").remove();
+		if (!loaded) {
+			console.log("NOT LOADED");
+			var lopts = $("#loadoptions");
+			/*if (!Eden.restore()) {
+				Eden.loadFromURL("library2/NewProject.js-e");
+			}*/
+
+			lopts.css("display","block");
+			lopts.on("click","#restoreold",function() {
+				Eden.restore();
+				lopts.css("display","none");
+			})
+			.on("click","#loadnew",function() {
+				Eden.loadFromURL("library2/NewProject.js-e");
+				lopts.css("display","none");
+			})
+			.on("click",".project",function(e) {
+				var path = e.currentTarget.getAttribute("data-path");
+				var tag = parseInt(e.currentTarget.getAttribute("data-tag"));
+				console.log("Load project: " + path + "@"+tag);
+				Eden.load(path,tag,function() {
+					lopts.css("display","none");
+				});
+			});
+
+			var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
+			var path = "jseden2/"+user;
+			var plist = lopts.find(".jseden-dialog-plisting");
+			Eden.DB.getDirectory(path, function(data) {
+				console.log(data);
+				for (var x in data) {
+					//Eden.DB.getMeta(path+"/"+x,function(path,meta) {
+						plist.append($('<div class="cadence-plisting-entry project" data-path="'+(path+"/"+x)+'" data-tag="'+Eden.DB.meta[path+"/"+x].latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+x+'</div></div>'));
+						console.log(Eden.DB.meta[path+"/"+x]);
+					//});
+				}
+			});
+		}
+	});
 </script>
 
 <div class="loaddialog">
 <img src="images/construit_logo_2.png"/>
 <div class="mainloader">Loading...</div>
 <div class="loadmessage">Loading...</div>
+</div>
+
+<div id="loadoptions" class="modal" style="display: none;">
+	<div class="modal-content">
+		<div class="jseden-dialog-plisting">
+			<div id="restoreold" class="cadence-plisting-entry"><div class="cadence-plisting-icon">&#xf01e;</div><div class="cadence-plisting-title">Restore</div></div>
+			<div id="loadnew" class="cadence-plisting-entry"><div class="cadence-plisting-icon">&#xf067;</div><div class="cadence-plisting-title">New Project</div></div>
+		</div>
+	</div>
 </div>
 
 <div id="tooltip" style="display:none"></div>

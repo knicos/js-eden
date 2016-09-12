@@ -401,7 +401,6 @@ function concatAndResolveUrl(url, concat) {
 	};
 
 	EdenUI.prototype.finishedLoading = function() {
-		$(".loaddialog").remove();
 		this.loaded = true;
 		//edenUI.updateStatus(Language.ui.general.finished_loading);
 	};
@@ -676,6 +675,67 @@ function concatAndResolveUrl(url, concat) {
 		 * @private
 		 */
 		var initialDefinitions = {};
+	}
+
+	Eden.load = function(path, tag, cb) {
+		console.log("Loading: " + path + "@" + tag);
+		Eden.DB.load(path,tag, undefined, function(status) {
+			var menu = $(".jseden-title").get(0);
+			if (menu) {
+				menu.textContent = status.title;
+			}
+			EdenUI.MenuBar.saveTitle(status.title);
+			eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
+			if (cb) cb();
+		});
+	}
+
+	Eden.restore = function(cb) {
+		var res = Eden.Statement.restore();
+		if (!res) return res;
+
+		var menu = $(".jseden-title").get(0);
+		if (menu) {
+			try {
+				if (window.localStorage) {
+					var savedtitle = window.localStorage.getItem("title");
+					if (savedtitle && savedtitle != "") menu.textContent = savedtitle;
+				}
+			} catch(e) {
+			}
+		}
+
+		eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
+		if (cb) cb(res);
+		return res;
+	}
+
+	Eden.loadFromURL = function(url, cb) {
+		console.log("Load from: " + url);
+		$.ajax({
+			url: url,
+			type: "get",
+			success: function(data){
+				if (data) {
+					data = JSON.parse(data);
+					//console.log(data);
+					Eden.Statement.load(data.statements);
+					EdenUI.ScriptView.loadData(data.scriptview);
+					var menu = $(".jseden-title").get(0);
+					if (menu) {
+						menu.textContent = data.title;
+					}
+					EdenUI.MenuBar.saveTitle(data.title);
+					eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
+					if (cb) cb(data);
+				} else {
+					if (cb) cb(undefined);
+				}
+			},
+			error: function(a){
+				if (cb) cb(undefined);
+			}
+		});
 	}
 
 	Eden.prototype.isValidIdentifier = function (name) {

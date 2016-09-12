@@ -366,30 +366,29 @@ div.jseden-title:hover {
 	text-shadow: 0 0 2px white;
 }
 
-#menubar-obscurer {
+/*#menubar-obscurer {
 	position: absolute;
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
 	background-color: rgba(0,0,0,0.5);
-	z-index: 2000;
+	z-index: 655355;
 	font-family: Verdana,Arial,sans-serif;
 	font-size: 8pt;
-}
+}*/
 
-div.login-subdialog {
+/*div.login-subdialog {
 	position: relative;
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 80px;
-	width: 500px;
-	/*min-height: 200px;*/
+	width: 200px;
 	background-color: #f5f5f5;
 	padding: 20px;
 	box-shadow: 0 0 7px black;
 	border-radius: 5px;
-}
+}*/
 
 iframe.menubar-login-iframe {
 	/*position: absolute;

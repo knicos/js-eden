@@ -1,5 +1,5 @@
 EdenUI.MenuBar = function() {
-	this.element = $('<div id="menubar-main"><div id="eden-logo"></div><div contenteditable class="jseden-title">My Project</div>'+((!mobilecheck()) ? '<div class="menubar-buttons"><button class="menubar-button enabled share" data-obs="menu_new_scriptview" title="New Script View">&#xf1e0;</button><button class="menubar-button enabled new" data-obs="menu_new_scriptview" title="New Script View">&#xf121;</button><button class="menubar-button enabled new" data-obs="menu_new_obslist" title="New Observable List">&#xf022;</button><button class="menubar-button enabled new" data-obs="menu_new_graphicview" title="New Graphic View">&#xf03e;</button></div>' : '<div class="menubar-mobilebuttons"><button class="scriptview-button enabled mobilemore">&#xf078;</button></div>')+'</div>');
+	this.element = $('<div id="menubar-main"><div id="eden-logo"></div><div contenteditable class="jseden-title">Construit!</div>'+((!mobilecheck()) ? '<div class="menubar-buttons"><button class="menubar-button enabled share" data-obs="menu_new_scriptview" title="New Script View">&#xf1e0;</button><button class="menubar-button enabled new" data-obs="menu_new_scriptview" title="New Script View">&#xf121;</button><button class="menubar-button enabled new" data-obs="menu_new_obslist" title="New Observable List">&#xf022;</button><button class="menubar-button enabled new" data-obs="menu_new_graphicview" title="New Graphic View">&#xf03e;</button></div>' : '<div class="menubar-mobilebuttons"><button class="scriptview-button enabled mobilemore">&#xf078;</button></div>')+'</div>');
 	$(document.body).append(this.element);
 
 	// Login Button
@@ -32,8 +32,8 @@ EdenUI.MenuBar = function() {
 
 	$("#menubar-login").click(function() {
 		if (Eden.DB.isConnected() && !Eden.DB.isLoggedIn()) {
-			var obscurer = $('<div id="menubar-obscurer"></div>');
-			obscurer.html("<div class=\"login-subdialog\"><iframe frameborder=\"0\" name=\"logintarget\" width=\"460\" height=\"300\" class=\"menubar-login-iframe\"></iframe><br/><button class=\"button-icon-silver button-cancel\">Cancel</button></div>");
+			var obscurer = $('<div id=\"menubar-obscurer\" class=\"login-subdialog modal\" style=\"display: block;\"></div>');
+			obscurer.html("<div class=\"modal-content\"><iframe frameborder=\"0\" name=\"logintarget\" width=\"250\" height=\"300\" class=\"menubar-login-iframe\"></iframe><br/><button class=\"button-icon-silver button-cancel\">Cancel</button></div>");
 			$(document.body).append(obscurer);
 			obscurer.on("click", ".button-cancel", function() {
 				obscurer.remove();
@@ -92,4 +92,14 @@ EdenUI.MenuBar = function() {
 
 		}
 	});
+}
+
+EdenUI.MenuBar.saveTitle = function(title) {
+	try {
+		if (window.localStorage) {
+			window.localStorage.setItem("title", title);
+		}
+	} catch(e) {
+
+	}
 }

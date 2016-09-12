@@ -204,39 +204,15 @@ function Construit(options,callback) {
 			loadPlugin();
 		};
 		
-		doneLoading = function () {
-			eden.captureInitialState();
+		doneLoading = function (didload) {
+			//eden.captureInitialState();
 
 			window.scrollTo(0, 0); //Chrome remembers position on refresh.
 			// Remove spinning loader and message
 			edenUI.finishedLoading();
 
-			/*if (exec) {
-				if (exec.slice(-1) != ";") {
-					exec = exec + ";";
-				}
-				eden.execute2(exec, "URL", "", {name: "execute"}, function () { });
-			}*/
-
-			eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
-
-			if (callback) callback();
+			if (callback) callback(didload);
 		}
-
-		// Load the Eden library scripts
-		var librarySource;
-		/*if (document.location.pathname.slice(-15) == "/index-dev.html") {
-			librarySource = "library/eden.jse";
-		} else {
-			librarySource = "library/jseden-lib.min.jse";
-		}*/
-
-		var bootscript = "import jseden2/lib;\n";
-		/*for (var i=0; i<imports.length; i++) {
-			bootscript += "import " + imports[i]+";\n" 
-		}*/
-		bootscript += "${{ doneLoading(); }}$;\n";
-		console.log("BOOTSCRIPT: " + bootscript);
 
 		Eden.Statement.connect((addr == "") ? window.location.hostname : addr);
 
@@ -249,27 +225,11 @@ function Construit(options,callback) {
 
 						Eden.DB.connect(Eden.DB.repositories[Eden.DB.repoindex], function() {
 							//eden.execute2(bootscript);
+							
 							if (load != "" && tag != "") {
-								console.log("Loading: " + load + "@" + tag);
-								Eden.DB.load(load,tag, undefined, function(status) {
-									if (menuBar) {
-										$(".jseden-title").get(0).textContent = status.title;
-									}
-									doneLoading();
-								});
-							} else if (Eden.Statement.restore()) {
-								if (menuBar) {
-									try {
-										if (window.localStorage) {
-											var savedtitle = window.localStorage.getItem("title");
-											if (savedtitle && savedtitle != "") $(".jseden-title").get(0).textContent = savedtitle;
-										}
-									} catch(e) {
-									}
-								}
-								doneLoading();
+								Eden.load(load,tag,function(){ doneLoading(true); });
 							} else {
-								eden.execute2(bootscript);
+								doneLoading(false);
 							}
 						});
 						Eden.DB.repoindex = (Eden.DB.repoindex + 1) % Eden.DB.repositories.length;
