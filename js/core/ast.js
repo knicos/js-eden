@@ -61,15 +61,29 @@ Eden.AST.DoxyComment = function(content, start, end) {
 	this.content = content;
 	this.startline = start;
 	this.endline = end;
+	this.tags = undefined;
+	this.controls = undefined;
 }
 
 Eden.AST.DoxyComment.prototype.getHashTags = function() {
+	if (this.tags) return this.tags;
+
 	var words = this.content.split(/[ \n\t]+/);
 	var tags = [];
+	var controls = {};
 	for (var i=0; i<words.length; i++) {
 		if (words[i].charAt(0) == "#") tags.push(words[i]);
+		if (words[i].charAt(0) == "@") controls[words[i]] = true;
 	}
+	this.tags = tags;
+	this.controls = controls;
 	return tags;
+}
+
+Eden.AST.DoxyComment.prototype.getControls = function() {
+	if (this.controls) return this.controls;
+	this.getHashTags();
+	return this.controls;
 }
 
 Eden.AST.DoxyComment.prototype.stripped = function() {

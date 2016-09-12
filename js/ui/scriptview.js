@@ -266,6 +266,14 @@ EdenUI.ScriptView.prototype.save = function() {
 	}
 }
 
+EdenUI.ScriptView.saveData = function() {
+	return EdenUI.ScriptView.savedViews;
+}
+
+EdenUI.ScriptView.loadData = function(object) {
+	EdenUI.ScriptView.savedViews = object;
+}
+
 EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 	if (res === undefined) res = {active:[],inactive:[],agents:[]};
 

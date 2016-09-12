@@ -28,7 +28,9 @@
     "grunt-gh-pages": "~0.9.1",
     "wd": "~0.3.11",
     "mocha": "~2.0.1",
-    "chai-as-promised": "~4.1.1"
+    "chai-as-promised": "~4.1.1",
+	"ws": "*",
+	"fs": "*"
   },
   "optionalDependencies": {},
   "engines": {

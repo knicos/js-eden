@@ -60,6 +60,14 @@ div.menubar-buttons {
 	display: inline-block;
 }
 
+div.menubar-mobilebuttons {
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	width: 50px;
+	display: inline-block;
+}
+
 button.menubar-button {
 	/*text-shadow: 0px 0px 2px black;*/
 	font-family: "FontAwesome";

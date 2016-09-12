@@ -1,5 +1,5 @@
 EdenUI.MenuBar = function() {
-	this.element = $('<div id="menubar-main"><div id="eden-logo"></div><div contenteditable class="jseden-title">My Project</div>'+((!mobilecheck()) ? '<div class="menubar-buttons"><button class="menubar-button enabled share" data-obs="menu_new_scriptview" title="New Script View">&#xf1e0;</button><button class="menubar-button enabled new" data-obs="menu_new_scriptview" title="New Script View">&#xf121;</button><button class="menubar-button enabled new" data-obs="menu_new_obslist" title="New Observable List">&#xf022;</button><button class="menubar-button enabled new" data-obs="menu_new_graphicview" title="New Graphic View">&#xf03e;</button></div>' : '')+'</div>');
+	this.element = $('<div id="menubar-main"><div id="eden-logo"></div><div contenteditable class="jseden-title">My Project</div>'+((!mobilecheck()) ? '<div class="menubar-buttons"><button class="menubar-button enabled share" data-obs="menu_new_scriptview" title="New Script View">&#xf1e0;</button><button class="menubar-button enabled new" data-obs="menu_new_scriptview" title="New Script View">&#xf121;</button><button class="menubar-button enabled new" data-obs="menu_new_obslist" title="New Observable List">&#xf022;</button><button class="menubar-button enabled new" data-obs="menu_new_graphicview" title="New Graphic View">&#xf03e;</button></div>' : '<div class="menubar-mobilebuttons"><button class="scriptview-button enabled mobilemore">&#xf078;</button></div>')+'</div>');
 	$(document.body).append(this.element);
 
 	// Login Button
@@ -48,45 +48,48 @@ EdenUI.MenuBar = function() {
 	this.sharebox.hide();
 
 	var me = this;
+
+	if (mobilecheck()) {
+		var ctx = new EdenUI.ContextMenu(this.element.find(".mobilemore").get(0));
+		ctx.addItem("&#xf1e0;", "Share", true, function(e) { me.script.stickAll(); });
+		ctx.addItem("&#xf121;", "New Script View", true, function(e) { me.script.unstickAll(); });
+		ctx.addItem("&#xf022;", "New Observable Lists", true, function(e) { me.script.clearUnstuck(); });
+		ctx.addItem("&#xf03e;", "New Graphic View", true, function(e) { me.script.activateAll(); });
+		this.element.on("click",".mobilemore",function(e) {
+			me.element.find(".mobilemore").get(0).oncontextmenu(e);
+		});
+	}
+
 	this.element.on("click", ".menubar-button.share", function(e) {
 		var title = me.element.find(".jseden-title").get(0).textContent.split(" ").join("");
-		var source = "";
 
-		try {
-			if (window.localStorage) source = window.localStorage.getItem("statements");
-		} catch(e) {
-
-		}
-
-
-		if (Eden.DB.isLoggedIn()) {
-			var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
-			var path = "jseden2/"+user+"/"+title;
-			var meta = Eden.DB.meta[path];
-			if (meta === undefined) meta = new Eden.DB.createMeta(path);
-			//console.log(source);
-
-			Eden.DB.upload(path,meta,source,"v1",true,function() {
-				var url = "?load="+path+"&tag="+meta.saveID;
-				console.log("UPLOAD");
+		Eden.DB.save(title, function(status) {
+			if (status.path) {
+				var url = "?load="+status.path+"&tag="+status.saveID;
 				me.sharebox.find(".projecturl").html('<a href="'+window.location.href+url+'">'+window.location.href+url+'</a>');
-			});
-		} else {
-			me.sharebox.find(".projecturl").html('No URL, not connected');
-		}
+			} else {
+				me.sharebox.find(".projecturl").html('No URL, not connected');
+			}
 
-		source = "data:application/octet-stream," + encodeURIComponent(source);
-		me.sharebox.find(".downloadurl").html('<a href="'+source+'" download="'+title+'.js-e">Download</a>');
+			var source = "data:application/octet-stream," + encodeURIComponent(status.source);
+			me.sharebox.find(".downloadurl").html('<a href="'+source+'" download="'+title+'.js-e">Download</a>');
 
-		me.sharebox.show("fast");
-		// Upload to project manager and generate URL.
-		// Also generate data url
-		// Provide download link
-		// Provide share link
+			me.sharebox.show("fast");
+		});
 	});
 
 	this.element.on("click", ".menubar-button.new", function(e) {
 		var obs = e.currentTarget.getAttribute("data-obs");
 		eden.root.lookup(obs).assign(true, eden.root.scope);
+	});
+
+	this.element.on("keyup", ".jseden-title", function(e) {
+		try {
+			if (window.localStorage) {
+				window.localStorage.setItem("title", e.currentTarget.textContent);
+			}
+		} catch(e) {
+
+		}
 	});
 }

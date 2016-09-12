@@ -47,6 +47,7 @@ Eden.Statement = function() {
 	this.source = "";
 	this.ast = undefined;
 	this.owned = false;
+	this.rid = undefined;
 }
 
 Eden.Statement.findFree = function() {
@@ -340,32 +341,55 @@ Eden.Statement.prototype.isActive = function() {
 	return false;
 }
 
-Eden.Statement.reload = function() {
+Eden.Statement.load = function(object) {
+	Eden.Statement.statements = [];
+	Eden.Statement.symbols = {};
+	Eden.Statement.tags = {};
+	Eden.Statement.active = {};
+	Eden.Statement.shared = {};
+
+	var stats = object;
+
+	if (stats && Array.isArray(stats) && stats.length > 0) {
+		for (var i=0; i<stats.length; i++) {
+			if (stats[i]) {
+				var stat = new Eden.Statement();
+				stat.setSource(stats[i].source, new Eden.AST(stats[i].source, undefined, true));
+				if (stats[i].active) {
+					//console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
+					stat.activate();
+				}
+				if (stats[i].rid) {
+					stat.rid = stats[i].rid;
+					Eden.Statement.shared[stats[i].rid] = stat;
+				}
+			} else {
+				Eden.Statement.statements.push(undefined);
+			}
+		}
+		this.autosave();
+		return true;
+	}
+}
+
+Eden.Statement.save = function() {
+	var stats = [];
+	for (var i=0; i<Eden.Statement.statements.length; i++) {
+		var stat = Eden.Statement.statements[i];
+		if (stat === undefined) {
+			stats.push(undefined);
+		} else {
+			stats.push({source: stat.source, active: stat.isActive(), rid: stat.rid});
+		}
+	}
+	return stats;
+}
+
+Eden.Statement.restore = function() {
 	try {
 		if (window.localStorage) {
-			//console.log("LOADING STATEMENTS");
-			Eden.Statement.statements = [];
-			Eden.Statement.symbols = {};
-			Eden.Statement.tags = {};
-			Eden.Statement.active = {};
-
 			var stats = JSON.parse(window.localStorage.getItem("statements"));
-
-			if (stats && Array.isArray(stats) && stats.length > 0) {
-				for (var i=0; i<stats.length; i++) {
-					if (stats[i]) {
-						var stat = new Eden.Statement();
-						stat.setSource(stats[i].source, new Eden.AST(stats[i].source, undefined, true));
-						if (stats[i].active) {
-							//console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
-							stat.activate();
-						}
-					} else {
-						Eden.Statement.statements.push(undefined);
-					}
-				}
-				return true;
-			}
+			return Eden.Statement.load(stats);
 		}
 	} catch(e) {
 
@@ -379,15 +403,7 @@ Eden.Statement.autosave = function() {
 	var me = this;
 	Eden.Statement.timeout = setTimeout(function() {
 		//console.log("AUTOSAVE STATEMENTS");
-		var stats = [];
-		for (var i=0; i<Eden.Statement.statements.length; i++) {
-			var stat = Eden.Statement.statements[i];
-			if (stat === undefined) {
-				stats.push(undefined);
-			} else {
-				stats.push({source: stat.source, active: stat.isActive()});
-			}
-		}
+		var stats = Eden.Statement.save();
 
 		try {
 			if (window.localStorage) {
@@ -401,7 +417,7 @@ Eden.Statement.autosave = function() {
 	}, 2000);
 }
 
-Eden.Statement.prototype.setSource = function(src, ast, stat) {
+Eden.Statement.prototype.setSource = function(src, ast, stat, net) {
 	if (ast === undefined) ast = new Eden.AST(src,undefined, true);
 	if (ast && stat === undefined) stat = ast.script;
 	if (this.ast && this.statement && (this.statement.type == "definition" || this.statement.type == "assignment")) {
@@ -441,6 +457,19 @@ Eden.Statement.prototype.setSource = function(src, ast, stat) {
 				if (Eden.Statement.tags[tags[i]] === undefined) Eden.Statement.tags[tags[i]] = {length:1};
 				else Eden.Statement.tags[tags[i]].length++;
 				Eden.Statement.tags[tags[i]][this.id] = this;
+			}
+			if (!net) {
+				var controls = stat.doxyComment.getControls();
+				if (controls && controls["@shared"]) {
+					if (Eden.Statement.connected) {
+						console.log("SEND");
+						if (this.rid === undefined) {
+							this.rid = makeRandomName();
+							Eden.Statement.shared[this.rid] = this;
+						}
+						Eden.Statement.connection.send(JSON.stringify({action: "update", rid: this.rid, source: this.source}));
+					}
+				}
 			}
 		}
 	}
@@ -483,7 +512,164 @@ Eden.Statement.init = function() {
 	});
 }
 
+//==============================================================================
+
+Eden.Statement.connect = function() {
+	var ipaddr = window.location.hostname;
+	var port = 8001;
+	var key = "1234";
+
+	window.WebSocket = window.WebSocket || window.MozWebSocket;
+	 
+	if (!window.WebSocket) {
+		console.log("WebSockets not supported");
+		return;
+	}
+	 
+	// open connection
+	var url = "ws://" + ipaddr + ":" + port + '/'; 
+	Eden.Statement.connection = new WebSocket(url);
+	
+
+	/*Eden.Agent.listenTo('executeline',this,function(origin,lineno){
+		if(origin) {
+			var data = JSON.stringify({action: "executeline", name: origin.name, lineno: lineno});
+			connection.send(data);
+		}
+	});
+	Eden.Agent.listenTo('patch',this,function(origin,patch,lineno){
+		if(origin) {
+			var data = JSON.stringify({action: "patch", name: origin.name, patch: patch, lineno: lineno});
+			connection.send(data);
+		}
+	});
+	Eden.Agent.listenTo("owned", this, function(origin, cause) {
+		if (cause == "net") return;
+		connection.send(JSON.stringify({action: "ownership", name: origin.name, owned: origin.owned}));
+	});
+	eden.listenTo('beforeAssign',this,function(symbol, value, origin){
+		if (origin != "net") {
+			console.log("ASSIGN: " + symbol.name + " = " + Eden.edenCodeForValue(value));
+			connection.send(JSON.stringify({action: "assign", symbol: symbol.name.slice(1), value: value}));
+			//connection.send(symbol.name.slice(1) + "=" + Eden.edenCodeForValue(value) + ";");						
+		}
+	});
+	$("#nr-status").html('<p>Connected to: ' + url + "</p>");*/
+
+	Eden.Statement.connection.onopen = function (error) {
+		Eden.Statement.connection.send(key);
+		//viewData.confirmClose = true;
+		//Make sure the pseudorandom numbers generated by different JS-EDEN instances
+		//are the same.
+		/*randomSeedSym = edenUI.eden.root.lookup("randomSeed");
+		randomSeed = randomSeedSym.value();
+		
+		if (randomSeed === undefined) {
+			randomSeedSym.assign((new Date()).getTime(), eden.root.scope, undefined, true);
+		} else {
+			pushSymbol("randomSeed");
+		}
+		pushSymbol("randomGenerator");
+		connected = true;*/
+		Eden.Statement.connected = true;
+
+		// Make sure ownership data is sent
+		/*for (var a in Eden.Agent.agents) {
+			if (Eden.Agent.agents[a].owned) {
+				connection.send(JSON.stringify({action: "ownership", name: a, owned: true}));
+			}
+		}*/
+
+		// Go through all existing statements and check for sharing...
+
+		//eden.root.lookup("network_connected").assign(true, eden.root.scope);
+	};
+	Eden.Statement.connection.onerror = function (error) {
+		Eden.Statement.connected = false;
+		//eden.root.lookup("network_connected").assign(false, eden.root.scope);
+		//eden.root.lookup("network_error").assign(error, eden.root.scope);
+	};
+
+	Eden.Statement.connection.onclose = function() {
+		Eden.Statement.connected = false;
+		//eden.root.lookup("network_connected").assign(false, eden.root.scope);
+	}
+	 
+
+	// Forces the current definition of an observable to be sent to the remote clients,
+	// e.g. one defined before the connection was established.
+	/*function pushSymbol(name) {
+		var root = edenUI.eden.root;
+		var currentDef = root.lookup("definitionOf").definition(root)(name);
+		connection.send(JSON.stringify({code: currentDef}));
+	}*/
+
+	/*me.sendControl = function(key, value) {
+		console.log("Send Control: " + key + "= " + value);
+		console.log(value);
+		connection.send(JSON.stringify({action: "control", key: key, value: value}));
+	}
+
+	me.sendAssign = function(sym) {
+		if (sym.last_modified_by != "net") {
+			connection.send(JSON.stringify({action: "assign", symbol: sym.name.slice(1), value: sym.value()}));
+		}
+	}*/
+
+	// most important part - incoming messages
+	Eden.Statement.connection.onmessage = function (message) {
+		program = JSON.parse(message.data);
+		
+		for(var i = 0; i < program.length; i++){
+			line = program[i].code;
+			//console.log(line);
+
+			/*switch (line.action) {
+			case "patch"		:	Eden.Agent.importAgent(line.name, "default", ["noexec","create"], function(ag) { ag.applyPatch(line.patch, line.lineno) });
+									break;
+			case "ownership"	:	Eden.Agent.importAgent(line.name, "default", ["noexec","create"], function(ag) { ag.setOwned(line.owned, "net"); });
+									break;
+			case "executeline"	:	//if (line.lineno >= 0) {
+									Eden.Agent.importAgent(line.name, "default", ["noexec"], function(ag) { ag.executeLine(line.lineno, true); });
+									//}
+									break;
+			case "assign"		:	eden.root.lookup(line.symbol).assign(line.value,eden.root.scope, {name: "net"});
+									break;
+			}*/
+
+			console.log(line);
+
+			if (line.action == "update") {
+				if (Eden.Statement.shared[line.rid]) {
+					Eden.Statement.shared[line.rid].setSource(line.source, undefined, undefined, true);
+				}
+			}
+
+			/*continue;
+
+			if (line.code) {
+				$("#nr-status").html('<p>Received: ' + line.code + "</p>");
+				var ast = new Eden.AST(line.code);
+				if (Eden.Agent.agents[line.name]) {
+					ast.script.execute(eden.root, undefined, Eden.Agent.agents[line.name].ast);
+				} else {
+					ast.script.execute(eden.root, undefined, ast);
+				}
+			} else if (line.owned !== undefined) {
+				console.log("OWNED BY OTHER: " + line.name + " = " + line.owned);
+				if (Eden.Agent.agents[line.name]) {
+					Eden.Agent.agents[line.name].setOwned(line.owned, "net");
+				}
+			}*/
+		}
+		//me.playCode(0);
+		return;
+
+	};
+}
+
 Eden.Statement.statements = [];
 Eden.Statement.symbols = {};
 Eden.Statement.tags = {};
 Eden.Statement.active = {};
+Eden.Statement.shared = {};

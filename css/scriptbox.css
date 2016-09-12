@@ -441,7 +441,7 @@ div.searchouter:after {
 	background: none;
 	top: 1px;
 	margin-top: 0;
-	z-index: 2001;
+	/*z-index: 2001;*/
 }
 
 div.scriptview-results {

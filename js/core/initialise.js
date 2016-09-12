@@ -69,6 +69,8 @@ function Construit(options,callback) {
 	var menuBar = (URLUtil.getParameterByName("menu")) ? URLUtil.getParameterByName("menu") != "false" : ((options) ? options.menu : true);
 	var developer = URLUtil.getParameterByName("developer") != "" && URLUtil.getParameterByName("developer") != "false";
 	var lang = URLUtil.getParameterByName("lang");
+	var load = URLUtil.getParameterByName("load");
+	var tag = URLUtil.getParameterByName("tag");
 	//var imports = URLUtil.getArrayParameterByName("import");
 
 	if (developer) {
@@ -187,7 +189,7 @@ function Construit(options,callback) {
 			});
 		}
 
-		Eden.Statement.reload();
+		//Eden.Statement.restore();
 
 		var loadPlugins = function (pluginList, callback) {
 			var loadPlugin = function () {
@@ -244,8 +246,24 @@ function Construit(options,callback) {
 
 						Eden.DB.connect(Eden.DB.repositories[Eden.DB.repoindex], function() {
 							//eden.execute2(bootscript);
-							if (Eden.Statement.reload()) {
-								console.log("Reloaded statements...");
+							if (load != "" && tag != "") {
+								console.log("Loading: " + load + "@" + tag);
+								Eden.DB.load(load,tag, undefined, function(status) {
+									if (menuBar) {
+										$(".jseden-title").get(0).textContent = status.title;
+									}
+									doneLoading();
+								});
+							} else if (Eden.Statement.restore()) {
+								if (menuBar) {
+									try {
+										if (window.localStorage) {
+											var savedtitle = window.localStorage.getItem("title");
+											if (savedtitle && savedtitle != "") $(".jseden-title").get(0).textContent = savedtitle;
+										}
+									} catch(e) {
+									}
+								}
 								doneLoading();
 							} else {
 								eden.execute2(bootscript);

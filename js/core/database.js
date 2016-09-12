@@ -647,6 +647,54 @@ Eden.DB.getSource = function(path, tag, callback) {
 	});
 }
 
+Eden.DB.save = function(title, cb) {
+	var status = {};
+
+	status.source = JSON.stringify({
+		statements: Eden.Statement.save(),
+		title: title,
+		scriptviews: EdenUI.ScriptView.saveData()
+	});
+
+	if (Eden.DB.isLoggedIn()) {
+		var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
+		var path = "jseden2/"+user+"/"+title;
+		var meta = Eden.DB.meta[path];
+		if (meta === undefined) meta = new Eden.DB.createMeta(path);
+		//console.log(source);
+
+		Eden.DB.upload(path,meta,status.source,"v1",true,function() {
+			var url = "?load="+path+"&tag="+meta.saveID;
+			status.path = path;
+			status.saveID = meta.saveID;
+			if (cb) cb(status);
+			//console.log("UPLOAD");
+		});
+	} else {
+		if (cb) cb(status);
+	}
+}
+
+Eden.DB.load = function(path, saveid, source, cb) {
+	function doload() {
+		Eden.Statement.load(source.statements);
+		EdenUI.ScriptView.loadData(source.scriptview);
+		if (cb) cb(source);
+	}
+
+	if (source === undefined) {
+		// Get it from server if possible...
+		Eden.DB.getSource(path, saveid, function(src) {
+			if (src && src != "") {
+				source = JSON.parse(src);
+				doload();
+			}
+		});
+	} else {
+		doload();
+	}
+}
+
 Eden.DB.loadLocalMeta();
 
 // Start connection attempts.
