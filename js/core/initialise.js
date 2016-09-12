@@ -237,6 +237,8 @@ function Construit(options,callback) {
 		bootscript += "${{ doneLoading(); }}$;\n";
 		console.log("BOOTSCRIPT: " + bootscript);
 
+		Eden.Statement.connect();
+
 		loadLanguage(lang, function() {
 			loadPlugins(plugins, function () {
 				//Eden.Agent.importAgent("lib", undefined, function() {
