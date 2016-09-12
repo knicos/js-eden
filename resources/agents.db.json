@@ -588,27 +588,27 @@
 			"title": "Basic Shopping",
 			"enabled": true
 		},
-		"jugs": {
+		"jseden2/jugs": {
 			"file": "models/nick/jugs/jugs_run.jse",
 			"title": "Jugs Model",
 			"enabled": true
 		},
-		"jugs/jugs": {
+		"jseden2/jugs/jugs": {
 			"file": "models/nick/jugs/jugs.jse",
 			"title": "Jugs Core",
 			"enabled": true
 		},
-		"jugs/buttons": {
+		"jseden2/jugs/buttons": {
 			"file": "models/nick/jugs/buttonAgent.jse",
 			"title": "Jugs Buttons",
 			"enabled": true
 		},
-		"jugs/fill": {
+		"jseden2/jugs/fill": {
 			"file": "models/nick/jugs/fillAgent.jse",
 			"title": "Jugs Fill Agent",
 			"enabled": true
 		},
-		"jugs/display": {
+		"jseden2/jugs/display": {
 			"file": "models/nick/jugs/display.jse",
 			"title": "Jugs Display",
 			"enabled": true

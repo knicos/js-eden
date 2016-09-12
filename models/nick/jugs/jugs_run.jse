@@ -1,5 +1,5 @@
 
-import jugs/jugs;
-import jugs/display;
-import jugs/fill;
+import jseden2/jugs/jugs;
+import jseden2/jugs/display;
+import jseden2/jugs/fill;
 
