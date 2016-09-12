@@ -514,8 +514,8 @@ Eden.Statement.init = function() {
 
 //==============================================================================
 
-Eden.Statement.connect = function() {
-	var ipaddr = window.location.hostname;
+Eden.Statement.connect = function(addr) {
+	var ipaddr = addr;
 	var port = 8001;
 	var key = "1234";
 

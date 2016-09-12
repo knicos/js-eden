@@ -71,6 +71,7 @@ function Construit(options,callback) {
 	var lang = URLUtil.getParameterByName("lang");
 	var load = URLUtil.getParameterByName("load");
 	var tag = URLUtil.getParameterByName("tag");
+	var addr = URLUtil.getParameterByName("addr");
 	//var imports = URLUtil.getArrayParameterByName("import");
 
 	if (developer) {
@@ -237,7 +238,7 @@ function Construit(options,callback) {
 		bootscript += "${{ doneLoading(); }}$;\n";
 		console.log("BOOTSCRIPT: " + bootscript);
 
-		Eden.Statement.connect();
+		Eden.Statement.connect((addr == "") ? window.location.hostname : addr);
 
 		loadLanguage(lang, function() {
 			loadPlugins(plugins, function () {
