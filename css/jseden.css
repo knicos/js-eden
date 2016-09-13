@@ -26,6 +26,19 @@ div#viewtabs {
 	background: #29454B;
 }
 
+button.jseden {
+	border: 1px solid #222;
+	color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+	background: #29454B; /* this is a light blue */
+	outline: none;
+	padding: 5px 20px;
+	margin-left: 10px;
+	margin-right: 10px;
+	cursor: pointer;
+}
+
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -42,10 +55,17 @@ div#viewtabs {
 /* Modal Content/Box */
 .modal-content {
     background-color: #fefefe;
-    margin: 18% auto; /* 15% from the top and centered */
+    margin: 20% auto; /* 15% from the top and centered */
+	border: 1px solid #222;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	box-shadow: 0 0 15px #4a6887;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 800px; /* Could be more or less, depending on screen size */
+	width: 80%;
 }
 
 div.search-box-outer {
@@ -288,19 +308,17 @@ div.message-infotext:before {
 }
 
 div.loaddialog {
-	width: 550px;
+	width: 300px;
 	padding: 20px;
 	/*height: 150px;*/
-	background-color: #eee;
-	color: black;
+	/*background-color: #eee*/;
+	color: white;
 	font: bold 12px "Helvetica Neue", Sans-Serif;
-	margin-left: calc(50% - 325px);
-	top: 20%;
-	position: fixed;
+	margin: 20% auto;
 	text-align: center;
 	border-radius: 6px;
 	z-index: 200000;
-	box-shadow: 0 0 15px #4a6887;
+	/*box-shadow: 0 0 15px #4a6887;*//
 }
 
 div.loadmessage {

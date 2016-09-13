@@ -89,6 +89,43 @@ See LICENSE.txt
 			color: #29454B;
 		}
 
+		div.cadence-plisting-entry:hover .cadence-plisting-icon {
+			border-color: #222;
+			background-color: white;
+		}
+
+		div.importdialog {
+			position: absolute;
+			top: 65px;
+			right: 150px;
+			width: 400px;
+			height: 200px;
+			background: #f5f5f5;
+			border-bottom-left-radius: 6px;
+			border-bottom-right-radius: 6px;
+			box-shadow: 0 0 15px #4a6887;
+			font-size: 12pt;
+			color: black;
+		}
+
+		span.importdialog-icon {
+			font-family: "FontAwesome";
+			margin-right: 20px;
+		}
+
+		div.importdialog-title {
+			font-size: 16pt;
+			font-weight: bold;
+			margin-top: 20px;
+			margin-left: 20px;
+			color: #666;
+		}
+
+		div.importdialog-content {
+			margin: 20px;
+			color: black;
+		}
+
 	</style>
 </head>
 <body>
@@ -131,6 +168,73 @@ See LICENSE.txt
 
 
 <script type="text/javascript">
+	function get_time_diff( timestamp )
+	{
+		var datetime = timestamp * 1000;
+		var now = Date.now();
+		var _date = new Date();
+		var _userOffset = _date.getTimezoneOffset()*60000;
+		datetime -= _userOffset;
+
+		if( isNaN(datetime) )
+		{
+		    return "";
+		}
+
+		if (datetime < now) {
+		    var milisec_diff = now - datetime;
+		}else{
+		    var milisec_diff = datetime - now;
+		}
+
+		var days = Math.floor(milisec_diff / 1000 / 60 / (60 * 24));
+
+		var date_diff = new Date( milisec_diff );
+
+		if (days > 5) {
+			return (new Date(datetime)).toDateString();
+		} else {
+			var result = "";
+			if (days > 0) {
+				result += days;
+				if (days > 1) {
+					result += " days ago";
+				} else {
+					result += " day ago";
+				}
+			} else {
+				if (date_diff.getUTCHours() > 0) {
+					var hours = date_diff.getUTCHours();
+					result += hours;
+					if (hours > 1) {
+						result += " hours ago";
+					} else {
+						result += " hour ago";
+					}
+				} else {
+					var mins = date_diff.getUTCMinutes();
+					if (mins > 0) {
+						result += mins;
+						if (mins > 1) {
+							result += " minutes ago";
+						} else {
+							result += " minute ago";
+						}
+					} else {
+						var secs = date_diff.getUTCSeconds();
+						result += secs;
+						if (secs > 1) {
+							result += " seconds ago";
+						} else {
+							result += " seconds ago";
+						}
+					}
+				}
+			}
+			return result;
+		}
+	}
+
 	Construit(undefined, function(loaded) {
 		$(".loaddialog").remove();
 		if (!loaded) {
@@ -149,6 +253,27 @@ See LICENSE.txt
 				Eden.loadFromURL("library2/NewProject.js-e");
 				lopts.css("display","none");
 			})
+			.on("click","#importfile",function() {
+				//Eden.loadFromURL("library2/NewProject.js-e");
+				lopts.css("display","none");
+				var importfile = $("#importdialog");
+				importfile.css("display","block");
+
+				importfile.on("click","#closeimport",function() {
+					importfile.css("display","none");
+					lopts.css("display","block");
+				})
+				.on("click","#openfile",function() {
+					var fileinput = $("#theimportfile").get(0);
+					var file = fileinput.files[0];
+					var reader = new FileReader();
+					reader.onload = function(e) {
+						Eden.loadFromString(e.target.result);
+						importfile.css("display","none");
+					};
+					reader.readAsText(file);
+				});
+			})
 			.on("click",".project",function(e) {
 				var path = e.currentTarget.getAttribute("data-path");
 				var tag = parseInt(e.currentTarget.getAttribute("data-tag"));
@@ -158,16 +283,38 @@ See LICENSE.txt
 				});
 			});
 
-			var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
-			var path = "jseden2/"+user;
-			var plist = lopts.find(".jseden-dialog-plisting");
-			Eden.DB.getDirectory(path, function(data) {
-				console.log(data);
-				for (var x in data) {
-					//Eden.DB.getMeta(path+"/"+x,function(path,meta) {
-						plist.append($('<div class="cadence-plisting-entry project" data-path="'+(path+"/"+x)+'" data-tag="'+Eden.DB.meta[path+"/"+x].latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+x+'</div></div>'));
-						console.log(Eden.DB.meta[path+"/"+x]);
-					//});
+			function displayMyProjects() {
+				var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
+				var path = "jseden2/"+user;
+				var plist = lopts.find(".jseden-dialog-plisting");
+				Eden.DB.getDirectory(path, function(data) {
+					console.log(data);
+					for (var x in data) {
+						var meta = Eden.DB.meta[path+"/"+x];
+						var t = meta.date.split(/[- :]/);
+						//Eden.DB.getMeta(path+"/"+x,function(path,meta) {
+							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(path+"/"+x)+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+x+'</div><div class="cadence-plisting-subtitle">'+get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000)+'</div></div>'));
+							//console.log(Eden.DB.meta[path+"/"+x]);
+						//});
+					}
+				});
+			}
+
+			if (Eden.DB.isLoggedIn()) {
+				displayMyProjects();
+			}
+
+			Eden.DB.listenTo("login", this, function(name) {
+				displayMyProjects();
+			});
+
+			Eden.DB.listenTo("logout", this, function() {
+				var plist = lopts.find(".jseden-dialog-plisting").get(0);
+				var node = plist.firstChild;
+				while (node) {
+					var next = node.nextSibling;
+					if (node.className == "cadence-plisting-entry project noselect") plist.removeChild(node);
+					node = next;
 				}
 			});
 		}
@@ -175,7 +322,7 @@ See LICENSE.txt
 </script>
 
 <div class="loaddialog">
-<img src="images/construit_logo_2.png"/>
+<!--img src="images/construit_logo_2.png"/-->
 <div class="mainloader">Loading...</div>
 <div class="loadmessage">Loading...</div>
 </div>
@@ -183,8 +330,19 @@ See LICENSE.txt
 <div id="loadoptions" class="modal" style="display: none;">
 	<div class="modal-content">
 		<div class="jseden-dialog-plisting">
-			<div id="restoreold" class="cadence-plisting-entry"><div class="cadence-plisting-icon">&#xf01e;</div><div class="cadence-plisting-title">Restore</div></div>
-			<div id="loadnew" class="cadence-plisting-entry"><div class="cadence-plisting-icon">&#xf067;</div><div class="cadence-plisting-title">New Project</div></div>
+			<div id="loadnew" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon">&#xf067;</div><div class="cadence-plisting-title">New Project</div></div>
+			<div id="importfile" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon">&#xf07c;</div><div class="cadence-plisting-title">Import File</div></div>
+			<div id="restoreold" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon">&#xf01e;</div><div class="cadence-plisting-title">Restore Last</div></div>
+		</div>
+	</div>
+</div>
+
+<div id="importdialog" class="modal" style="display: none">
+	<div class="modal-content" style="width: 300px;">
+		<div class="importdialog-title"><span class="importdialog-icon">&#xf07c;</span>Import File</div>
+		<div class="importdialog-content">
+		<input id="theimportfile" type="file"></input><br/><br/>
+		<div style="text-align: center; margin-top: 20px;"><button class="jseden" id="openfile">Import</button><button class="jseden" id="closeimport">Cancel</button></div>
 		</div>
 	</div>
 </div>

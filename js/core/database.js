@@ -99,6 +99,7 @@ Eden.DB.logOut = function(cb) {
 			success: function(data){
 				Eden.DB.username = undefined;
 				if (cb) cb();
+				Eden.DB.emit("logout", []);
 
 				function loginLoop() {
 					if (Eden.DB.isConnected() && Eden.DB.username === undefined) {
@@ -180,6 +181,7 @@ Eden.DB.connect = function(url, callback) {
 
 Eden.DB.disconnect = function(retry) {
 	Eden.DB.remoteURL = undefined;
+	Eden.DB.emit("logout", []);
 	Eden.DB.emit("disconnected", []);
 	Eden.DB.connected = false;
 
@@ -650,6 +652,8 @@ Eden.DB.getSource = function(path, tag, callback) {
 Eden.DB.save = function(title, cb) {
 	var status = {};
 
+	var reducedtitle = title.split(" ").join("");
+
 	status.source = JSON.stringify({
 		statements: Eden.Statement.save(),
 		title: title,
@@ -658,10 +662,12 @@ Eden.DB.save = function(title, cb) {
 
 	if (Eden.DB.isLoggedIn()) {
 		var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
-		var path = "jseden2/"+user+"/"+title;
+		var path = "jseden2/"+user+"/"+reducedtitle;
 		var meta = Eden.DB.meta[path];
 		if (meta === undefined) meta = new Eden.DB.createMeta(path);
 		//console.log(source);
+
+		meta.title = title;
 
 		Eden.DB.upload(path,meta,status.source,"v1",true,function() {
 			var url = "?load="+path+"&tag="+meta.saveID;
@@ -678,7 +684,7 @@ Eden.DB.save = function(title, cb) {
 Eden.DB.load = function(path, saveid, source, cb) {
 	function doload() {
 		Eden.Statement.load(source.statements);
-		EdenUI.ScriptView.loadData(source.scriptview);
+		EdenUI.ScriptView.loadData(source.scriptviews);
 		if (cb) cb(source);
 	}
 

@@ -1,5 +1,5 @@
 EdenUI.MenuBar = function() {
-	this.element = $('<div id="menubar-main"><div id="eden-logo"></div><div contenteditable class="jseden-title">Construit!</div>'+((!mobilecheck()) ? '<div class="menubar-buttons"><button class="menubar-button enabled share" data-obs="menu_new_scriptview" title="New Script View">&#xf1e0;</button><button class="menubar-button enabled new" data-obs="menu_new_scriptview" title="New Script View">&#xf121;</button><button class="menubar-button enabled new" data-obs="menu_new_obslist" title="New Observable List">&#xf022;</button><button class="menubar-button enabled new" data-obs="menu_new_graphicview" title="New Graphic View">&#xf03e;</button></div>' : '<div class="menubar-mobilebuttons"><button class="scriptview-button enabled mobilemore">&#xf078;</button></div>')+'</div>');
+	this.element = $('<div id="menubar-main"><div id="eden-logo"></div><div contenteditable class="jseden-title">Construit!</div>'+((!mobilecheck()) ? '<div class="menubar-buttons"><button class="menubar-button enabled share" data-obs="menu_new_scriptview" title="Save or share">&#xf1e0;</button><button class="menubar-button enabled new" data-obs="menu_new_scriptview" title="New Script View">&#xf121;</button><button class="menubar-button enabled new" data-obs="menu_new_obslist" title="New Observable List">&#xf022;</button><button class="menubar-button enabled new" data-obs="menu_new_graphicview" title="New Graphic View">&#xf03e;</button></div>' : '<div class="menubar-mobilebuttons"><button class="scriptview-button enabled mobilemore">&#xf078;</button></div>')+'</div>');
 	$(document.body).append(this.element);
 
 	// Login Button
@@ -33,7 +33,7 @@ EdenUI.MenuBar = function() {
 	$("#menubar-login").click(function() {
 		if (Eden.DB.isConnected() && !Eden.DB.isLoggedIn()) {
 			var obscurer = $('<div id=\"menubar-obscurer\" class=\"login-subdialog modal\" style=\"display: block;\"></div>');
-			obscurer.html("<div class=\"modal-content\"><iframe frameborder=\"0\" name=\"logintarget\" width=\"250\" height=\"300\" class=\"menubar-login-iframe\"></iframe><br/><button class=\"button-icon-silver button-cancel\">Cancel</button></div>");
+			obscurer.html("<div class=\"modal-content\" style=\"width: 290px;\"><div class=\"menubar-sharebox-title\"><span class=\"menubar-shareicon\">&#xf090;</span>Login</div><iframe frameborder=\"0\" name=\"logintarget\" width=\"250\" height=\"200\" class=\"menubar-login-iframe\"></iframe><br/><button class=\"jseden button-cancel\">Cancel</button></div>");
 			$(document.body).append(obscurer);
 			obscurer.on("click", ".button-cancel", function() {
 				obscurer.remove();
@@ -43,7 +43,7 @@ EdenUI.MenuBar = function() {
 		}
 	});
 
-	this.sharebox = $('<div class="menubar-sharebox"><div class="menubar-sharebox-title">Share</div><div class="menubar-sharebox-content"><div class="projecturl"></div><div class="downloadurl"></div></div></div>');
+	this.sharebox = $('<div class="modal"><div class="modal-content" style="width: 400px;"><div class="menubar-sharebox-title"><span class="menubar-shareicon">&#xf1e0;</span>Save and Share</div><div class="menubar-sharebox-content">Link to this project:<div class="projecturl"></div><br/>Download to file: <span class="downloadurl"></span><br/><br><button class="jseden done" style="margin-top: 20px;">Done</button></div></div></div>');
 	this.element.append(this.sharebox);
 	this.sharebox.hide();
 
@@ -60,21 +60,25 @@ EdenUI.MenuBar = function() {
 		});
 	}
 
+	this.sharebox.on("click",".done",function() {
+		me.sharebox.hide();
+	});
+
 	this.element.on("click", ".menubar-button.share", function(e) {
-		var title = me.element.find(".jseden-title").get(0).textContent.split(" ").join("");
+		var title = me.element.find(".jseden-title").get(0).textContent;
 
 		Eden.DB.save(title, function(status) {
 			if (status.path) {
 				var url = "?load="+status.path+"&tag="+status.saveID;
-				me.sharebox.find(".projecturl").html('<a href="'+window.location.href+url+'">'+window.location.href+url+'</a>');
+				me.sharebox.find(".projecturl").html(window.location.href+url);
 			} else {
-				me.sharebox.find(".projecturl").html('No URL, not connected');
+				me.sharebox.find(".projecturl").html('No URL, not logged in.');
 			}
 
 			var source = "data:application/octet-stream," + encodeURIComponent(status.source);
-			me.sharebox.find(".downloadurl").html('<a href="'+source+'" download="'+title+'.js-e">Download</a>');
+			me.sharebox.find(".downloadurl").html('<a href="'+source+'" download="'+title+'.js-e">'+title+'.js-e</a>');
 
-			me.sharebox.show("fast");
+			me.sharebox.show();
 		});
 	});
 

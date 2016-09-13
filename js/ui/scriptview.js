@@ -272,6 +272,13 @@ EdenUI.ScriptView.saveData = function() {
 
 EdenUI.ScriptView.loadData = function(object) {
 	EdenUI.ScriptView.savedViews = object;
+	try {
+		if (window.localStorage) {
+			window.localStorage.setItem("scriptviews", JSON.stringify(EdenUI.ScriptView.savedViews));
+		}
+	} catch(e) {
+
+	}
 }
 
 EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {

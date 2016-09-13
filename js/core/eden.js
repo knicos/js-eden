@@ -710,6 +710,20 @@ function concatAndResolveUrl(url, concat) {
 		return res;
 	}
 
+	Eden.loadFromString = function(str, cb) {
+		var data = JSON.parse(str);
+		//console.log(data);
+		Eden.Statement.load(data.statements);
+		EdenUI.ScriptView.loadData(data.scriptviews);
+		var menu = $(".jseden-title").get(0);
+		if (menu) {
+			menu.textContent = data.title;
+		}
+		EdenUI.MenuBar.saveTitle(data.title);
+		eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
+		if (cb) cb(data);
+	}
+
 	Eden.loadFromURL = function(url, cb) {
 		console.log("Load from: " + url);
 		$.ajax({
@@ -717,17 +731,7 @@ function concatAndResolveUrl(url, concat) {
 			type: "get",
 			success: function(data){
 				if (data) {
-					data = JSON.parse(data);
-					//console.log(data);
-					Eden.Statement.load(data.statements);
-					EdenUI.ScriptView.loadData(data.scriptview);
-					var menu = $(".jseden-title").get(0);
-					if (menu) {
-						menu.textContent = data.title;
-					}
-					EdenUI.MenuBar.saveTitle(data.title);
-					eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
-					if (cb) cb(data);
+					Eden.loadFromString(data, cb);
 				} else {
 					if (cb) cb(undefined);
 				}

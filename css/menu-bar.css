@@ -29,16 +29,22 @@ div.menubar-sharebox {
 	color: black;
 }
 
+span.menubar-shareicon {
+	font-family: "FontAwesome";
+	margin-right: 20px;
+}
+
 div.menubar-sharebox-title {
-	font-size: 18pt;
+	font-size: 16pt;
 	font-weight: bold;
 	margin-top: 20px;
-	margin-left: 50px;
+	margin-left: 20px;
 	color: #666;
 }
 
 div.menubar-sharebox-content {
 	margin: 20px;
+	color: black;
 }
 
 div.menubar-sharebox-content .projecturl {
@@ -391,6 +397,7 @@ div.jseden-title:hover {
 }*/
 
 iframe.menubar-login-iframe {
+	margin-top: 20px;
 	/*position: absolute;
 	top: 20%;
 	margin-left: auto;
