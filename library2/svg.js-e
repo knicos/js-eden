@@ -20,6 +20,11 @@ _js_svg_createElement_args_text is ["picture", i, "text"];
 _js_svg_updateContent_args_text is ["picture", i, e.text];
 _js_svg_updateAttribute_args_text_style is ["picture", i, "style", "fill: " + e.colour + "; stroke: "+e.colour+"; font-size: " + e.size+ "pt; font-weight: " + e.weight+";"];
 
+_js_svg_createElement_args_text is ["picture", i, "circle"];
+_js_svg_updateAttribute_args_circle_x is ["picture", i, "cx", ""+ e.position.x];
+_js_svg_updateAttribute_args_circle_y is ["picture", i, "cy", ""+ e.position.y];
+_js_svg_updateAttribute_args_circle_r is ["picture", i, "r", ""+ e.radius];
+
 /** #library #svg */
 Point is [x,y](x-->0,y-->0);
 /** #library #svg #drawable */
@@ -27,7 +32,9 @@ Line is self(start-->Point,end-->Point,colour-->"black",width-->2);
 /** #library #svg #drawable */
 Text is self(position-->Point,text-->"Text",colour-->"black",size-->12,family->"Arial",weight->"normal");
 /** #library #svg #drawable */
-Rectangle is self(start-->Point,size-->Point,colour-->"black",border-->"black",borderSize-->2);
+Rectangle is self(position-->Point,size-->Point,colour-->"black",border-->"black",borderSize-->2);
+/** #library #svg #drawable */
+Circle is self(position-->Point,radius-->100,colour-->"white",border-->"black",borderSize-->2);
 
 /** Update the screen. #library */
 when (picture) {
@@ -54,8 +61,15 @@ when (picture) {
 			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_y);
 			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_text_style);
 			call _js_svg_updateContent(args->_js_svg_updateContent_args_text);
+			i = i + 1;
 		} else if (e.self == "Circle") {
-
+			call _js_svg_createElement(args->_js_svg_createElement_args_circle);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_circle_x);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_circle_y);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_circle_r);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_stroke);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_strokewidth);
+			call _js_svg_updateAttribute(args->_js_svg_updateAttribute_args_rect_fill);
 		}
 	}
 }(i-->0)
