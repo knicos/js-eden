@@ -293,8 +293,11 @@ Eden.DB.loadDatabaseRoot = function(callback) {
 				//console.error(a);
 				//eden.error(a);
 				Eden.DB.disconnect(true);
+				if (callback) callback();
 			}
 		});
+	} else {
+		if (callback) callback();
 	}
 }
 
