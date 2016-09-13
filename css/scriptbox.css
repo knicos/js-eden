@@ -173,7 +173,7 @@ div.scriptbox-gutter.error:before {
 
 .hidden-textarea {
 	position: relative;
-	left: -300px;
+	left: -30000px;
 }
 
 div.scriptview {

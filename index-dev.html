@@ -43,7 +43,7 @@ See LICENSE.txt
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
-			justify-content: center;
+			justify-content: left;
 			overflow-y: auto;
 		}
 
@@ -60,11 +60,15 @@ See LICENSE.txt
 			border: 1px solid #eee;
 			font-family: "FontAwesome";
 			font-size: 60px;
-			background: #f5f5f5;
+			background: #d0f0f5;
 			cursor: pointer;
 			text-align: center;
 			padding-top: 10px;
 			padding-bottom: 10px;
+		}
+
+		div.cadence-plisting-icon.special {
+			background: #f5f5d0;
 		}
 
 		div.cadence-plisting-title {
@@ -168,6 +172,8 @@ See LICENSE.txt
 
 
 <script type="text/javascript">
+	var projects;
+
 	function get_time_diff( timestamp )
 	{
 		var datetime = timestamp * 1000;
@@ -288,15 +294,31 @@ See LICENSE.txt
 				var path = "jseden2/"+user;
 				var plist = lopts.find(".jseden-dialog-plisting");
 				Eden.DB.getDirectory(path, function(data) {
-					console.log(data);
+					var ordered = [];
+
 					for (var x in data) {
-						var meta = Eden.DB.meta[path+"/"+x];
+						ordered.push(path+"/"+x);
+					}
+
+					ordered.sort(function(a,b) {
+						var t = Eden.DB.meta[a].date.split(/[- :]/);
+						var da = (new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000;
+						t = Eden.DB.meta[b].date.split(/[- :]/);
+						var db = (new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000;
+						return da < db;
+					});
+
+					for (var i=0; i<ordered.length; i++) {
+						var meta = Eden.DB.meta[ordered[i]];
 						var t = meta.date.split(/[- :]/);
+						var title = meta.title;
 						//Eden.DB.getMeta(path+"/"+x,function(path,meta) {
-							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(path+"/"+x)+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+x+'</div><div class="cadence-plisting-subtitle">'+get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000)+'</div></div>'));
+							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(ordered[i])+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+title+'</div><div class="cadence-plisting-subtitle">'+get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000)+'</div></div>'));
 							//console.log(Eden.DB.meta[path+"/"+x]);
 						//});
 					}
+
+					projects = ordered;
 				});
 			}
 
@@ -329,10 +351,11 @@ See LICENSE.txt
 
 <div id="loadoptions" class="modal" style="display: none;">
 	<div class="modal-content">
+		<div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div>
 		<div class="jseden-dialog-plisting">
-			<div id="loadnew" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon">&#xf067;</div><div class="cadence-plisting-title">New Project</div></div>
-			<div id="importfile" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon">&#xf07c;</div><div class="cadence-plisting-title">Import File</div></div>
-			<div id="restoreold" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon">&#xf01e;</div><div class="cadence-plisting-title">Restore Last</div></div>
+			<div id="loadnew" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon special">&#xf067;</div><div class="cadence-plisting-title">New Project</div></div>
+			<div id="importfile" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon special">&#xf07c;</div><div class="cadence-plisting-title">Import File</div></div>
+			<div id="restoreold" class="cadence-plisting-entry noselect"><div class="cadence-plisting-icon special">&#xf01e;</div><div class="cadence-plisting-title">Restore Last</div></div>
 		</div>
 	</div>
 </div>

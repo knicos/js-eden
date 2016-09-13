@@ -57,7 +57,7 @@ Eden.Statement.findFree = function() {
 	return -1;
 }
 
-Eden.Statement.search = function(str) {
+Eden.Statement.search = function(str, cb) {
 	var words = str.split(/[ ]+/);
 	var res;
 	var i = 0;
@@ -66,6 +66,9 @@ Eden.Statement.search = function(str) {
 	var inittoken = false;
 
 	if (words.length > 0) {
+		// Init server search
+		Eden.Statement.remoteSearch(str,cb);
+
 		if (words[0].charAt(words[0].length-1) == ":") {
 			i = 1;
 			inittoken = true;
@@ -163,6 +166,12 @@ Eden.Statement.search = function(str) {
 		return res;
 	} else if (tagres) {
 		return {tags: tagres};
+	}
+}
+
+Eden.Statement.remoteSearch = function(str, cb) {
+	if (Eden.Statement.connected) {
+		Eden.Statement.connection.send(JSON.stringify({action: "search", query: str}));
 	}
 }
 

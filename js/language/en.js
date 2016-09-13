@@ -1,7 +1,7 @@
 //Language.keywords.push.apply(Language.keywords, {...});
 //Language.symbols.push.apply(Language.symbols, {...});
 
-Language.errors = [
+Eden.Language.errors = [
 /* EDEN_ERROR_UNKNOWN */ [
 	"An unknown error occurred"
 ],
@@ -298,7 +298,7 @@ Language.errors = [
 ]
 ];
 
-Language.ui = {
+Eden.Language.ui = {
 	"input_window": {
 		title: "Script View",
 		description: "Provides the ability to type in definitional scripts using the keyboard, submit them for interpretation and recall the input history.",

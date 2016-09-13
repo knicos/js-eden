@@ -657,7 +657,8 @@ Eden.DB.save = function(title, cb) {
 	status.source = JSON.stringify({
 		statements: Eden.Statement.save(),
 		title: title,
-		scriptviews: EdenUI.ScriptView.saveData()
+		scriptviews: EdenUI.ScriptView.saveData() //,
+		//thumb: EdenUI.SVGView.thumbnail()
 	});
 
 	if (Eden.DB.isLoggedIn()) {

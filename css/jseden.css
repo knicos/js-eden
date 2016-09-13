@@ -55,7 +55,9 @@ button.jseden {
 /* Modal Content/Box */
 .modal-content {
     background-color: #fefefe;
-    margin: 20% auto; /* 15% from the top and centered */
+	position: relative;
+	top: 10%;
+    margin: 20px auto; /* 15% from the top and centered */
 	border: 1px solid #222;
 	border-bottom-left-radius: 6px;
 	border-bottom-right-radius: 6px;
@@ -430,7 +432,7 @@ div.jseden-view {
 	top: 200px;
 	left: 50px;
 	z-index: 2000;
-	overflow: hidden;
+	/*overflow: hidden;*/
 }
 
 div.jseden-viewcontent {

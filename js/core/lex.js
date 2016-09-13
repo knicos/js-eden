@@ -420,9 +420,9 @@ EdenStream.prototype.readToken = function() {
 	this.unget();
 
 	if (this.parseAlphaNumeric(this.data)) {
-		if (Language.keywords.hasOwnProperty(this.data.value)) return Language.keywords[this.data.value];
-		if (Language.values.hasOwnProperty(this.data.value)) {
-			this.data.value = Language.values[this.data.value];
+		if (Eden.Language.keywords.hasOwnProperty(this.data.value)) return Eden.Language.keywords[this.data.value];
+		if (Eden.Language.values.hasOwnProperty(this.data.value)) {
+			this.data.value = Eden.Language.values[this.data.value];
 			return "BOOLEAN";
 		}
 		return "OBSERVABLE";
@@ -450,8 +450,11 @@ function edenTokenTest(code) {
 	return result;
 };
 
+Eden.EdenStream = EdenStream;
+Eden.EdenSyntaxData = EdenSyntaxData;
+
 // expose as node.js module
-if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-	exports.EdenStream = EdenStream;
-	exports.EdenSyntaxData = EdenSyntaxData;
-}
+//if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
+//	exports.EdenStream = EdenStream;
+//	exports.EdenSyntaxData = EdenSyntaxData;
+//}

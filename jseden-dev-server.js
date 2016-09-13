@@ -7,6 +7,12 @@
  */
 var connect = require('connect');
 var serveStatic = require('serve-static');
+Eden = {};
+require("./js/language/lang.js");
+require("./js/language/en.js");
+require("./js/core/lex.js");
+require("./js/core/translator2.js");
+require("./js/core/ast.js");
 var port = 8000;
 
 var app = connect();
@@ -109,6 +115,56 @@ function sendToAllExcept(sessionKey, except, data) {
 	}
 }
 
+
+function SharedStatement(rid, source) {
+	this.rid = rid;
+	this.source = undefined;
+	this.ast = undefined;
+}
+
+SharedStatement.prototype.setSource = function(source) {
+	var stat = (this.ast) ? this.ast.script : undefined;
+
+	if (stat && (stat.type == "definition" || stat.type == "assignment")) {
+		if (symbols[stat.lvalue.name] && symbols[stat.lvalue.name][this.rid]) {
+			symbols[stat.lvalue.name][this.rid] = undefined;
+		}
+
+		if (stat.doxyComment) {
+			var tags = stat.doxyComment.getHashTags();
+			for (var i=0; i<tags.length; i++) {
+				//if (Eden.Statement.tags[tags[i]] === undefined) Eden.Statement.tags[tags[i]] = [];
+				delete hashtags[tags[i]][this.rid];
+				hashtags[tags[i]].length--;
+				if (hashtags[tags[i]].length == 0) delete hashtags[tags[i]];
+			}
+		}
+	}
+
+	this.source = source;
+	this.ast = new Eden.AST(source,undefined,true);
+	stat = this.ast.script;
+
+	if (stat.type == "definition" || stat.type == "assignment") {
+		if (symbols[stat.lvalue.name] === undefined) symbols[stat.lvalue.name] = {};
+		symbols[stat.lvalue.name][this.rid] = this;
+	}
+
+	if (stat.doxyComment) {
+		var tags = stat.doxyComment.getHashTags();
+		for (var i=0; i<tags.length; i++) {
+			if (hashtags[tags[i]] === undefined) hashtags[tags[i]] = {length:1};
+			else hashtags[tags[i]].length++;
+			hashtags[tags[i]][this.rid] = this;
+		}
+	}
+}
+
+statements = {};
+symbols = {};
+hashtags = {};
+
+
 function processCode(socket, data){
 	var sessionKey = socketKeys[socket.upgradeReq.headers["sec-websocket-key"]];
 	var socketsInSession = allSockets[sessionKey];
@@ -116,6 +172,14 @@ function processCode(socket, data){
 	var replay = false;
 	var code = JSON.parse(data);
 	var codeLines = [];
+
+	if (code.action == "update") {
+		if (statements[code.rid] === undefined) {
+			statements[code.rid] = new SharedStatement(code.rid);
+		}
+		var stat = statements[code.rid];
+		stat.setSource(code.source);
+	}
 
 	// Need to manage ownership of script edit permissions
 	/*if (code.action == "ownership") {

@@ -72,6 +72,9 @@ function Construit(options,callback) {
 	var load = URLUtil.getParameterByName("load");
 	var tag = URLUtil.getParameterByName("tag");
 	var addr = URLUtil.getParameterByName("addr");
+	var embed = URLUtil.getParameterByName("embed");
+
+	if (embed == "true") Eden.mobile = true;
 	//var imports = URLUtil.getArrayParameterByName("import");
 
 	if (developer) {

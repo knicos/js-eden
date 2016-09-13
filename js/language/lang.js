@@ -140,6 +140,8 @@ var Language = {
 };
 
 // expose as node.js module
-if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-	exports.Language = Language;
-}
+//if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
+//	exports.Language = Language;
+//}
+
+Eden.Language = Language;

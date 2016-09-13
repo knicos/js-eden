@@ -14,8 +14,8 @@
  * @param code String containing the script.
  */
 Eden.AST = function(code, imports, singleton) {
-	this.stream = new EdenStream(code);
-	this.data = new EdenSyntaxData();
+	this.stream = new Eden.EdenStream(code);
+	this.data = new Eden.EdenSyntaxData();
 	this.token = "INVALID";
 	this.previous = "INVALID";
 	this.src = "input";
@@ -2793,7 +2793,7 @@ Eden.AST.prototype.pSCRIPT = function() {
 };
 
 // expose as node.js module
-if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-	exports.Eden.AST = Eden.AST;
-}
+//if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
+//	exports.Eden.AST = Eden.AST;
+//}
 
