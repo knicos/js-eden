@@ -1,9 +1,12 @@
 EdenUI.SVG = function(name, title, source) {
+	EdenUI.SVG.init();
+
 	this.name = name;
 	this.title = title;
 	this.source = (source) ? source : "picture";
 	this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	this.contents = $('<div class="jseden-viewcontent2"></div>');
+	//this.svg.className = "jseden-svg";
+	this.contents = $('<div class="jseden-viewcontent2 jseden-svg"></div>');
 	this.svg.setAttribute("width","100%");
 	this.svg.setAttribute("height","100%");
 	this.svg.setAttribute("style", "background: white;");
@@ -20,6 +23,17 @@ EdenUI.SVG = function(name, title, source) {
 }
 
 EdenUI.SVG.sources = {};
+EdenUI.SVG.inited = false;
+
+EdenUI.SVG.init = function() {
+	if (EdenUI.SVG.inited) return;
+	EdenUI.SVG.inited = true;
+
+	$(document.body).on("mousemove",".jseden-svg",function(e) {
+		eden.root.lookup("mouseX").assign(e.offsetX,eden.root.scope);
+		eden.root.lookup("mouseY").assign(e.offsetY,eden.root.scope);
+	});
+}
 
 EdenUI.SVG.prototype.createElement = function(index, type) {
 	if (this.svg.childNodes[index] && this.svg.childNodes[index].nodeName == type) return;

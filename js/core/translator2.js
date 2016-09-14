@@ -717,6 +717,16 @@ Eden.AST.prototype.pFACTOR_SIMPLE = function() {
 		return lit;
 	} else {
 		var primary = this.pPRIMARY();
+		if (this.token == "(") {
+			this.next();
+			var scope = this.pSCOPE();
+			scope.setExpression(primary);
+			primary = scope;
+			if (this.token != ")") {
+				primary.error(new Eden.SyntaxError(this, Eden.SyntaxError.SCOPECLOSE));
+			}
+			this.next();
+		}
 		return primary;
 	}
 }

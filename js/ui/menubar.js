@@ -43,7 +43,7 @@ EdenUI.MenuBar = function() {
 		}
 	});
 
-	this.sharebox = $('<div class="modal"><div class="modal-content" style="width: 400px;"><div class="menubar-sharebox-title"><span class="menubar-shareicon">&#xf1e0;</span>Save and Share</div><div class="menubar-sharebox-content">Link to this project:<div class="projecturl"></div><br/>Download to file: <span class="downloadurl"></span><br/><br><button class="jseden done" style="margin-top: 20px;">Done</button></div></div></div>');
+	this.sharebox = $('<div class="modal"><div class="modal-content" style="width: 400px;"><div class="menubar-sharebox-title"><span class="menubar-shareicon">&#xf1e0;</span>Save and Share</div><div class="menubar-sharebox-content">Saved to your projects and shared at:<div class="projecturl"></div><br/>Download to file: <span class="downloadurl"></span><br/><br><button class="jseden done" style="margin-top: 20px;">Done</button></div></div></div>');
 	this.element.append(this.sharebox);
 	this.sharebox.hide();
 
@@ -67,18 +67,26 @@ EdenUI.MenuBar = function() {
 	this.element.on("click", ".menubar-button.share", function(e) {
 		var title = me.element.find(".jseden-title").get(0).textContent;
 
+		me.sharebox.find(".projecturl").html('Saving...');
+		me.sharebox.show();
+
 		Eden.DB.save(title, function(status) {
 			if (status.path) {
 				var url = "?load="+status.path+"&tag="+status.saveID;
 				me.sharebox.find(".projecturl").html(window.location.href+url);
+				//function selectElementContents(el) {
+				var range = document.createRange();
+				range.selectNodeContents(me.sharebox.find(".projecturl").get(0));
+				var sel = window.getSelection();
+				sel.removeAllRanges();
+				sel.addRange(range);
+				//}
 			} else {
-				me.sharebox.find(".projecturl").html('No URL, not logged in.');
+				me.sharebox.find(".projecturl").html('<b>Save failed</b>, not logged in.');
 			}
 
 			var source = "data:application/octet-stream," + encodeURIComponent(status.source);
 			me.sharebox.find(".downloadurl").html('<a href="'+source+'" download="'+title+'.js-e">'+title+'.js-e</a>');
-
-			me.sharebox.show();
 		});
 	});
 
