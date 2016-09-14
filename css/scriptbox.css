@@ -57,13 +57,17 @@ div.scriptbox-valuecontent {
 }
 
 div.scriptbox-statement {
-	border-bottom: 1px solid #e5e5e5;
+	/*border-bottom: 1px solid #e5e5e5;*/
 	border-top: 1px solid #e5e5e5;
-	margin-top: 6px;
+	/*margin-top: 6px;*/
 	background: white;
 	white-space: pre;
-	overflow-x: scroll;
+	overflow-x: auto;
 	overflow-y: hidden;
+}
+
+div.scriptbox-statement:last-child {
+	border-bottom: 1px solid #e5e5e5;
 }
 
 div.scriptbox-statement::-webkit-scrollbar {
@@ -481,6 +485,18 @@ div.scriptview-result {
 	overflow: hidden;
 }
 
+div.scriptview-resultremote {
+	padding: 5px;
+	/*border-top: 1px solid #e5e5e5;
+	border-bottom: 1px solid #e5e5e5;*/
+	margin-bottom: 2px;
+	font: 12px Roboto Mono,monospace;
+	background: white;
+	cursor: pointer;
+	white-space: pre;
+	overflow: hidden;
+}
+
 div.scriptview-resultview {
 	padding: 5px;
 	/*border-top: 1px solid #e5e5e5;
@@ -532,6 +548,10 @@ div.scriptview-result:hover {
 }
 
 div.scriptview-resultsearch:hover {
+	background: #f5f5f5;
+}
+
+div.scriptview-resultremote:hover {
 	background: #f5f5f5;
 }
 

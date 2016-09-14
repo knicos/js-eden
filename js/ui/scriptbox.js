@@ -145,7 +145,7 @@ EdenUI.ScriptBox = function(element, options) {
 
 
 	function enableInspectMode() {
-		me.outdiv.contentEditable = false;
+		//me.outdiv.contentEditable = false;
 		changeClass(me.outdiv, "inspect", true);
 		me.inspectmode = true;
 		// TODO Remove caret and merge those spans
@@ -154,7 +154,7 @@ EdenUI.ScriptBox = function(element, options) {
 	}
 
 	function enableGotoMode() {
-		me.outdiv.contentEditable = false;
+		//me.outdiv.contentEditable = false;
 		changeClass(me.outdiv, "goto", true);
 		me.gotomode = true;
 	}
@@ -525,11 +525,12 @@ EdenUI.ScriptBox = function(element, options) {
 	}
 
 	function onStatementClick(e) {
-		if (me.outdiv === undefined || e.currentTarget !== me.outdiv.parentNode) {
+		if (me.dragline == -1 && (me.outdiv === undefined || e.currentTarget !== me.outdiv.parentNode)) {
 			//Eden.Statement.statements[me.currentstatement].setSource(me.intextarea.value, me.ast);
 			var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 			me.moveTo(num);
 			//return;
+			//me.outdiv.focus();
 		}
 	}
 
@@ -555,7 +556,7 @@ EdenUI.ScriptBox = function(element, options) {
 	.on('click','.scriptbox-gutter', onGutterClick)
 	.on('click','.scriptbox-sticky', onStickyClick)
 	.on('click','.scriptbox-valueclose', onValueClose)
-	.on('click','.scriptbox-statement', onStatementClick);
+	.on('mouseenter','.scriptbox-statement', onStatementClick);
 	
 	this.setSource("");
 
@@ -620,6 +621,7 @@ EdenUI.ScriptBox.prototype.setChangeCB = function(cb) {
 }
 
 EdenUI.ScriptBox.prototype.moveTo = function(num) {
+	if (num == this.currentstatement) return;
 	this.changeOutput($(this.statements[num]).find(".scriptbox-output").get(0));
 	this.currentstatement = num;
 	this.setSource(Eden.Statement.statements[this.currentstatement].source);
@@ -789,7 +791,7 @@ EdenUI.ScriptBox.prototype.hideInfoBox = function() {
 }
 
 EdenUI.ScriptBox.prototype.enableGotoMode = function() {
-	this.outdiv.contentEditable = false;
+	//this.outdiv.contentEditable = false;
 	changeClass(this.outdiv, "goto", true);
 	this.gotomode = true;
 }
@@ -820,7 +822,7 @@ EdenUI.ScriptBox.prototype.disable = function() {
 	if (!this.outdiv) return;
 	changeClass(this.outdiv, "goto", false);
 	this.gotomode = false;
-	this.outdiv.contentEditable = false;
+	//this.outdiv.contentEditable = false;
 	changeClass(this.outdiv.parentNode, "readonly", true);
 	if (this.ast) {
 		//this.highlighter.hideComments();

@@ -71,6 +71,7 @@ EdenUI.ScriptView = function(name, title, options) {
 	this.bar = this.contents.find(".scriptview-bar");
 	this.menushow = this.contents.find(".scriptview-menuicon");
 	this.lastres = undefined;
+	this.lastrem = undefined;
 	this.searchreshidden = true;
 	this.nobuttons = (options && options.nobuttons !== undefined) ? options.nobuttons : false;
 
@@ -131,7 +132,13 @@ EdenUI.ScriptView = function(name, title, options) {
 				me.searchres.hide();
 				me.searchreshidden = true;
 			} else if (str != "") {
-				var res = Eden.Statement.search(str);
+				var res;
+				// Init server search
+				Eden.Statement.remoteSearch(str,function(results) {
+					me.lastrem = results;
+					me.updateSearchResults(res, str, results);
+				});
+				res = Eden.Statement.search(str);
 				me.lastres = res;
 				me.updateSearchResults(res, str);
 			} else {
@@ -162,6 +169,18 @@ EdenUI.ScriptView = function(name, title, options) {
 			me.searchreshidden = true;
 			//me.bar.hide("fast");
 			//me.menushow.show();
+		});
+
+		this.searchres.on("click", ".scriptview-resultremote", function(e) {
+			var num = parseInt(e.currentTarget.getAttribute("data-remote"));
+			var stat = new Eden.Statement();
+			stat.rid = me.lastrem.inactive[num].rid;
+			Eden.Statement.shared[stat.rid] = stat;
+			stat.setSource(me.lastrem.inactive[num].source, undefined, undefined, true);
+			me.script.insertStatement(Eden.Statement.statements[stat.id], true);
+			//else me.script.moveTo(num);
+			me.searchres.hide();
+			me.searchreshidden = true;
 		});
 
 		this.searchres.on("click", ".scriptview-resultsearch", function(e) {
@@ -281,7 +300,7 @@ EdenUI.ScriptView.loadData = function(object) {
 	}
 }
 
-EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
+EdenUI.ScriptView.prototype.updateSearchResults = function(res,str,remote) {
 	if (res === undefined) res = {active:[],inactive:[],agents:[]};
 
 	var regex = edenUI.regExpFromStr(str);
@@ -292,7 +311,7 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 		}	
 	}
 
-	if (res && ((res.tags && res.tags.length > 0) || res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0)) {
+	if ((remote && remote.inactive.length > 0) || (res && ((res.tags && res.tags.length > 0) || res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0))) {
 		if (this.searchreshidden) {
 			this.searchres.show('fast');
 			this.searchreshidden = false;
@@ -345,6 +364,15 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str) {
 				var com = "";
 				if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
 				html += "<div class='scriptview-result' data-statement='"+res.inactive[i]+"'"+((com!="")?" title='"+com+"'":"")+"><span class='scriptview-resulticon'>&#xf070;</span>"+src+"</div>\n";
+			}
+			symmax -= res.active.length;
+		}
+
+		if (symmax > 0 && remote) {
+			for (var i=0; i<((remote.inactive.length > symmax)?symmax:remote.inactive.length); i++) {
+				var ast = new Eden.AST(remote.inactive[i].source,undefined,true);
+				var src = ast.getSource(ast.script).split("\n")[0];
+				html += "<div class='scriptview-resultremote' data-remote='"+i+"'><span class='scriptview-resulticon'>&#xf0c2</span>"+src+"</div>\n";
 			}
 		}
 
@@ -406,9 +434,9 @@ EdenUI.ScriptView.xProto.createdCallback = function() {
 	});*/
 }
 
-EdenUI.ScriptView.xProduct = document.registerElement("x-construit-script", {
+/*EdenUI.ScriptView.xProduct = document.registerElement("x-construit-script", {
 	prototype: EdenUI.ScriptView.xProto
-});
+});*/
 
 
 

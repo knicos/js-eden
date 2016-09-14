@@ -380,7 +380,7 @@ div.jseden-viewbar {
 	left: 0;
 	right: 0;
 	top: 0;
-	height: 40px;
+	height: 35px;
 	background: white;
 	/*border-bottom: 1px solid #e5e5e5;*/
 	box-sizing: border-box;
@@ -391,7 +391,7 @@ div.jseden-viewtitle {
 	font-size: 18pt;
 	font-weight: bold;
 	position: absolute;
-	top: 10px;
+	top: 5px;
 	left: 30px;
 	color: #666;
 	box-sizing: border-box;
@@ -439,7 +439,7 @@ div.jseden-viewcontent {
 	position: absolute;
 	left: 0;
 	right: 0;
-	top: 40px;
+	top: 35px;
 	bottom: 0;
 }
 

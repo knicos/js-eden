@@ -3138,6 +3138,8 @@ Eden.AST.When.prototype.compile = function(base) {
 
 	// MUST EXECUTE CONDITION TO GENERATE DYNAMIC DEPENDENCIES
 	var scope = eden.root.scope;
+	if (scope === undefined) return;
+
 	if (this.compScope) {
 		try { scope = this.compScope.call(this,eden.root, eden.root.scope) } catch(e) {}
 		//scope.causecount = 0;

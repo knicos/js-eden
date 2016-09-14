@@ -73,8 +73,12 @@ function Construit(options,callback) {
 	var tag = URLUtil.getParameterByName("tag");
 	var addr = URLUtil.getParameterByName("addr");
 	var embed = URLUtil.getParameterByName("embed");
+	var restore = URLUtil.getParameterByName("restore");
 
-	if (embed == "true") Eden.mobile = true;
+	if (embed == "true") {
+		Eden.mobile = true;
+		if (URLUtil.getParameterByName("menu") == "") menuBar = false;
+	}
 	//var imports = URLUtil.getArrayParameterByName("import");
 
 	if (developer) {
@@ -217,7 +221,9 @@ function Construit(options,callback) {
 			if (callback) callback(didload);
 		}
 
-		Eden.Statement.connect((addr == "") ? window.location.hostname : addr);
+		if (addr != "none") {
+			Eden.Statement.connect((addr == "") ? window.location.hostname : addr);
+		}
 
 		loadLanguage(lang, function() {
 			loadPlugins(plugins, function () {
@@ -231,6 +237,8 @@ function Construit(options,callback) {
 							
 							if (load != "" && tag != "") {
 								Eden.load(load,tag,function(){ doneLoading(true); });
+							} else if (restore != "") {
+								doneLoading(Eden.restore());
 							} else {
 								doneLoading(false);
 							}

@@ -1,39 +1,4 @@
-function sortByCount(arr) {
-	// Sort results by count.
-	var map = arr.reduce(function (p, c) {
-		p[c] = (p[c] || 0) + 1;
-		return p;
-	}, {});
-	return Object.keys(map).sort(function (a, b) {
-		return map[a] < map[b];
-	});
-}
 
-function reduceByCount(arr, num) {
-	var map = arr.reduce(function (p, c) {
-		p[c] = (p[c] || 0) + 1;
-		return p;
-	}, {});
-
-	var res = [];
-	for (var x in map) {
-		if (map[x] >= num) res.push(x);
-	}
-	return res;
-}
-
-function negativeFilter(arr, neg) {
-	var map = neg.reduce(function (p, c) {
-		p[c] = (p[c] || 0) + 1;
-		return p;
-	}, {});
-
-	var res = [];
-	for (var i=0; i<arr.length; i++) {
-		if (!map[arr[i]]) res.push(arr[i]);
-	}
-	return res;
-}
 
 Eden.Statement = function() {
 	var ffree = Eden.Statement.findFree();
@@ -66,9 +31,6 @@ Eden.Statement.search = function(str, cb) {
 	var inittoken = false;
 
 	if (words.length > 0) {
-		// Init server search
-		Eden.Statement.remoteSearch(str,cb);
-
 		if (words[0].charAt(words[0].length-1) == ":") {
 			i = 1;
 			inittoken = true;
@@ -171,6 +133,7 @@ Eden.Statement.search = function(str, cb) {
 
 Eden.Statement.remoteSearch = function(str, cb) {
 	if (Eden.Statement.connected) {
+		Eden.Statement.querycb = cb;
 		Eden.Statement.connection.send(JSON.stringify({action: "search", query: str}));
 	}
 }
@@ -363,14 +326,14 @@ Eden.Statement.load = function(object) {
 		for (var i=0; i<stats.length; i++) {
 			if (stats[i]) {
 				var stat = new Eden.Statement();
+				if (stats[i].rid) {
+					stat.rid = stats[i].rid;
+					Eden.Statement.shared[stats[i].rid] = stat;
+				}
 				stat.setSource(stats[i].source, new Eden.AST(stats[i].source, undefined, true));
 				if (stats[i].active) {
 					//console.log("ACTIVATE: " + ((stat.statement.type == "definition") ? stat.statement.lvalue.name : ""));
 					stat.activate();
-				}
-				if (stats[i].rid) {
-					stat.rid = stats[i].rid;
-					Eden.Statement.shared[stats[i].rid] = stat;
 				}
 			} else {
 				Eden.Statement.statements.push(undefined);
@@ -467,19 +430,19 @@ Eden.Statement.prototype.setSource = function(src, ast, stat, net) {
 				else Eden.Statement.tags[tags[i]].length++;
 				Eden.Statement.tags[tags[i]][this.id] = this;
 			}
-			if (!net) {
-				var controls = stat.doxyComment.getControls();
-				if (controls && controls["@shared"]) {
-					if (Eden.Statement.connected) {
-						console.log("SEND");
-						if (this.rid === undefined) {
-							this.rid = makeRandomName();
-							Eden.Statement.shared[this.rid] = this;
-						}
-						Eden.Statement.connection.send(JSON.stringify({action: "update", rid: this.rid, source: this.source}));
+		}
+		if (!net) {
+			//var controls = stat.doxyComment.getControls();
+			//if (controls && controls["@shared"]) {
+				if (Eden.Statement.connected) {
+					//console.log("SEND");
+					if (this.rid === undefined) {
+						this.rid = makeRandomName();
+						Eden.Statement.shared[this.rid] = this;
 					}
+					Eden.Statement.connection.send(JSON.stringify({action: "update", rid: this.rid, source: this.source}));
 				}
-			}
+			//}
 		}
 	}
 
@@ -646,12 +609,19 @@ Eden.Statement.connect = function(addr) {
 									break;
 			}*/
 
-			console.log(line);
+			//console.log(line);
 
 			if (line.action == "update") {
 				if (Eden.Statement.shared[line.rid]) {
 					Eden.Statement.shared[line.rid].setSource(line.source, undefined, undefined, true);
 				}
+			} else if (line.action == "results" && Eden.Statement.querycb) {
+				var nres = {agents: [], inactive: []};
+				for (var i=0; i<line.results.inactive.length; i++) {
+					if (Eden.Statement.shared[line.results.inactive[i].rid] === undefined) nres.inactive.push(line.results.inactive[i]);
+				}
+				Eden.Statement.querycb(nres);
+				Eden.Statement.querycb = undefined;
 			}
 
 			/*continue;
