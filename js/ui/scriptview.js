@@ -184,14 +184,20 @@ EdenUI.ScriptView = function(name, title, options) {
 		});
 
 		this.searchres.on("click", ".scriptview-resultsearch", function(e) {
-			for (var i=0; i<me.lastres.active.length; i++) {
-				me.script.insertStatement(Eden.Statement.statements[me.lastres.active[i]], false);
-			}
-			for (var i=0; i<me.lastres.inactive.length; i++) {
-				me.script.insertStatement(Eden.Statement.statements[me.lastres.inactive[i]], false);
-			}
-			for (var i=0; i<me.lastres.agents.length; i++) {
-				me.script.insertStatement(Eden.Statement.statements[me.lastres.agents[i]], false);
+			if (me.lastres.all && me.lastres.all.length > 0) {
+				for (var i=0; i<me.lastres.all.length; i++) {
+					me.script.insertStatement(Eden.Statement.statements[me.lastres.all[i]], false);
+				}
+			} else {
+				for (var i=0; i<me.lastres.active.length; i++) {
+					me.script.insertStatement(Eden.Statement.statements[me.lastres.active[i]], false);
+				}
+				for (var i=0; i<me.lastres.inactive.length; i++) {
+					me.script.insertStatement(Eden.Statement.statements[me.lastres.inactive[i]], false);
+				}
+				for (var i=0; i<me.lastres.agents.length; i++) {
+					me.script.insertStatement(Eden.Statement.statements[me.lastres.agents[i]], false);
+				}
 			}
 			me.searchres.hide();
 			me.searchreshidden = true;
@@ -311,7 +317,28 @@ EdenUI.ScriptView.prototype.updateSearchResults = function(res,str,remote) {
 		}	
 	}
 
-	if ((remote && remote.inactive.length > 0) || (res && ((res.tags && res.tags.length > 0) || res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0))) {
+	if (res.all && res.all.length > 0) {
+		if (this.searchreshidden) {
+			this.searchres.show('fast');
+			this.searchreshidden = false;
+		}
+		var html = "";
+		var symmax = 5;
+
+		for (var i=0; i<((res.all.length > symmax)?3:res.all.length); i++) {
+			var stat = Eden.Statement.statements[res.all[i]];
+			//var src = stat.source.substring(stat.statement.start).split("\n")[0];
+			var src = stat.ast.getSource(stat.statement).split("\n")[0];
+			var com = "";
+			if (stat.statement.doxyComment) com = stat.statement.doxyComment.stripped();
+			html += "<div class='scriptview-result' data-statement='"+res.all[i]+"'"+((com!="")?" title='"+com+"'":"")+"><span class='scriptview-resulticon'>&#xf070;</span>"+src+"</div>\n";
+		}
+		html += "<hr>";
+		html += "<div class='scriptview-resultsearch'><span class='scriptview-resulticon'>&#xf002;</span> All results for \""+str+"\"</div>";
+
+		this.searchres.html(html);
+
+	} else if ((remote && remote.inactive.length > 0) || (res && ((res.tags && res.tags.length > 0) || res.active.length > 0 || res.inactive.length > 0 || res.agents.length > 0 || res.views.length > 0))) {
 		if (this.searchreshidden) {
 			this.searchres.show('fast');
 			this.searchreshidden = false;

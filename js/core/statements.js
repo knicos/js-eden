@@ -13,6 +13,7 @@ Eden.Statement = function() {
 	this.ast = undefined;
 	this.owned = false;
 	this.rid = undefined;
+	this.timestamp = undefined;
 }
 
 Eden.Statement.findFree = function() {
@@ -29,6 +30,7 @@ Eden.Statement.search = function(str, cb) {
 	var rcount = words.length;
 	var tagres;
 	var inittoken = false;
+	var sortopts;
 
 	if (words.length > 0) {
 		if (words[0].charAt(words[0].length-1) == ":") {
@@ -58,7 +60,11 @@ Eden.Statement.search = function(str, cb) {
 			rcount--;
 			continue;
 		}
-		if (words[i].startsWith("depends:")) {
+		if (words[i].startsWith("sort:")) {
+			var opts = words[i].split(":");
+			sortopts = opts[1].split(",");
+			rcount--;
+		} else if (words[i].startsWith("depends:")) {
 			// Do a dependency search
 			var deps = words[i].split(":");
 			if (deps[1] == "") continue;
@@ -124,6 +130,30 @@ Eden.Statement.search = function(str, cb) {
 		res.inactive = reduceByCount(res.inactive, rcount);
 		res.agents = reduceByCount(res.agents, rcount);
 		if (tagres) res.tags = tagres;
+
+		// Now apply sorting
+		if (sortopts && sortopts.length > 0) {
+			var allres = [];
+			allres.push.apply(allres, res.active);
+			allres.push.apply(allres, res.inactive);
+
+			if (sortopts[0] == "youngest") {
+				allres.push.apply(allres, res.agents);
+				allres.sort(function(a,b) {
+					return Eden.Statement.statements[a].timestamp < Eden.Statement.statements[b].timestamp;
+				});
+			} else if (sortopts[0] == "oldest") {
+				allres.push.apply(allres, res.agents);
+				allres.sort(function(a,b) {
+					return Eden.Statement.statements[a].timestamp > Eden.Statement.statements[b].timestamp;
+				});
+			} else if (sortopts[0] == "name") {
+				allres.sort(function(a,b) {
+					return Eden.Statement.statements[a].statement.lvalue.name.toUpperCase().localeCompare(Eden.Statement.statements[b].statement.lvalue.name.toUpperCase());
+				});
+			}
+			res.all = allres;
+		}
 
 		return res;
 	} else if (tagres) {
@@ -390,6 +420,7 @@ Eden.Statement.autosave = function() {
 }
 
 Eden.Statement.prototype.setSource = function(src, ast, stat, net) {
+	if (this.source == src) return;
 	if (ast === undefined) ast = new Eden.AST(src,undefined, true);
 	if (ast && stat === undefined) stat = ast.script;
 	if (this.ast && this.statement && (this.statement.type == "definition" || this.statement.type == "assignment")) {
@@ -446,6 +477,7 @@ Eden.Statement.prototype.setSource = function(src, ast, stat, net) {
 		}
 	}
 
+	this.timestamp = Date.now();
 	Eden.Statement.autosave();
 }
 
