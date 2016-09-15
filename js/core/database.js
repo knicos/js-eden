@@ -660,9 +660,10 @@ Eden.DB.save = function(title, cb) {
 	status.source = JSON.stringify({
 		statements: Eden.Statement.save(),
 		title: title,
-		scriptviews: EdenUI.ScriptView.saveData() //,
-		//thumb: EdenUI.SVGView.thumbnail()
+		scriptviews: EdenUI.ScriptView.saveData()
 	});
+
+	
 
 	if (Eden.DB.isLoggedIn()) {
 		var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
@@ -671,14 +672,20 @@ Eden.DB.save = function(title, cb) {
 		if (meta === undefined) meta = new Eden.DB.createMeta(path);
 		//console.log(source);
 
-		meta.title = title;
+		EdenUI.SVG.thumbnail(function(thumb) {
+			if (thumb) {
+				meta.title = JSON.stringify({title: title, thumb: thumb});
+			} else {
+				meta.title = title;
+			}
 
-		Eden.DB.upload(path,meta,status.source,"v1",true,function() {
-			var url = "?load="+path+"&tag="+meta.saveID;
-			status.path = path;
-			status.saveID = meta.saveID;
-			if (cb) cb(status);
-			//console.log("UPLOAD");
+			Eden.DB.upload(path,meta,status.source,"v1",true,function() {
+				var url = "?load="+path+"&tag="+meta.saveID;
+				status.path = path;
+				status.saveID = meta.saveID;
+				if (cb) cb(status);
+				//console.log("UPLOAD");
+			});
 		});
 	} else {
 		if (cb) cb(status);

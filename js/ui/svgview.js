@@ -106,3 +106,74 @@ EdenUI.SVG.createDialog = function(name, mtitle) {
 	var viewdata = new EdenUI.SVG(name.slice(0,-7),mtitle);
 	return viewdata;
 }
+
+EdenUI.SVG.thumbnail = function(cb) {
+	if (EdenUI.SVG.sources["picture"] === undefined || EdenUI.SVG.sources["picture"].length == 0) {
+		if (cb) cb();
+		return;
+	}
+
+	var svgele = EdenUI.SVG.sources["picture"][0].svg;
+	svgele.setAttribute("width",""+svgele.clientWidth);
+	svgele.setAttribute("height",""+svgele.clientHeight);
+	var svgString = new XMLSerializer().serializeToString(svgele);
+	svgele.setAttribute("width","100%");
+	svgele.setAttribute("height","100%");
+
+	var imgwidth = svgele.clientWidth;
+	var imgheight = svgele.clientHeight;
+	var canwidth = 200;
+	var canheight = 112;
+
+	var imageAspectRatio = imgwidth / imgheight;
+	var canvasAspectRatio = canwidth / canheight;
+	var renderableHeight, renderableWidth, xStart, yStart;
+
+	// If image's aspect ratio is less than canvas's we fit on height
+	// and place the image centrally along width
+	if(imageAspectRatio < canvasAspectRatio) {
+		renderableHeight = canheight;
+		renderableWidth = imgwidth * (renderableHeight / imgheight);
+		xStart = (canwidth - renderableWidth) / 2;
+		yStart = 0;
+	}
+
+	// If image's aspect ratio is greater than canvas's we fit on width
+	// and place the image centrally along height
+	else if(imageAspectRatio > canvasAspectRatio) {
+		renderableWidth = canwidth
+		renderableHeight = imgheight * (renderableWidth / imgwidth);
+		xStart = 0;
+		yStart = (canheight - renderableHeight) / 2;
+	}
+
+	// Happy path - keep aspect ratio
+	else {
+		renderableHeight = canheight;
+		renderableWidth = canwidth;
+		xStart = 0;
+		yStart = 0;
+	}
+	//context.drawImage(imageObj, xStart, yStart, renderableWidth, renderableHeight);
+
+	//$(document.body).append($('<div id="png-container" style="margin-top: 200px;"></div>'));
+
+	var canvas = document.createElement("canvas");
+	canvas.setAttribute("width","200");
+	canvas.setAttribute("height","112");
+	var ctx = canvas.getContext("2d");
+	var DOMURL = self.URL || self.webkitURL || self;
+	var img = new Image();
+	var svg = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+	var url = DOMURL.createObjectURL(svg);
+	img.onload = function() {
+		//console.log("SVG: " + svgele.clientWidth + "x" + svgele.clientHeight + " @ " + canvas.width + "," + canvas.height);
+		ctx.drawImage(img, xStart, yStart, renderableWidth, renderableHeight);
+		var png = canvas.toDataURL("image/png");
+		//DOMURL.revokeObjectURL(png);
+		if (cb) cb(png);
+		//document.querySelector('#png-container').innerHTML = '<img src="'+png+'"/>';
+	};
+	img.src = url;
+}
+

@@ -49,7 +49,7 @@ See LICENSE.txt
 
 		div.cadence-plisting-entry {
 			width: 200px;
-			height: 142px;
+			height: 150px;
 			margin: 5px;
 			background-repeat: no-repeat;
 			cursor: pointer;
@@ -65,10 +65,20 @@ See LICENSE.txt
 			text-align: center;
 			padding-top: 10px;
 			padding-bottom: 10px;
+			height: 95px;
+		}
+
+		div.cadence-plisting-img {
+			border: 1px solid #eee;
+			background: white;
+			cursor: pointer;
+			text-align: center;
+			/*height: 112;*/
 		}
 
 		div.cadence-plisting-icon.special {
 			background: #f5f5d0;
+			height: 70px;
 		}
 
 		div.cadence-plisting-title {
@@ -94,6 +104,11 @@ See LICENSE.txt
 		}
 
 		div.cadence-plisting-entry:hover .cadence-plisting-icon {
+			border-color: #222;
+			background-color: white;
+		}
+
+		div.cadence-plisting-entry:hover .cadence-plisting-img {
 			border-color: #222;
 			background-color: white;
 		}
@@ -313,9 +328,19 @@ See LICENSE.txt
 						var meta = Eden.DB.meta[ordered[i]];
 						var t = meta.date.split(/[- :]/);
 						var title = meta.title;
+						var thumb = undefined;
+						if (title.charAt(0) == "{") {
+							var decoded = JSON.parse(title);
+							title = decoded.title;
+							thumb = decoded.thumb;
+						}
 						//Eden.DB.getMeta(path+"/"+x,function(path,meta) {
+						if (thumb) {
+							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(ordered[i])+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-img"><img src="'+thumb+'"></img></div><div class="cadence-plisting-title">'+title+'</div><div class="cadence-plisting-subtitle">'+get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000)+'</div></div>'));
+						} else {
 							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(ordered[i])+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+title+'</div><div class="cadence-plisting-subtitle">'+get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000)+'</div></div>'));
 							//console.log(Eden.DB.meta[path+"/"+x]);
+						}
 						//});
 					}
 
