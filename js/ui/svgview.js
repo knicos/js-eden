@@ -16,6 +16,8 @@ EdenUI.SVG = function(name, title, source) {
 	this.defaultWidth = 500;
 	this.defaultHeight = 500;
 
+	this.inspectmode = true;
+
 	if (EdenUI.SVG.sources[this.source] === undefined) {
 		EdenUI.SVG.sources[this.source] = [];
 	}
@@ -35,10 +37,19 @@ EdenUI.SVG.init = function() {
 	});
 }
 
-EdenUI.SVG.prototype.createElement = function(index, type) {
+EdenUI.SVG.prototype.createElement = function(index, type, name) {
 	if (this.svg.childNodes[index] && this.svg.childNodes[index].nodeName == type) return;
 
 	var e = document.createElementNS("http://www.w3.org/2000/svg", type);
+	//console.log(name);
+	//e.setAttribute("data-observable",(name)?name:"@");
+	e.setAttribute("class","svg-item");
+	var me = this;
+	e.onmouseover = function() {
+		if (name && me.inspectmode) {
+			console.log(name);
+		}
+	};
 
 	if (this.svg.childNodes[index] === undefined) {
 		this.svg.appendChild(e);
@@ -67,11 +78,11 @@ EdenUI.SVG.prototype.updateContent = function(index, value) {
 	}
 }
 
-EdenUI.SVG.createElement = function(source, index, type) {
+EdenUI.SVG.createElement = function(source, index, type, name) {
 	if (EdenUI.SVG.sources[source] === undefined) return;
 
 	for (var i=0; i<EdenUI.SVG.sources[source].length; i++) {
-		EdenUI.SVG.sources[source][i].createElement(index,type);
+		EdenUI.SVG.sources[source][i].createElement(index,type,name);
 	}
 }
 

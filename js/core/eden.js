@@ -1104,9 +1104,13 @@ function concatAndResolveUrl(url, concat) {
 		} else if (value === null) {
 			code = "$" + "{{ null }}" + "$";
 		} else if (type == "string") {
-			code = "\"" + value.replace(/\\/g,"\\\\").replace(/\"/g,"\\\"") + "\"";
-			// NOTE: For the new parser...
-			code = code.replace(/\n/g,"\"\n\"");
+			if (scope && /\[.+ object\]/.test(value)) {
+				code = scope.self();
+			} else {
+				code = "\"" + value.replace(/\\/g,"\\\\").replace(/\"/g,"\\\"") + "\"";
+				// NOTE: For the new parser...
+				code = code.replace(/\n/g,"\"\n\"");
+			}
 		} else if (Array.isArray(value)) {
 			if (refStack === undefined) {
 				refStack = [];

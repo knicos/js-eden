@@ -556,7 +556,7 @@ EdenUI.ScriptBox = function(element, options) {
 	.on('click','.scriptbox-gutter', onGutterClick)
 	.on('click','.scriptbox-sticky', onStickyClick)
 	.on('click','.scriptbox-valueclose', onValueClose)
-	.on('mouseenter','.scriptbox-statement', onStatementClick);
+	.on('mousedown','.scriptbox-statement', onStatementClick);
 	
 	this.setSource("");
 

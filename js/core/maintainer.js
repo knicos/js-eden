@@ -150,6 +150,16 @@
 		return res;
 	}
 
+	Scope.prototype.allCauseNames = function() {
+		var res = [];
+		var scope = this;
+		while (scope) {
+			if (scope.cause && scope.cause.name) res.push(scope.cause.name.slice(1));
+			scope = scope.parent;
+		}
+		return res;
+	}
+
 	Scope.prototype.allOverrides = function() {
 		var map = {};
 		var scope = this;
@@ -211,10 +221,12 @@
 		if (this.cache !== undefined) return;
 		this.cache = {};
 
-		this.add("/this");
-		this.add("/has");
-		this.add("/from");
-		this.add("/self");
+		if (this.parent) {
+			this.add("/this");
+			this.add("/has");
+			this.add("/from");
+			this.updateSubscriber("/self");
+		}
 
 		/* Process the overrides */
 		for (var i = 0; i < this.overrides.length; i++) {
@@ -520,13 +532,13 @@
 		 */
 		this.root = root || this;
 
-		this.scope = new Scope(this, undefined, {});
-
 		/**
 		 * @type {Object.<string, Symbol>}
 		 * @public
 		 */
 		this.symbols = {};
+
+		this.scope = new Scope(this, undefined, {});
 		
 		this.evalResults = {};
 
