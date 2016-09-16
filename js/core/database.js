@@ -683,6 +683,9 @@ Eden.DB.save = function(title, cb, pub) {
 				var url = "?load="+path+"&tag="+meta.saveID;
 				status.path = path;
 				status.saveID = meta.saveID;
+
+				window.history.replaceState({project: path, tag: meta.saveID},"",url);
+
 				if (cb) cb(status);
 				//console.log("UPLOAD");
 			});
@@ -696,6 +699,7 @@ Eden.DB.load = function(path, saveid, source, cb) {
 	function doload() {
 		Eden.Statement.load(source.statements);
 		EdenUI.ScriptView.loadData(source.scriptviews);
+
 		if (cb) cb(source);
 	}
 

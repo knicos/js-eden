@@ -679,7 +679,7 @@ function concatAndResolveUrl(url, concat) {
 		var initialDefinitions = {};
 	}
 
-	Eden.load = function(path, tag, cb) {
+	Eden.load = function(path, tag, cb, nohistory) {
 		console.log("Loading: " + path + "@" + tag);
 		Eden.DB.load(path,tag, undefined, function(status) {
 			var menu = $(".jseden-title").get(0);
@@ -688,6 +688,9 @@ function concatAndResolveUrl(url, concat) {
 			}
 			EdenUI.MenuBar.saveTitle(status.title);
 			eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
+
+			if (!nohistory) window.history.pushState({project: path, tag: tag},"","?load="+path+"&tag="+tag);
+
 			if (cb) cb();
 		});
 	}
@@ -707,9 +710,17 @@ function concatAndResolveUrl(url, concat) {
 			}
 		}
 
+		window.history.pushState({project: path, tag: tag},"","?restore=true");
+
 		eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
 		if (cb) cb(res);
 		return res;
+	}
+
+	Eden.reset = function() {
+		Eden.Statement.reset();
+		edenUI.reset();
+		eden.root.symbols = {};
 	}
 
 	Eden.loadFromString = function(str, cb) {
@@ -722,6 +733,7 @@ function concatAndResolveUrl(url, concat) {
 			menu.textContent = data.title;
 		}
 		EdenUI.MenuBar.saveTitle(data.title);
+		window.history.pushState(null,"","");
 		eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
 		if (cb) cb(data);
 	}

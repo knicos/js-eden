@@ -173,6 +173,23 @@
 		}
 	}
 
+	EdenUI.prototype.reset = function() {
+		this.viewInstances = {};
+		this.activeDialogs = {};
+		var node = document.body.firstChild;
+		while (node) {
+			var next = node.nextSibling;
+			if (node.className && node.className.startsWith("jseden-view")) {
+				document.body.removeChild(node);
+			}
+			node = next;
+		}
+
+		EdenUI.SVG.reset();
+		EdenUI.ScriptView.reset();
+		EdenUI.MenuBar.reset();
+	}
+
 	/**
 	 * A view is a window which appears in the JsEden UI.
 	 *

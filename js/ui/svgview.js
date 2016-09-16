@@ -37,6 +37,10 @@ EdenUI.SVG.init = function() {
 	});
 }
 
+EdenUI.SVG.reset = function() {
+	EdenUI.SVG.sources = {};
+}
+
 EdenUI.SVG.prototype.createElement = function(index, type, name) {
 	if (this.svg.childNodes[index] && this.svg.childNodes[index].nodeName == type) return;
 
@@ -65,6 +69,7 @@ EdenUI.SVG.prototype.createElement = function(index, type, name) {
 }
 
 EdenUI.SVG.prototype.updateAttribute = function(index, attrib, value) {
+	if (index > this.svg.childNodes.length) return;
 	var node = this.svg.childNodes[index];
 	if (node) {
 		node.setAttribute(attrib,value);

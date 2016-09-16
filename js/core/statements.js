@@ -343,12 +343,16 @@ Eden.Statement.prototype.isActive = function() {
 	return false;
 }
 
-Eden.Statement.load = function(object) {
+Eden.Statement.reset = function() {
 	Eden.Statement.statements = [];
 	Eden.Statement.symbols = {};
 	Eden.Statement.tags = {};
 	Eden.Statement.active = {};
 	Eden.Statement.shared = {};
+}
+
+Eden.Statement.load = function(object) {
+	Eden.Statement.reset();
 
 	var stats = object;
 

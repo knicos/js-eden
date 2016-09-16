@@ -135,6 +135,12 @@ function Construit(options,callback) {
 			$(".loadmessage").html(msg);
 		}
 
+		window.addEventListener("popstate",function(e) {
+			if (e.state) {
+				Eden.load(e.state.project,e.state.tag, undefined, true);
+			}
+		});
+
 		if (browser.msie) {
 			if (bversion < 13) invalidVersion("Microsoft Internet Explorer is not supported, use Edge, Firefox or Chrome.");
 		} else if (browser.mozilla) {

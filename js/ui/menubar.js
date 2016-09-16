@@ -106,6 +106,10 @@ EdenUI.MenuBar = function() {
 	});
 }
 
+EdenUI.MenuBar.reset = function() {
+	$(".jseden-title").html("Construit!");
+}
+
 EdenUI.MenuBar.saveTitle = function(title) {
 	try {
 		if (window.localStorage) {

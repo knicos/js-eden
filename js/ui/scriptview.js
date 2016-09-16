@@ -94,7 +94,7 @@ EdenUI.ScriptView = function(name, title, options) {
 				me.buttons.get(0).childNodes[0].oncontextmenu(e);
 			});
 		} else {
-			this.buttons.append($('<button class="scriptview-button enabled starall">&#xf005;</button><button class="scriptview-button enabled unstarall">&#xf006;</button><button class="scriptview-button enabled clear">&#xf05e;</button><button class="scriptview-button enabled playall">&#xf144;</button><button class="scriptview-button enabled clonestar">&#xf24d;</button>'));
+			this.buttons.append($('<button class="scriptview-button enabled starall" title="Star All">&#xf005;</button><button class="scriptview-button enabled unstarall" title="Unstar All">&#xf006;</button><button class="scriptview-button enabled clear" title="Remove Unstarred">&#xf05e;</button><button class="scriptview-button enabled playall" title="Activate Starred">&#xf144;</button><button class="scriptview-button enabled clonestar" title="Copy Starred">&#xf24d;</button>'));
 		}
 
 		this.menushow.on("click", function() {
@@ -241,6 +241,10 @@ EdenUI.ScriptView.init = function() {
 		if (!views) views = {};
 		EdenUI.ScriptView.savedViews = views;
 	}
+}
+
+EdenUI.ScriptView.reset = function() {
+	EdenUI.ScriptView.savedViews = {};
 }
 
 //EdenUI.ScriptView.savedViews = {};
