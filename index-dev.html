@@ -305,16 +305,21 @@ See LICENSE.txt
 				});
 			});
 
-			function displayMyProjects() {
-				var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
+			function displayProjects(pub, cb) {
+				var user = (pub)?"public" : ((Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "public");
 				var path = "jseden2/"+user;
 				var plist = lopts.find(".jseden-dialog-plisting");
+
+				console.log("Load projects: " + path);
+
 				Eden.DB.getDirectory(path, function(data) {
 					var ordered = [];
 
 					for (var x in data) {
 						ordered.push(path+"/"+x);
 					}
+
+					console.log(data);
 
 					ordered.sort(function(a,b) {
 						var t = Eden.DB.meta[a].date.split(/[- :]/);
@@ -334,26 +339,37 @@ See LICENSE.txt
 							title = decoded.title;
 							thumb = decoded.thumb;
 						}
+
+						var subtitle;
+						if (pub) {
+							subtitle = meta.author;
+						} else {
+							subtitle = get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000);
+						}
+
 						//Eden.DB.getMeta(path+"/"+x,function(path,meta) {
 						if (thumb) {
-							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(ordered[i])+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-img"><img src="'+thumb+'"></img></div><div class="cadence-plisting-title">'+title+'</div><div class="cadence-plisting-subtitle">'+get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000)+'</div></div>'));
+							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(ordered[i])+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-img"><img src="'+thumb+'"></img></div><div class="cadence-plisting-title">'+title+'</div><div class="cadence-plisting-subtitle">'+subtitle+'</div></div>'));
 						} else {
-							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(ordered[i])+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+title+'</div><div class="cadence-plisting-subtitle">'+get_time_diff((new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5])).getTime()/1000)+'</div></div>'));
+							plist.append($('<div class="cadence-plisting-entry project noselect" data-path="'+(ordered[i])+'" data-tag="'+meta.latestID+'"><div class="cadence-plisting-icon">&#xf0c3;</div><div class="cadence-plisting-title">'+title+'</div><div class="cadence-plisting-subtitle">'+subtitle+'</div></div>'));
 							//console.log(Eden.DB.meta[path+"/"+x]);
 						}
 						//});
 					}
 
 					projects = ordered;
+					if (cb) cb(ordered);
 				});
 			}
 
-			if (Eden.DB.isLoggedIn()) {
-				displayMyProjects();
-			}
+			displayProjects(true, function() {
+				if (Eden.DB.isLoggedIn()) {
+					displayProjects();
+				}
+			});
 
 			Eden.DB.listenTo("login", this, function(name) {
-				displayMyProjects();
+				displayProjects();
 			});
 
 			Eden.DB.listenTo("logout", this, function() {
@@ -364,6 +380,8 @@ See LICENSE.txt
 					if (node.className == "cadence-plisting-entry project noselect") plist.removeChild(node);
 					node = next;
 				}
+
+				displayProjects(true);
 			});
 		}
 	});

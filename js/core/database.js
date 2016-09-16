@@ -652,7 +652,7 @@ Eden.DB.getSource = function(path, tag, callback) {
 	});
 }
 
-Eden.DB.save = function(title, cb) {
+Eden.DB.save = function(title, cb, pub) {
 	var status = {};
 
 	var reducedtitle = title.split(" ").join("");
@@ -666,7 +666,7 @@ Eden.DB.save = function(title, cb) {
 	
 
 	if (Eden.DB.isLoggedIn()) {
-		var user = (Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "nouser";
+		var user = (pub) ? "public" : ((Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "public");
 		var path = "jseden2/"+user+"/"+reducedtitle;
 		var meta = Eden.DB.meta[path];
 		if (meta === undefined) meta = new Eden.DB.createMeta(path);
