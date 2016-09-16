@@ -44,6 +44,7 @@
 		this.scope = scope;
 		this.scopes = undefined;
 		this.owner = undefined;
+		this.override = false;
 	}
 
 	function BoundValue(value,scope,scopes) {
@@ -69,7 +70,7 @@
 			}
 		} else {
 			this.current = (options && options.isin && !options.range && Array.isArray(start) && start.length > 0) ? start[0] : start;
-			this.currentscope = undefined;
+			this.currentscope = eden.root.scope;
 		}
 
 		//if (this.isin) console.log(this.currentscope);
@@ -120,7 +121,7 @@
 	}
 
 	Scope.prototype.self = function() {
-		if (this.cause) return this.cause.name.slice(1);
+		if (this.cause && this.cause.name) return this.cause.name.slice(1);
 		else return undefined;
 	}
 
@@ -352,12 +353,13 @@
 		} else {
 			//console.log(override.current);
 			currentval = override.current;
-			currentscope = (override.currentscope) ? override.currentscope : this;
+			currentscope = (override.currentscope) ? override.currentscope : eden.root.scope;
 		}
 
 		if (this.cache[name] === undefined) {
 			this.cache[name] = new ScopeCache( true, currentval, currentscope );
 			this.cache[name].owner = this;
+			this.cache[name].override = true;
 		} else {
 			this.cache[name].value = currentval;
 			this.cache[name].scope = currentscope;
@@ -378,12 +380,13 @@
 	Scope.prototype.updateSubscriber = function(name) {
 		//console.log("Adding scope subscriber...: " + name);
 		if (this.cache[name] === undefined) {
-			this.cache[name] = new ScopeCache( false, undefined, this);
+			this.cache[name] = new ScopeCache( false, undefined, eden.root.scope);
 			this.cache[name].owner = this;
 		} else {
+			if (this.cache[name].override) return;
 			this.cache[name].up_to_date = false;
 			this.cache[name].value = undefined;
-			this.cache[name].scope = this;
+			this.cache[name].scope = eden.root.scope;
 		}
 		var sym = this.context.lookup(name.slice(1));
 		for (var d in sym.subscribers) {

@@ -84,6 +84,19 @@ var rt = {
 		}
 	},
 
+	addbound: function(a, b) {
+		if (a.value === undefined || b.value === undefined) {
+			return a;
+		} else if (Array.isArray(a.value) || typeof a.value == "string") {
+			if (a.scopes && b.scopes) {
+				return new BoundValue(rt.concat(a.value,b.value), eden.root.scope, rt.concat(a.scopes, b.scopes));
+			}
+			return new BoundValue(rt.concat(a.value,b.value), eden.root.scope);
+		} else {
+			return new BoundValue(a.value + b.value, eden.root.scope);
+		}
+	},
+
 	add: function (a, b) {
 		if (a === undefined || b === undefined) {
 			return undefined;

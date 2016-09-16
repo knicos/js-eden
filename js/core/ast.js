@@ -720,8 +720,8 @@ Eden.AST.TernaryOp.prototype.unparse = function() {
 
 Eden.AST.TernaryOp.prototype.generate = function(ctx, scope) {
 	var cond = this.condition.generate(ctx, scope);
-	var first = this.first.generate(ctx, scope);
-	var second = this.second.generate(ctx, scope);
+	var first = this.first.generate(ctx, scope,true);
+	var second = this.second.generate(ctx, scope,true);
 
 	if (this.condition.doesReturnBound && this.condition.doesReturnBound()) {
 		cond += ".value";
@@ -758,6 +758,7 @@ Eden.AST.BinaryOp = function(op) {
 	this.errors = [];
 	this.l = undefined;
 	this.r = undefined;
+	this.returnsbound = false;
 }
 Eden.AST.BinaryOp.prototype.left = fnEdenASTleft;
 Eden.AST.BinaryOp.prototype.error = fnEdenASTerror;
@@ -771,17 +772,29 @@ Eden.AST.BinaryOp.prototype.unparse = function() {
 	return this.l.unparse() + " " + this.op + " " + this.r.unparse();
 }
 
+Eden.AST.BinaryOp.prototype.doesReturnBound = function() {
+	return this.returnsbound;
+}
+
 Eden.AST.BinaryOp.prototype.generate = function(ctx, scope) {
-	var left = this.l.generate(ctx, scope);
-	var right = this.r.generate(ctx, scope);
+	var left = this.l.generate(ctx, scope, true);
+	var right = this.r.generate(ctx, scope, true);
 	var opstr;
 
-	// Get values out of any BoundValues
-	if (this.l.doesReturnBound && this.l.doesReturnBound()) {
-		left += ".value";
-	}
-	if (this.r.doesReturnBound && this.r.doesReturnBound()) {
-		right += ".value";
+	var lbound = this.l.doesReturnBound && this.l.doesReturnBound();
+	var rbound = this.r.doesReturnBound && this.r.doesReturnBound();
+
+	if (lbound && rbound && this.op == "+") {
+		this.returnsbound = true;
+		return "rt.addbound(("+left+"),("+right+"))";
+	} else {
+		// Get values out of any BoundValues
+		if (lbound) {
+			left += ".value";
+		}
+		if (rbound) {
+			right += ".value";
+		}
 	}
 
 	switch(this.op) {

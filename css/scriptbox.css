@@ -307,12 +307,12 @@ button.scriptview-button.playall:after {
 	top: 3px;
 }
 
-button.scriptview-button.hashtag {
+button.scriptview-button.clonestar {
 	color: black;
 	/*text-shadow: 0px 0px 2px black;*/
 }
 
-button.scriptview-button.hashtag:after {
+button.scriptview-button.clonestar:after {
 	color: yellow;
 	text-shadow: 0px 0px 2px black;
 	font-family: "FontAwesome";

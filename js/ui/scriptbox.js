@@ -786,6 +786,27 @@ EdenUI.ScriptBox.prototype.clearUnstuck = function() {
 	if (this.savecb) this.savecb.call(this);
 }
 
+EdenUI.ScriptBox.prototype.cloneStuck = function() {
+	var parent = this.outdiv.parentNode.parentNode;
+	var toinsert = [];
+
+	node = parent.firstChild;
+	while (node) {
+		//console.log(node);
+		var snum = parseInt(node.getAttribute("data-statement"));
+		if (node.childNodes[1].className.indexOf("stuck") != -1) {
+			toinsert.push(snum);
+		}
+		node = node.nextSibling;
+	}
+
+	for (var i=0; i<toinsert.length; i++) {
+		var nstat = new Eden.Statement();
+		nstat.setSource(Eden.Statement.statements[toinsert[i]].source);
+		this.insertStatement(nstat, true);
+	}
+}
+
 EdenUI.ScriptBox.prototype.hideInfoBox = function() {
 	$(this.infobox).hide("fast");
 }
