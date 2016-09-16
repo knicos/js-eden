@@ -43,7 +43,7 @@ See LICENSE.txt
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
-			justify-content: left;
+			justify-content: center;
 			overflow-y: auto;
 		}
 
@@ -66,6 +66,27 @@ See LICENSE.txt
 			background-repeat: no-repeat;
 			cursor: pointer;
 			color: #132023;
+		}
+
+		div.cadence-plisting-login {
+			/*width: 200px;
+			height: 150px;*/
+			margin: 5px;
+			background: #f5f5f5;
+			cursor: pointer;
+			color: #424249;
+			font-size: 18pt;
+			font-weight: bold;
+			font-family: Roboto,Arial,sans-serif;
+			text-align: center;
+			border: 1px solid #ddd;
+			padding: 10px 30px;
+			/*text-shadow: 0 0 5px silver;*/
+		}
+
+		span.cadence-plisting-loginicon {
+			font-family: "FontAwesome";
+			margin-right: 10px;
 		}
 
 		div.cadence-plisting-entry.special {
@@ -312,6 +333,11 @@ See LICENSE.txt
 					reader.readAsText(file);
 				});
 			})
+			.on("click","#plist-login", function() {
+				if (Eden.DB.isConnected()) {
+					lopts.find("#jseden-private-projects").html("<div><div class=\"menubar-sharebox-title\"><span class=\"menubar-shareicon\">&#xf090;</span>Login</div><iframe frameborder=\"0\" src=\""+Eden.DB.remoteURL+"/login"+"\" name=\"logintarget\" width=\"250\" height=\"200\" class=\"menubar-login-iframe\"></iframe><br/><button class=\"jseden button-cancel\">Cancel</button></div>");
+				}
+			})
 			.on("click",".project",function(e) {
 				var path = e.currentTarget.getAttribute("data-path");
 				var tag = parseInt(e.currentTarget.getAttribute("data-tag"));
@@ -385,19 +411,27 @@ See LICENSE.txt
 			});
 
 			Eden.DB.listenTo("login", this, function(name) {
+				var plist = lopts.find("#jseden-private-projects").get(0);
+				var node = plist.firstChild;
+				while (node) {
+					var next = node.nextSibling;
+					plist.removeChild(node);
+					node = next;
+				}
+
 				displayProjects();
 			});
 
 			Eden.DB.listenTo("logout", this, function() {
-				var plist = lopts.find(".jseden-dialog-plisting").get(0);
+				var plist = lopts.find("#jseden-private-projects").get(0);
 				var node = plist.firstChild;
 				while (node) {
 					var next = node.nextSibling;
-					if (node.className == "cadence-plisting-entry project noselect") plist.removeChild(node);
+					plist.removeChild(node);
 					node = next;
 				}
 
-				displayProjects(true);
+				//displayProjects(true);
 			});
 		}
 	});
@@ -423,7 +457,7 @@ See LICENSE.txt
 		</div>
 		<hr class="jseden-project-cat" /><div class="jseden-project-cat">Your Projects:</div>
 		<div id="jseden-private-projects" class="jseden-dialog-plisting">
-
+			<div id="plist-login" class="cadence-plisting-login"><span class="cadence-plisting-loginicon">&#xf090;</span>Login</div>
 		</div>
 	</div>
 </div>
