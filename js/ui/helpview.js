@@ -3,7 +3,7 @@ EdenUI.Help = function(name, title, source) {
 	this.title = title;
 	this.source = source;
 
-	this.contents = $('<div class="jseden-viewcontent" style="padding-left: 20px; padding-right: 20px; overflow: auto;"></div>');
+	this.contents = $('<div style="position: absolute; top: 0; bottom: 0; right: 0; left: 0; padding: 20px; overflow: auto;"></div>');
 
 	var me = this;
 	$.ajax({

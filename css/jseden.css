@@ -398,6 +398,19 @@ div.jseden-viewbar {
 	cursor: pointer;
 }
 
+div.jseden-viewclose {
+	font-weight: bold;
+	font-size: 25px;
+	color: #eee;
+	float: right;
+	font-family: "FontAwesome";
+	margin-right: 20px;
+}
+
+div.jseden-viewbar:hover .jseden-viewclose {
+	color: #666;
+}
+
 div.jseden-viewtitle {
 	font-size: 18pt;
 	font-weight: bold;

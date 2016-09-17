@@ -249,11 +249,17 @@
 		this.viewInstances[name] = viewData;
 		var position = viewData.position;
 
-		var diag = $('<div id="'+viewData.name+'" class="jseden-view"><div class="jseden-viewinner"><div class="jseden-viewbar"></div><div class="jseden-viewtitle" contenteditable>'+defaultTitle+'</div><div class="jseden-viewcontent"></div></div></div>')
+		var diag = $('<div id="'+viewData.name+'" class="jseden-view"><div class="jseden-viewinner"><div class="jseden-viewbar"><div class="jseden-viewclose">&#xf00d;</div></div><div class="jseden-viewtitle" contenteditable>'+defaultTitle+'</div><div class="jseden-viewcontent"></div></div></div>')
 			.draggable({
 				handle: ".jseden-viewbar"
 			}).resizable()
 			.css("position","absolute")
+			.on("click",".jseden-viewclose", function() {
+				//me.destroyView(vname, false);
+				document.body.removeChild($("#"+viewData.name).get(0));
+				delete me.viewInstances[name];
+				delete me.activeDialogs[name];
+			})
 			.appendTo($(document.body));
 
 		if (viewData.defaultWidth) diag.css("width",""+viewData.defaultWidth+"px");

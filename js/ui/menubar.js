@@ -43,7 +43,7 @@ EdenUI.MenuBar = function() {
 		}
 	});
 
-	this.sharebox = $('<div class="modal"><div class="modal-content" style="width: 400px;"><div class="menubar-sharebox-title"><span class="menubar-shareicon">&#xf1e0;</span>Save and Share</div><div class="menubar-sharebox-content">Saved to your projects and shared at:<div class="projecturl"></div><br/>Download to file: <span class="downloadurl"></span><br/><br><button class="jseden done" style="margin-top: 20px;">Done</button></div></div></div>');
+	this.sharebox = $('<div class="modal"><div class="modal-content" style="width: 400px;"><div class="menubar-sharebox-title"><span class="menubar-shareicon">&#xf1e0;</span>Save and Share</div><div class="menubar-sharebox-content">Saved to your projects and shared at:<div class="projecturl"></div><br/>Download to file: <span class="downloadurl"></span><br/><br><button class="jseden done" style="margin-top: 20px;">Done</button><button class="jseden publish" style="margin-top: 20px;">Publish</button></div></div></div>');
 	this.element.append(this.sharebox);
 	this.sharebox.hide();
 
