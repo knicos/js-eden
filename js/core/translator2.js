@@ -30,6 +30,7 @@ Eden.AST = function(code, imports, singleton) {
 	this.warnings = [];
 	this.agent = undefined;
 	this.statid = undefined;
+	this.within = false;
 
 	this.lastDoxyComment = undefined;
 	this.mainDoxyComment = undefined;
@@ -46,7 +47,14 @@ Eden.AST = function(code, imports, singleton) {
 	}
 }
 
-Eden.AST.strict = true;
+/* strict 0 = Free
+ * strict 1 = No expressions in scope overrides
+ * strict 2 = No "is" definitions in when statements
+ * strict 3 = No pure literals in expressions.
+ * strict 4 = No literals in scope overrides
+ * strict 5 = No overrides in overrides.
+ */
+Eden.AST.strict = 1;
 
 
 
@@ -335,6 +343,16 @@ Eden.AST.prototype.pTERM = function() {
 	var right = this.pEXPRESSION_PPPPPP();
 
 	if (right) {
+		if (Eden.AST.strict >= 3) {
+			if (left.type == "literal") {
+				right.error(new Eden.SyntaxError(this, Eden.SyntaxError.EXPRESSIONLIT));
+			}
+		} else {
+			if (left.type == "literal") {
+				this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.EXPRESSIONLIT, ""));
+			}
+		}
+
 		right.left(left);
 		return right;
 	}
@@ -346,6 +364,7 @@ Eden.AST.prototype.pTERM = function() {
  */
 Eden.AST.prototype.pTERM_A = function() {
 	var left = this.pTERM_P();
+	var right;
 
 	// For all tokens of this precedence do...
 	while (this.token == "<" || this.token == "<=" || this.token == ">"
@@ -353,7 +372,17 @@ Eden.AST.prototype.pTERM_A = function() {
 		var binop = new Eden.AST.BinaryOp(this.token);
 		this.next();
 		binop.left(left);
-		binop.setRight(this.pTERM_P());
+		right = this.pTERM_P();
+		binop.setRight(right);
+
+		if (left.type == "literal" || right.type == "literal") {
+			if (Eden.AST.strict >= 3) {
+				binop.error(new Eden.SyntaxError(this, Eden.SyntaxError.EXPRESSIONLIT));
+			} else {
+				this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.EXPRESSIONLIT, ""));
+			}
+		}
+
 		left = binop;
 	}
 
@@ -367,12 +396,23 @@ Eden.AST.prototype.pTERM_A = function() {
  */
 Eden.AST.prototype.pTERM_P = function() {
 	var left = this.pTERM_PP();
+	var right;
 
 	while (this.token == "+" || this.token == "-") {
 		var binop = new Eden.AST.BinaryOp(this.token);
 		this.next();
 		binop.left(left);
-		binop.setRight(this.pTERM_PP());
+		right = this.pTERM_PP();
+		binop.setRight(right);
+
+		if (left.type == "literal" || right.type == "literal") {
+			if (Eden.AST.strict >= 3) {
+				binop.error(new Eden.SyntaxError(this, Eden.SyntaxError.EXPRESSIONLIT));
+			} else {
+				this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.EXPRESSIONLIT, ""));
+			}
+		}
+
 		left = binop;
 	}
 
@@ -386,13 +426,24 @@ Eden.AST.prototype.pTERM_P = function() {
  */
 Eden.AST.prototype.pTERM_PP = function() {
 	var left = this.pTERM_PPP();
+	var right;
 
 	while (this.token == "*" || this.token == "/" || this.token == "%"
 			|| this.token == "^") {
 		var binop = new Eden.AST.BinaryOp(this.token);
 		this.next();
 		binop.left(left);
-		binop.setRight(this.pTERM_PPP());
+		right = this.pTERM_PPP();
+		binop.setRight(right);
+
+		if (left.type == "literal" || right.type == "literal") {
+			if (Eden.AST.strict >= 3) {
+				binop.error(new Eden.SyntaxError(this, Eden.SyntaxError.EXPRESSIONLIT));
+			} else {
+				this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.EXPRESSIONLIT, ""));
+			}
+		}
+
 		left = binop;
 	}
 
@@ -1164,7 +1215,14 @@ Eden.AST.prototype.pSCOPE_P = function() {
 	if (this.token == "-->") isdefault = true;
 
 	this.next();
-	var expression = (isin || !Eden.AST.strict) ? this.pEXPRESSION() : this.pFACTOR_SIMPLE();
+	var expression = (isin || !Eden.AST.strict >= 1) ? this.pEXPRESSION() : this.pFACTOR_SIMPLE();
+
+	if (Eden.AST.strict >= 4 && expression.type == "literal") {
+		var scope = new Eden.AST.Scope();
+		scope.error(new Eden.SyntaxError(this, Eden.SyntaxError.LITOVER));
+		return scope;
+	}
+
 	if (expression.errors.length > 0) {
 		var scope = new Eden.AST.Scope();
 		obs.setStart(expression);
@@ -1310,24 +1368,7 @@ Eden.AST.prototype.pELIST_SIMPLE_P = function() {
  *  epsilon
  */
 Eden.AST.prototype.pEXPRESSION_PPPPPP = function() {
-	if (this.token == "?") {
-		this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.DEPRECATED, "old 'if' syntax using '?'. Use new 'if' syntax"));
-		this.next();
-		var tern = new Eden.AST.TernaryOp("?");
-		tern.setFirst(this.pEXPRESSION());
-
-		if (tern.errors.length > 0) return tern;
-
-		if (this.token != ":") {
-			tern.errors.push(new Eden.SyntaxError(this, Eden.SyntaxError.TERNIFCOLON));
-			return tern;
-		} else {
-			this.next();
-		}
-		
-		tern.setSecond(this.pEXPRESSION());
-		return tern;
-	} else if (this.token == "if") {
+	if (this.token == "if") {
 		this.next();
 		var tern = new Eden.AST.TernaryOp("?");
 		tern.setCondition(this.pEXPRESSION());
@@ -1341,7 +1382,15 @@ Eden.AST.prototype.pEXPRESSION_PPPPPP = function() {
 			this.next();
 		}
 		
-		tern.setSecond(this.pEXPRESSION());
+		var ex = this.pEXPRESSION();
+		if (Eden.AST.strict >= 3) {
+			if (ex.type == "literal") {
+				tern.error(new Eden.SyntaxError(this, Eden.SyntaxError.EXPRESSIONLIT));
+			}
+		} else if (ex.type == "literal") {
+			this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.EXPRESSIONLIT, ""));
+		}
+		tern.setSecond(ex);
 		return tern;
 	}
 	return undefined;
@@ -1355,12 +1404,23 @@ Eden.AST.prototype.pEXPRESSION_PPPPPP = function() {
  */
 Eden.AST.prototype.pEXPRESSION_PLAIN = function() {
 	var left = this.pTERM();
+	var right;
 
 	while (this.token == "&&" || this.token == "||") {
 		var binop = new Eden.AST.BinaryOp(this.token);
 		this.next();
 		binop.left(left);
-		binop.setRight(this.pTERM());
+		right = this.pTERM();
+		binop.setRight(right);
+
+		if (left.type == "literal" || right.type == "literal") {
+			if (Eden.AST.strict >= 3) {
+				binop.error(new Eden.SyntaxError(this, Eden.SyntaxError.EXPRESSIONLIT));
+			} else {
+				this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.EXPRESSIONLIT, ""));
+			}
+		}
+
 		left = binop;
 	}
 
@@ -1460,7 +1520,10 @@ Eden.AST.prototype.pWHEN = function() {
 		this.next();
 	}
 
+	this.within = true;
 	when.setStatement(this.pSTATEMENT());
+	this.within = false;
+
 	if (when.errors.length > 0) {
 		this.parent = parent;
 		return when;
@@ -2111,8 +2174,20 @@ Eden.AST.prototype.pLVALUE = function() {
  */
 Eden.AST.prototype.pSTATEMENT_PP = function() {
 	if (this.token == "is") {
+		var err;
+
+		if (this.within) {
+			if (Eden.AST.strict >= 2) {
+				err = new Eden.SyntaxError(this, Eden.SyntaxError.DEFINWHEN);
+			} else {
+				this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.DEFINWHEN, ""));
+			}
+		}
+
 		this.next();
-		return new Eden.AST.Definition(this.pEXPRESSION());
+		var def = new Eden.AST.Definition(this.pEXPRESSION());
+		if (err) def.error(err);
+		return def;
 	} else if (this.token == "in") {
 		this.next();
 		return new Eden.AST.Range(this.pEXPRESSION());
@@ -2131,7 +2206,7 @@ Eden.AST.prototype.pSTATEMENT_PP = function() {
 	} else if (this.token == "*=") {
 		this.next();
 		return new Eden.AST.Modify("*=", this.pEXPRESSION());
-	} else if (this.token == "~>") {
+	/*} else if (this.token == "~>") {
 		this.next();
 		var subscribers = new Eden.AST.Subscribers();
 
@@ -2152,14 +2227,14 @@ Eden.AST.prototype.pSTATEMENT_PP = function() {
 			this.next();
 		}
 
-		return subscribers;
+		return subscribers;*/
 	} else if (this.token == "++") {
 		this.next();
 		return new Eden.AST.Modify("++", undefined);
 	} else if (this.token == "--") {
 		this.next();
 		return new Eden.AST.Modify("--", undefined);
-	} else if (this.token == "(") {
+	}/* else if (this.token == "(") {
 		var fcall = new Eden.AST.FunctionCall();
 		this.next();
 
@@ -2175,7 +2250,7 @@ Eden.AST.prototype.pSTATEMENT_PP = function() {
 
 		this.next();
 		return fcall;
-	}
+	}*/
 
 	var errors = [];
 	errors.push(new Eden.SyntaxError(this, Eden.SyntaxError.DEFINITION));
@@ -2559,26 +2634,34 @@ Eden.AST.prototype.pSTATEMENT = function() {
 	this.lastDoxyComment = undefined;
 
 	switch (this.token) {
-	case "proc"		:	this.next(); stat = this.pACTION(); end = this.stream.position; endline = this.stream.line; this.next(); break;
-	case "func"		:	this.next(); stat = this.pFUNCTION(); end = this.stream.position; endline = this.stream.line; this.next(); break;
-	case "when"		:	this.next(); stat = this.pWHEN(); end = this.stream.prevposition; endline = this.stream.prevline; break;
-	//case "action"	:	this.next(); stat = this.pNAMEDSCRIPT(); end = this.stream.position; endline = this.stream.line; this.next(); break;
+	case "when"		:	this.next();
+						stat = this.pWHEN();
+
+						if (this.within) {
+							if (Eden.AST.strict >= 2) {
+								stat.error(new Eden.SyntaxError(this, Eden.SyntaxError.NESTEDWHEN));
+							} else {
+								this.warnings.push(new Eden.SyntaxWarning(this, Eden.SyntaxWarning.NESTEDWHEN, ""));
+							}
+						}
+
+						end = this.stream.prevposition;
+						endline = this.stream.prevline;
+						break;
 	case "for"		:	this.next(); stat = this.pFOR(); break;
 	case "while"	:	this.next(); stat = this.pWHILE(); break;
-	//case "do"		:	this.next(); stat = this.pDO(); break;
-	//case "var"		:	stat = this.pLOCALS(); break;
 	case "call"		:	this.next(); stat = this.pCALL(); break;
-	case "wait"		:	this.next(); stat = this.pWAIT(); break;
+	case "wait"		:	this.next();
+						stat = this.pWAIT();
+
+						if (!this.within) {
+							stat.error(new Eden.SyntaxError(this, Eden.SyntaxError.WAITOUTSIDEWHEN));
+						}
+
+						break;
 	case "switch"	:	this.next(); stat = this.pSWITCH(); break;
 	case "case"		:	this.next(); stat = this.pCASE(); break;
-	//case "insert"	:	this.next(); stat = this.pINSERT(); break;
 	case "delete"	:	this.next(); stat = this.pDELETE(); break;
-	//case "append"	:	this.next(); stat = this.pAPPEND(); break;
-	//case "shift"	:	this.next(); stat = this.pSHIFT(); break;
-	//case "require"	:	this.next(); stat = this.pREQUIRE(); break;
-	//case "after"	:	this.next(); stat = this.pAFTER(); break;
-	//case "include"	:	this.next(); stat = this.pINCLUDE(); break;
-	case "import"	:	this.next(); stat = this.pIMPORT(); break;
 	case "default"	:	this.next();
 						var def = new Eden.AST.Default();
 						if (this.token != ":") {
@@ -2644,7 +2727,7 @@ Eden.AST.prototype.pSTATEMENT = function() {
 						stat = breakk; break;
 	case "{"		:	this.next();
 						var script = this.pSCRIPT();
-						if (this.token != "}") {
+						if (script.errors.length == 0 && this.token != "}") {
 							script.error(new Eden.SyntaxError(this, Eden.SyntaxError.ACTIONCLOSE));
 							endline = this.stream.line;
 							stat = script;

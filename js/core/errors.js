@@ -97,6 +97,11 @@ Eden.SyntaxError.LITSTRLINE = 70;
 Eden.SyntaxError.LITSTRCLOSE = 71;
 Eden.SyntaxError.IMPORTTAG = 72;
 Eden.SyntaxError.OVERRIDEASSIGN = 73;
+Eden.SyntaxError.NESTEDWHEN = 74;
+Eden.SyntaxError.DEFINWHEN = 75;
+Eden.SyntaxError.EXPRESSIONLIT = 76;
+Eden.SyntaxError.LITOVER = 77;
+Eden.SyntaxError.WAITOUTSIDEWHEN = 78;
 
 Eden.SyntaxError.db = [
 /* EDEN_ERROR_UNKNOWN */
@@ -501,6 +506,22 @@ Eden.SyntaxError.db = [
 		suggestion: {expected: [], next: []}
 	},
 /* EDEN_ERROR_OVERRIDEASSIGN */
+	{	message: function() { return 0; },
+		suggestion: {expected: [], next: []}
+	},
+/* EDEN_ERROR_NESTEDWHEN */
+	{	message: function() { return 0; },
+		suggestion: {expected: [], next: []}
+	},
+/* EDEN_ERROR_DEFINWHEN */
+	{	message: function() { return 0; },
+		suggestion: {expected: [], next: []}
+	},
+/* EDEN_ERROR_EXPRESSIONLIT */
+	{	message: function() { return 0; },
+		suggestion: {expected: [], next: []}
+	},
+/* EDEN_ERROR_LITOVER */
 	{	message: function() { return 0; },
 		suggestion: {expected: [], next: []}
 	}

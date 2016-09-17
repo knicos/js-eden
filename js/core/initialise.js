@@ -137,7 +137,11 @@ function Construit(options,callback) {
 
 		window.addEventListener("popstate",function(e) {
 			if (e.state) {
-				Eden.load(e.state.project,e.state.tag, undefined, true);
+				if (!e.state.restore) {
+					Eden.load(e.state.project,e.state.tag, undefined, true);
+				} else {
+					Eden.restore();
+				}
 			}
 		});
 

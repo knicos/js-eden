@@ -427,7 +427,7 @@ Eden.Statement.prototype.setSource = function(src, ast, stat, net) {
 	if (this.source == src) return;
 	if (ast === undefined) ast = new Eden.AST(src,undefined, true);
 	if (ast && stat === undefined) stat = ast.script;
-	if (stat === undefined || stat.errors.length > 0) return;
+	//if (stat === undefined || stat.errors.length > 0) return;
 	if (this.ast && this.statement && (this.statement.type == "definition" || this.statement.type == "assignment")) {
 		if (Eden.Statement.symbols[this.statement.lvalue.name] && Eden.Statement.symbols[this.statement.lvalue.name][this.id]) {
 			Eden.Statement.symbols[this.statement.lvalue.name][this.id] = undefined;

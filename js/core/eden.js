@@ -710,7 +710,7 @@ function concatAndResolveUrl(url, concat) {
 			}
 		}
 
-		window.history.pushState({project: path, tag: tag},"","?restore=true");
+		window.history.pushState({restore: true},"","?restore=true");
 
 		eden.root.lookup("_jseden_loaded").assign(true, eden.root.scope);
 		if (cb) cb(res);

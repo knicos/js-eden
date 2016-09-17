@@ -295,6 +295,18 @@ Eden.Language.errors = [
 ],
 /* EDEN_ERROR_OVERRIDEASSIGN */ [
 	"Cannot assign to a scope override"
+],
+/* EDEN_ERROR_NESTEDWHEN */ [
+	"Nesting \"when\"'s is not allowed"
+],
+/* EDEN_ERROR_DEFINWHEN */ [
+	"Definitions are not allowed inside a \"when\""
+],
+/* EDEN_ERROR_EXPRESSIONLIT */ [
+	"Expressions cannot contain literals in strict mode, use a separate observable"
+],
+/* EDEN_ERROR_LITOVER */ [
+	"Literal overrides not allowed in this strict mode"
 ]
 ];
 

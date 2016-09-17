@@ -14,6 +14,8 @@ require("./js/language/en.js");
 require("./js/core/lex.js");
 require("./js/core/translator2.js");
 require("./js/core/ast.js");
+require("./js/core/errors.js");
+require("./js/core/warnings.js");
 require("./js/query.js");
 var port = 8000;
 
@@ -269,9 +271,9 @@ SharedStatement.search = function(str) {
 			var theword = words[i].substring(1);
 			if (theword == "") continue;
 			if (words[i].charAt(1) == "#") {
-				nres = SharedStatement.tagSearch(regExpFromStr(theword));
+				nres = SharedStatement.tagSearch(regExpFromStr(theword), 10, res);
 			} else {
-				nres = SharedStatement._search(regExpFromStr(theword));
+				nres = SharedStatement._search(regExpFromStr(theword), 10, res);
 			}
 			res.active = Eden.Query.negativeFilter(res.active, nres.active);
 			res.inactive = Eden.Query.negativeFilter(res.inactive, nres.inactive);

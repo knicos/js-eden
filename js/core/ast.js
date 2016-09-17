@@ -708,6 +708,7 @@ Eden.AST.TernaryOp.prototype.left = function(pleft) {
 	} else {
 		this.first = pleft;
 	}
+	this.errors.push.apply(this.errors, pleft.errors);
 };
 
 Eden.AST.TernaryOp.prototype.doesReturnBound = function() {

@@ -59,7 +59,7 @@ span.eden-javascript-bold {
 
 span.eden-comment {
 	font-style: italic;
-	color: #888a85;
+	color: #b7bab3;
 	font-size: 12px;
 }
 
@@ -85,7 +85,7 @@ span.eden-importopt {
 }
 
 span.eden-doxytag {
-	color: #888a85;
+	color: #b7bab3;
 	font-style: normal;
 	font-weight: bold;
 	font-size: 12px;

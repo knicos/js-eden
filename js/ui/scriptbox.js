@@ -503,6 +503,8 @@ EdenUI.ScriptBox = function(element, options) {
 		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
 		console.log("GUTTER CLICK: " + num);
 		var stat = Eden.Statement.statements[num];
+		console.log(stat);
+
 		if (stat.statement && stat.statement.errors.length == 0) {
 			stat.statement.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
 			if (stat.statement.type == "when") {
@@ -828,6 +830,7 @@ EdenUI.ScriptBox.prototype.disableGotoMode = function() {
  * Displays the error/warning box.
  */
 EdenUI.ScriptBox.prototype.showInfoBox = function(x, y, type, message) {
+	console.log("SHOW INFO BOX " + message);
 	if (type == "warning") {
 		this.infobox.innerHTML = "<div class='info-warnitem'><span>"+message+"</span></div>";
 	} else if (type == "error") {
@@ -836,7 +839,7 @@ EdenUI.ScriptBox.prototype.showInfoBox = function(x, y, type, message) {
 	var $info = $(this.infobox);
 	$info.css("top",""+y+"px");
 	$info.css("left", ""+x+"px");
-	$(this.infobox).show("fast");
+	$(this.infobox).show();
 }
 
 EdenUI.ScriptBox.prototype.disable = function() {
@@ -874,6 +877,10 @@ EdenUI.ScriptBox.prototype.setSource = function(src) {
 		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",false);
 	} else {
 		changeClass(this.outdiv.parentNode.childNodes[(this.showstars)?2:1],"error",true);
+	}
+
+	if (this.ast.warnings.length > 0) {
+		changeClass(this.outdiv.parentNode,"warning",true);
 	}
 	//checkScroll();
 	this.outdiv.contentEditable = true;
