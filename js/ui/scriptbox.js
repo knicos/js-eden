@@ -501,9 +501,7 @@ EdenUI.ScriptBox = function(element, options) {
 
 	function onGutterClick(e) {
 		var num = parseInt(e.currentTarget.getAttribute("data-statement"));
-		console.log("GUTTER CLICK: " + num);
 		var stat = Eden.Statement.statements[num];
-		console.log(stat);
 
 		if (stat.statement && stat.statement.errors.length == 0) {
 			stat.statement.execute(eden.root, stat.ast, stat.ast, eden.root.scope);
@@ -512,8 +510,10 @@ EdenUI.ScriptBox = function(element, options) {
 				changeClass(e.currentTarget, "active", Eden.Statement.active[stat.id]);
 			}
 		} else {
-			var err = stat.ast.script.errors[0];
-			me.showInfoBox(e.target.offsetLeft+20, e.target.offsetTop-me.codearea.scrollTop+25, "error", err.messageText());
+			if (stat.ast && stat.ast.script) {
+				var err = stat.ast.script.errors[0];
+				me.showInfoBox(e.target.offsetLeft+20, e.target.offsetTop-me.codearea.scrollTop+25, "error", err.messageText());
+			}
 		}
 		//changeClass(e.currentTarget,"active",true);
 	}
@@ -661,7 +661,13 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 	//this.statements.push("");
 	this.changeOutput(newout.find(".scriptbox-output").get(0));
 	this.setSource(stat.source);
-	if (stat.isActive()) changeClass(this.statements[stat.id].childNodes[(this.showstars)?2:1],"active",true);
+	if (stat.isActive()) {
+		if (stat.statement.type == "assignment") {
+			changeClass(this.statements[stat.id].childNodes[(this.showstars)?2:1],"last",true);
+		} else {
+			changeClass(this.statements[stat.id].childNodes[(this.showstars)?2:1],"active",true);
+		}
+	}
 
 	if (this.savecb) this.savecb.call(this);
 }
@@ -693,6 +699,48 @@ EdenUI.ScriptBox.prototype.removeStatement = function(num) {
 	if (this.valuedivs[num]) delete this.valuedivs[num];
 
 	if (this.savecb) this.savecb.call(this);
+}
+
+EdenUI.ScriptBox.prototype.clearEmpty = function() {
+	if (this.outdiv === undefined || this.currentstatement === undefined) return;
+	var parent = this.outdiv.parentNode.parentNode;
+	var dnum;
+
+	node = parent.firstChild;
+	while (node) {
+		//var node = parent.childNodes[i];
+		var cachenext = node.nextSibling;
+		//console.log(node);
+		var snum = parseInt(node.getAttribute("data-statement"));
+		if (Eden.Statement.statements[snum].source == "") {
+			if (this.outdiv && this.outdiv.parentNode === node) {
+				if (node.previousSibling) {
+					dnum = parseInt(node.previousSibling.getAttribute("data-statement"));
+				//} else if (node.nextSibling) {
+				//	dnum = parseInt(node.nextSibling.getAttribute("data-statement"));
+				} else {
+					this.currentstatement = undefined;
+					this.outdiv = undefined;
+					dnum = undefined;
+				}
+			}
+			this.statements[snum] = undefined;
+			parent.removeChild(node);
+
+			// Now actually delete the statement
+			var stat = Eden.Statement.statements[snum];
+			if (stat.source == "") Eden.Statement.statements[snum] = undefined;
+
+			if (this.valuedivs[snum]) delete this.valuedivs[snum];
+		}
+		node = cachenext;
+	}
+
+	if (dnum !== undefined) this.moveTo(dnum);
+
+	//if (parent.childNodes.length == 0) this.insertStatement();
+
+	//if (this.savecb) this.savecb.call(this);
 }
 
 EdenUI.ScriptBox.prototype.clearAll = function() {

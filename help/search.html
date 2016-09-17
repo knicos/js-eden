@@ -1,0 +1,35 @@
+The script search box allows you to find definitions, both currently active and inactive, based upon various characteristics such as observable name or dependencies. Typing a word in the box will match all observable names that are similar to that, a drop down box then contains suggestions.
+
+<h2>Hashtags:</h2>
+<p>If a definition has a comment with it that contains hashtags, then search for #thathashtag will show only those definitions matching that tag.</p>
+
+<h2>Restricting results:</h2>
+<p>The results can be filtered by starting the search with one of the following tokens followed by a space and your query.</p>
+
+<ul>
+<li>"active: " - Show only those definitions that are currently active</li>
+<li>"inactive: " - Show only those that are not active</li>
+<li>"agents: " - Only display agents</li>
+<li>"handles: " - Select only assignments or definitions that are just a single literal value</li>
+<li>"oracles: " - Select definitions that are more complex expressions</li>
+<li>"defs: " - Only display "is" definitions</li>
+</ul>
+
+<p>These filters can be combined to, for example, select only active agents using "active:agents: ".</p>
+
+<h2>Dependency Searches:</h2>
+<p>Statements can be search based upon what they are dependant on or what is determined by something. Search tokens are added before the observable name to match, with no space between the : and the word to match.</p>
+
+<ul>
+<li>"depends:" - Find all results that directly depend upon some other observable</li>
+<li>"determines:" - Find all results that directly and indirectly determine some other observable<li>
+</ul>
+
+<h2>Sorting:</h2>
+<p>The results can be sorted by several properties such as time or name. This is specified by including one of the following search tokens somewhere in the search.</p>
+
+<ul>
+<li>"sort:youngest" - Put the most recent definition first</li>
+<li>"sort:oldest" - Put the oldest definition first</li>
+<li>"sort:name" - Sort alphabetically by observable name</li>
+</ul>

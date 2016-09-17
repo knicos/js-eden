@@ -145,6 +145,12 @@ function Construit(options,callback) {
 			}
 		});
 
+		// Display help page when help buttons clicked
+		$(document.body).on("click",".help",function(e) {
+			//console.log("Help: " + e.currentTarget.getAttribute("data-page"));
+			edenUI.createView("help","HelpView",e.currentTarget.getAttribute("title"),e.currentTarget.getAttribute("data-page"));
+		});
+
 		if (browser.msie) {
 			if (bversion < 13) invalidVersion("Microsoft Internet Explorer is not supported, use Edge, Firefox or Chrome.");
 		} else if (browser.mozilla) {
@@ -172,6 +178,7 @@ function Construit(options,callback) {
 		//Register the view options
 		edenUI.views["ScriptView2"] = {raw: function(name,title) { return new EdenUI.ScriptView(name,title); }, dialog: EdenUI.ScriptView.createDialog, title: "Script View", category: edenUI.viewCategories.interpretation};
 		edenUI.views["SVGView"] = {raw: function(name,title) { return new EdenUI.SVG(name,title); }, dialog: EdenUI.SVG.createDialog, title: "Graphic View", category: edenUI.viewCategories.interpretation};
+		edenUI.views["HelpView"] = {raw: function(name,title,source) { return new EdenUI.Help(name,title,source); }, dialog: EdenUI.Help.createDialog, title: "Help", category: edenUI.viewCategories.interpretation};
 
 		if (menuBar) {
 			edenUI.menu = new EdenUI.MenuBar();

@@ -203,7 +203,7 @@
 	 * @param {string} name Unique identifier for the view.
 	 * @param {string} type Used to group different types of views.
 	 */
-	EdenUI.prototype.createView = function (name, type, title) {
+	EdenUI.prototype.createView = function (name, type, title, option) {
 		if (!(type in this.views)) {
 			this.eden.error(new Error("View type " + type + " is unavailable.  Check that the associated plug-in is loaded."));
 			return;
@@ -242,7 +242,7 @@
 
 		var desktopTop = this.plugins.MenuBar? this.menuBarHeight : 0;
 		var defaultTitle = (title) ? title : this.views[type].title;
-		var viewData = this.views[type].dialog(name + "-dialog", defaultTitle);
+		var viewData = this.views[type].dialog(name + "-dialog", defaultTitle, option);
 		if (viewData === undefined) {
 			viewData = {};
 		}

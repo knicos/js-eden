@@ -48,11 +48,12 @@ See LICENSE.txt
 		}
 
 		div.jseden-project-cat {
-			margin-left: 80px;
 			font-size: 16pt;
 			font-family: Roboto,Arial,sans-serif;
-			color: #666;
+			color: #eee;
 			font-weight: bold;
+			background: #416d77;
+			padding: 10px 30px;
 		}
 
 		hr.jseden-project-cat {
@@ -91,6 +92,7 @@ See LICENSE.txt
 
 		div.cadence-plisting-entry.special {
 			height: 100px;
+			width: 150px;
 		}
 
 		div.cadence-plisting-icon {
@@ -221,6 +223,7 @@ See LICENSE.txt
 <script src="js/ui/scriptview.js"></script>
 <script src="js/ui/svgview.js"></script>
 <script src="js/ui/menubar.js"></script>
+<script src="js/ui/helpview.js"></script>
 <script src="plugins/symbol-viewer/symbol-viewer.js"></script>
 
 
@@ -370,6 +373,7 @@ See LICENSE.txt
 						ordered.push(path+"/"+x);
 					}
 
+					// Sort by most recent
 					ordered.sort(function(a,b) {
 						var da = Eden.DB.meta[a].date;
 						var db = Eden.DB.meta[b].date;
@@ -464,11 +468,11 @@ See LICENSE.txt
 			<div id="importfile" class="cadence-plisting-entry noselect special"><div class="cadence-plisting-icon special">&#xf07c;</div><div class="cadence-plisting-title">Import File</div></div>
 			<div id="restoreold" class="cadence-plisting-entry noselect special"><div class="cadence-plisting-icon special">&#xf01e;</div><div class="cadence-plisting-title">Restore Last</div></div>
 		</div>
-		<hr class="jseden-project-cat" /><div class="jseden-project-cat">Published:</div>
+		<div class="jseden-project-cat">Published:</div>
 		<div id="jseden-public-projects" class="jseden-dialog-plisting">
 
 		</div>
-		<hr class="jseden-project-cat" /><div class="jseden-project-cat">Your Projects:</div>
+		<div class="jseden-project-cat">Your Projects:</div>
 		<div id="jseden-private-projects" class="jseden-dialog-plisting">
 			<div id="plist-login" class="cadence-plisting-login"><span class="cadence-plisting-loginicon">&#xf090;</span>Login</div>
 		</div>

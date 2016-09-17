@@ -60,7 +60,7 @@ EdenUI.ScriptView = function(name, title, options) {
 	EdenUI.ScriptView.init();
 
 	this.titlechangecb = undefined;
-	this.contents = $('<div class="scriptview-inner"><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
+	this.contents = $('<div class="scriptview-inner"><div class="scriptview-box"></div><div class="scriptview-menuicon">&#xf002;</div><div class="scriptview-bar"><div class="searchouter"><input type="text" class="search" placeholder="Search..."></input></div><span title="Search Help" data-page="help/search.html" class="help">&#xf29c;</span><div class="scriptview-buttons"></div></div><div class="scriptview-results"></div></div>');
 	this.script = new EdenUI.ScriptBox(this.contents.find(".scriptview-box").get(0), options);
 	this.statements = [];
 	this.name = name;
@@ -123,6 +123,8 @@ EdenUI.ScriptView = function(name, title, options) {
 		this.searchin.on("keyup", function(e) {
 			var str = me.searchin.get(0).value;
 			if (str != "" && e.keyCode == 13) {
+				me.script.clearEmpty();
+
 				for (var i=0; i<me.lastres.active.length; i++) {
 					me.script.insertStatement(Eden.Statement.statements[me.lastres.active[i]], false);
 				}
@@ -187,6 +189,8 @@ EdenUI.ScriptView = function(name, title, options) {
 		});
 
 		this.searchres.on("click", ".scriptview-resultsearch", function(e) {
+			me.script.clearEmpty();
+
 			if (me.lastres.all && me.lastres.all.length > 0) {
 				for (var i=0; i<me.lastres.all.length; i++) {
 					me.script.insertStatement(Eden.Statement.statements[me.lastres.all[i]], false);
