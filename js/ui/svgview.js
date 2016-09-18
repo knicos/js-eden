@@ -49,9 +49,9 @@ EdenUI.SVG.prototype.createElement = function(index, type, name) {
 	//e.setAttribute("data-observable",(name)?name:"@");
 	e.setAttribute("class","svg-item");
 	var me = this;
-	e.onmouseover = function() {
-		if (name && me.inspectmode) {
-			console.log(name);
+	e.onmouseover = function(e) {
+		if (name && e.ctrlKey) {
+			console.log(name[name.length-1]);
 		}
 	};
 

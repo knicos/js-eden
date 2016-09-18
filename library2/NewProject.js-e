@@ -11,7 +11,7 @@
 			"rid": "EVcHj0w9Ve"
 		},
 		{
-			"source": "/** #library */\nfrom is ${{ scope.hasCause(context.lookup(\"name\").value(scope)) }}$;",
+			"source": "/** #library */\nfrom is ${{ scope.allCauseNames() }}$;",
 			"active": true,
 			"rid": "6UAq9DM4zo"
 		},
@@ -275,7 +275,7 @@
 			"rid": "RQVy2yiEgf"
 		},
 		{
-			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_line is [\"picture\", i, \"path\"];",
+			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_line is [\"picture\", i, \"path\", e.from];",
 			"active": true,
 			"rid": "8Waj8IuSzO"
 		},
@@ -290,7 +290,7 @@
 			"rid": "uGP7wZrg4C"
 		},
 		{
-			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_rect is [\"picture\", i, \"rect\"];",
+			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_rect is [\"picture\", i, \"rect\", e.from];",
 			"active": true,
 			"rid": "IXag1vmgEV"
 		},
@@ -335,7 +335,7 @@
 			"rid": "r5wHBgftsv"
 		},
 		{
-			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_text is [\"picture\", i, \"text\"];",
+			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_text is [\"picture\", i, \"text\", e.from];",
 			"active": true,
 			"rid": "YlNG7aF7iN"
 		},
@@ -380,7 +380,7 @@
 			"rid": "njOsalmk0w"
 		},
 		{
-			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_circle is [\"picture\", i, \"circle\"];",
+			"source": "/** #library #internal #svg */\n_js_svg_createElement_args_circle is [\"picture\", i, \"circle\",e.from];",
 			"active": true,
 			"rid": "Bn3cMmF0ui"
 		},
