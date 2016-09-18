@@ -365,7 +365,7 @@
 			"rid": "HXmZMD0pgl"
 		},
 		{
-			"source": "/** #library #svg #drawable */\nRectangle is Object(position-->Point,size-->Point,colour-->\"black\",border-->\"black\",borderSize-->2);",
+			"source": "/** #library #svg #drawable */\nRectangle is Object(position-->_0,size-->_1,_0-->Point,_1-->Point(100,100),colour-->\"black\",border-->\"black\",borderSize-->2);",
 			"active": true,
 			"rid": "Yh3EsWFNBV"
 		},
@@ -449,9 +449,7 @@
 	"title": "NewProject",
 	"scriptviews": {
 		"Script View": [
-			21,
-			70,
-			71
+			21
 		]
 	}
 }

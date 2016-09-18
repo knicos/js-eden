@@ -455,8 +455,10 @@ Eden.Statement.prototype.setSource = function(src, ast, stat, net) {
 			var tags = this.statement.doxyComment.getHashTags();
 			for (var i=0; i<tags.length; i++) {
 				//if (Eden.Statement.tags[tags[i]] === undefined) Eden.Statement.tags[tags[i]] = [];
-				delete Eden.Statement.tags[tags[i]][this.id];
-				Eden.Statement.tags[tags[i]].length--;
+				if (Eden.Statement.tags[tags[i]][this.id]) {
+					delete Eden.Statement.tags[tags[i]][this.id];
+					Eden.Statement.tags[tags[i]].length--;
+				}
 				if (Eden.Statement.tags[tags[i]].length == 0) delete Eden.Statement.tags[tags[i]];
 			}
 		}
@@ -481,7 +483,7 @@ Eden.Statement.prototype.setSource = function(src, ast, stat, net) {
 			var tags = stat.doxyComment.getHashTags();
 			for (var i=0; i<tags.length; i++) {
 				if (Eden.Statement.tags[tags[i]] === undefined) Eden.Statement.tags[tags[i]] = {length:1};
-				else Eden.Statement.tags[tags[i]].length++;
+				else if (Eden.Statement.tags[tags[i]][this.id] === undefined) Eden.Statement.tags[tags[i]].length++;
 				Eden.Statement.tags[tags[i]][this.id] = this;
 			}
 		}

@@ -1202,6 +1202,7 @@ function concatAndResolveUrl(url, concat) {
 			//while (scope && scope.parent) {
 			var overs = scope.allOverrides();
 			for (var i=0; i<overs.length; i++) {
+				if (overs[i].name.charAt(0) == "_") continue;
 				//if (x == "/this" || x == "/has" || x == "/from") continue;
 				//var name = x.slice(1);
 				var scache = scope.lookup("/"+overs[i].name);
