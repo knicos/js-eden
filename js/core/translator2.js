@@ -1195,26 +1195,40 @@ Eden.AST.prototype.pSCOPEPATTERN = function() {
  * SCOPE Prime Production
  * SCOPE' -> observable SCOPE''
  */
-Eden.AST.prototype.pSCOPE_P = function() {
-	var obs = this.pSCOPEPATTERN();
+Eden.AST.prototype.pSCOPE_P = function(count) {
+	var obs;
+	var peek = this.peekNext(1);
 	var isin = false;
 	var isdefault = false;
 	var isoneshot = false;
-	if (obs.errors.length > 0) {
-		var scope = new Eden.AST.Scope();
-		scope.addOverride(obs, undefined, undefined, undefined, false);
-		return scope;
+	if (count === undefined) count = 0;
+
+	if (peek != "->" && peek != "in" && peek != "-->") {
+		// NO NAME
+		obs = new Eden.AST.ScopePattern();
+		obs.setObservable("_" + count);
+		count++;
+	} else {
+		obs = this.pSCOPEPATTERN();
+
+		if (obs.errors.length > 0) {
+			var scope = new Eden.AST.Scope();
+			scope.addOverride(obs, undefined, undefined, undefined, false);
+			return scope;
+		}
+
+		if (this.token != "->" && this.token != "in" && this.token != "-->") {
+			var scope = new Eden.AST.Scope();
+			scope.error(new Eden.SyntaxError(this, Eden.SyntaxError.SCOPEEQUALS));
+			return scope;
+		}
+		if (this.token == "in") isin = true;
+		if (this.token == "-->") isdefault = true;
+
+		this.next();
 	}
 
-	if (this.token != "->" && this.token != "in" && this.token != "-->") {
-		var scope = new Eden.AST.Scope();
-		scope.error(new Eden.SyntaxError(this, Eden.SyntaxError.SCOPEEQUALS));
-		return scope;
-	}
-	if (this.token == "in") isin = true;
-	if (this.token == "-->") isdefault = true;
-
-	this.next();
+	//var obs = this.pSCOPEPATTERN();
 	var expression = (isin || !Eden.AST.strict >= 1) ? this.pEXPRESSION() : this.pFACTOR_SIMPLE();
 
 	if (Eden.AST.strict >= 4 && expression.type == "literal") {
@@ -1259,7 +1273,7 @@ Eden.AST.prototype.pSCOPE_P = function() {
 		}
 	}
 
-	var scope = this.pSCOPE_PP();
+	var scope = this.pSCOPE_PP(count);
 	obs.setStart(expression);
 	obs.setIn(isin);
 	obs.setDefault(isdefault);
@@ -1280,10 +1294,10 @@ Eden.AST.prototype.pSCOPE_P = function() {
  * Scope Prime Prime Production
  * SCOPE'' -> , SCOPE | epsilon
  */
-Eden.AST.prototype.pSCOPE_PP = function() {
+Eden.AST.prototype.pSCOPE_PP = function(count) {
 	if (this.token == ",") {
 		this.next();
-		return this.pSCOPE_P();
+		return this.pSCOPE_P(count);
 	} else {
 		return new Eden.AST.Scope();
 	}
