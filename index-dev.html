@@ -385,12 +385,9 @@ See LICENSE.txt
 						var meta = Eden.DB.meta[ordered[i]];
 						var t = meta.date.split(/[- :]/);
 						var title = meta.title;
-						var thumb = undefined;
-						if (title.charAt(0) == "{") {
-							var decoded = JSON.parse(title);
-							title = decoded.title;
-							thumb = decoded.thumb;
-						}
+						var thumb = meta.thumb;
+
+						var tags = meta.tags;
 
 						var subtitle;
 						if (pub) {

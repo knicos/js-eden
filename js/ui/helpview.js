@@ -3,7 +3,7 @@ EdenUI.Help = function(name, title, source) {
 	this.title = title;
 	this.source = source;
 
-	this.contents = $('<div style="position: absolute; top: 0; bottom: 0; right: 0; left: 0; padding: 20px; overflow: auto;"></div>');
+	this.contents = $('<div style="line-height: 25px; text-align: justify; position: absolute; top: 0; bottom: 0; right: 0; left: 0; padding: 20px; overflow: auto;"></div>');
 
 	var me = this;
 	$.ajax({
@@ -17,8 +17,9 @@ EdenUI.Help = function(name, title, source) {
 		}
 	});
 
-	this.defaultWidth = 500;
+	this.defaultWidth = 800;
 	this.defaultHeight = 500;
+	this.background = "dark";
 }
 
 EdenUI.Help.createDialog = function(name, mtitle, source) {

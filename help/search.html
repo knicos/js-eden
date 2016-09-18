@@ -1,4 +1,22 @@
-The script search box allows you to find definitions, both currently active and inactive, based upon various characteristics such as observable name or dependencies. Typing a word in the box will match all observable names that are similar to that, a drop down box then contains suggestions.
+<h2>Examples:</h2>
+<ul>
+<li><code style="margin-right: 40px">somename</code>Any statement for an observable containing "somename"</li>
+<li><code style="margin-right: 40px">active: *</code>All active statements</li>
+<li><code style="margin-right: 40px">inactive: *</code>All inactive statements</li>
+<li><code style="margin-right: 40px">agents: *</code>All agents</li>
+<li><code style="margin-right: 40px">active:agents: picture</code>All active agents triggered by "picture"</li>
+<li><code style="margin-right: 40px">#drawable</code>Statements containing the "drawable" hashtag</li>
+<li><code style="margin-right: 40px">depends:Circle</code>Any statement directly dependant on "Circle"</li>
+<li><code style="margin-right: 40px">determines:myline</code>All statements that directly or indirectly determine "myline"</li>
+<li><code style="margin-right: 40px">depends:Line -#library</code>Any statements using "Line" that are not in the library</li>
+<li><code style="margin-right: 40px">active: * sort:youngest</code>All active statements sorted by age</li>
+<li><code style="margin-right: 40px">* -# sort:name</code>All untagged statements sorted alphabetically</li>
+<li><code style="margin-right: 40px">handles: * -#lib</code>All non-library assignments or definitions with a single literal</li>
+</ul>
+
+<h2>Details:</h2>
+
+<p>The script search box allows you to find definitions, both currently active and inactive, based upon various characteristics such as observable name or dependencies. Typing a word in the box will match all observable names that are similar to that, a drop down box then contains suggestions.</p>
 
 <h2>Hashtags:</h2>
 <p>If a definition has a comment with it that contains hashtags, then search for #thathashtag will show only those definitions matching that tag.</p>
@@ -7,13 +25,13 @@ The script search box allows you to find definitions, both currently active and 
 <p>The results can be filtered by starting the search with one of the following tokens followed by a space and your query.</p>
 
 <ul>
-<li><b>"active: "</b> - Show only those definitions and agents that are currently active</li>
-<li><b>"inactive: "</b> - Show only those that are not active</li>
-<li><b>"agents: "</b> - Only display agents</li>
-<li><b>"handles: "</b> - Select only assignments or definitions that are just a single literal value</li>
-<li><b>"oracles: "</b> - Select definitions that are more complex expressions</li>
-<li><b>"defs: "</b> - Only display definitions and no agents</li>
-<li><b>"shared: "</b> - Only display definitions in the cloud that I do not have locally already</li>
+<li><code>active: </code> - Show only those definitions and agents that are currently active</li>
+<li><code>inactive: </code> - Show only those that are not active</li>
+<li><code>agents: </code> - Only display agents</li>
+<li><code>handles: </code> - Select only assignments or definitions that are just a single literal value</li>
+<li><code>oracles: </code> - Select definitions that are more complex expressions</li>
+<li><code>defs: </code> - Only display definitions and no agents</li>
+<li><code>shared: </code> - Only display definitions in the cloud that I do not have locally already</li>
 </ul>
 
 <p>These filters can be combined to, for example, select only active agents using "active:agents: ".</p>

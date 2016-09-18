@@ -323,10 +323,12 @@ SharedStatement.search = function(str) {
 }
 
 SharedStatement.dependSearch = function(regex, m, prev) {
+	if (prev === undefined) prev = {active: [], inactive: [], agents: []};
 	return prev;
 }
 
 SharedStatement.tagSearch = function(regex, m, prev) {
+	if (prev === undefined) prev = {active: [], inactive: [], agents: []};
 	return prev;
 }
 

@@ -398,6 +398,10 @@ div.jseden-viewbar {
 	cursor: pointer;
 }
 
+div.jseden-view.dark div.jseden-viewbar {
+	background: #416d77;
+}
+
 div.jseden-viewclose {
 	font-weight: bold;
 	font-size: 25px;
@@ -411,6 +415,10 @@ div.jseden-viewbar:hover .jseden-viewclose {
 	color: #666;
 }
 
+div.jseden-view.dark div.jseden-viewbar:hover .jseden-viewclose {
+	color: white;
+}
+
 div.jseden-viewtitle {
 	font-size: 18pt;
 	font-weight: bold;
@@ -420,6 +428,11 @@ div.jseden-viewtitle {
 	color: #666;
 	box-sizing: border-box;
 	border: 1px solid white;
+}
+
+div.jseden-view.dark div.jseden-viewtitle {
+	color: #eee;
+	border: 1px solid #416d77;
 }
 
 div.jseden-viewtitle:hover {
@@ -436,7 +449,7 @@ div.jseden-viewinner {
 	top: 6px;
 	left: 0;
 	right: 0;
-	bottom: 6px;
+	bottom: 0;
 }
 
 div.jseden-view {
@@ -459,6 +472,10 @@ div.jseden-view {
 	/*overflow: hidden;*/
 }
 
+div.jseden-view.dark {
+	background: #416d77;
+}
+
 div.jseden-viewcontent {
 	position: absolute;
 	left: 0;
@@ -466,6 +483,13 @@ div.jseden-viewcontent {
 	top: 35px;
 	bottom: 0;
 	font-family: Roboto,Arial,sans-serif;
+	background: white;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+div.jseden-view.dark > div.jseden-viewcontent {
+	background: #416d77;
 }
 
 div.jseden-viewcontent2 {
@@ -474,6 +498,15 @@ div.jseden-viewcontent2 {
 	right: 0;
 	top: 0;
 	bottom: 0;
+	background: white;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+h2 {
+	color: #416d77;
+	font-family: Roboto,Arial,sans-serif;
+	font-size: 1.4em;
 }
 
 

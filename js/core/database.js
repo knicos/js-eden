@@ -38,13 +38,22 @@ Eden.DB.Meta = function() {
 	this.latestID = -1;
 	this.file = undefined;
 	this.date = undefined;
+	this.thumb = undefined;
+	this.tags = undefined;
 }
 
 Eden.DB.Meta.prototype.updateDefault = function(id, title, author, date) {
 	if (id > this.defaultID) this.defaultID = id;
 	if (this.latestID == -1) this.latestID = id;
 	if (this.saveID == -1) {
-		this.title = title;
+		if (title && title.charAt(0) == "{") {
+			var decoded = JSON.parse(title);
+			this.title = decoded.title;
+			this.thumb = decoded.thumb;
+			this.tags = decoded.tags;
+		} else {
+			this.title = title;
+		}
 		this.author = author;
 		this.date = date;
 	}
@@ -53,7 +62,15 @@ Eden.DB.Meta.prototype.updateDefault = function(id, title, author, date) {
 Eden.DB.Meta.prototype.updateLatest = function(id, title, author, date) {
 	if (id > this.latestID) this.latestID = id;
 	if (this.saveID == -1 && this.defaultID == -1) {
-		this.title = title;
+		//this.title = title;
+		if (title && title.charAt(0) == "{") {
+			var decoded = JSON.parse(title);
+			this.title = decoded.title;
+			this.thumb = decoded.thumb;
+			this.tags = decoded.tags;
+		} else {
+			this.title = title;
+		}
 		this.author = author;
 		this.date = date;
 	}
@@ -354,9 +371,19 @@ Eden.DB.processManifestEntry = function(path, entry) {
 		}
 	}
 
-	if (entry.title) meta.title = entry.title;
 	if (entry.remote) meta.remote = true;
 	if (entry.file) meta.file = entry.file;
+
+	if (entry.title && entry.title.charAt(0) == "{") {
+		var decoded = JSON.parse(entry.title);
+		meta.title = decoded.title;
+		meta.thumb = decoded.thumb;
+		meta.tags = decoded.tags;
+		console.log("DECODE: " + meta.title);
+	} else if (entry.title) {
+		meta.title = entry.title;
+	}
+
 	Eden.DB.updateDirectory(path);
 	Eden.DB.meta[path] = meta;
 	return meta;
@@ -652,21 +679,35 @@ Eden.DB.getSource = function(path, tag, callback) {
 	});
 }
 
-Eden.DB.save = function(title, cb, pub) {
-	var status = {};
-
-	var reducedtitle = title.split(" ").join("");
-
-	status.source = JSON.stringify({
+Eden.DB.generateSource = function(title) {
+	return JSON.stringify({
 		statements: Eden.Statement.save(),
 		title: title,
 		scriptviews: EdenUI.ScriptView.saveData()
-	});
+	},null,"\t");
+}
+
+Eden.DB.save = function(title, cb, tags, pub) {
+	Eden.DB.saveSource(title, Eden.DB.generateSource(title), cb, tags, pub);
+}
+
+Eden.DB.saveSource = function(title, source, cb, tags, pub) {
+	var status = {};
+
+	var reducedtitle = title.replace(/[ \!\'\-\?\&]/g, "");
+
+	status.source = source;
+
+	var metatitle = {
+		title: title,
+		thumb: undefined,
+		tags: tags
+	};
 
 	
 
 	if (Eden.DB.isLoggedIn()) {
-		var user = (pub) ? "public" : ((Eden.DB.username) ? Eden.DB.username.split(" ").join("") : "public");
+		var user = (pub) ? "public" : ((Eden.DB.username) ? Eden.DB.username.replace(/[ \!\'\-\?\&]/g, "") : "public");
 		var path = "jseden2/"+user+"/"+reducedtitle;
 		var meta = Eden.DB.meta[path];
 		if (meta === undefined) meta = new Eden.DB.createMeta(path);
@@ -674,15 +715,16 @@ Eden.DB.save = function(title, cb, pub) {
 
 		EdenUI.SVG.thumbnail(function(thumb) {
 			if (thumb) {
-				meta.title = JSON.stringify({title: title, thumb: thumb});
-			} else {
-				meta.title = title;
+				metatitle.thumb = thumb;
 			}
+
+			meta.title = JSON.stringify(metatitle);
 
 			Eden.DB.upload(path,meta,status.source,"v1",true,function() {
 				var url = "?load="+path+"&tag="+meta.saveID;
 				status.path = path;
 				status.saveID = meta.saveID;
+				meta.title = title; // Reset title...
 
 				window.history.replaceState({project: path, tag: meta.saveID},"",url);
 

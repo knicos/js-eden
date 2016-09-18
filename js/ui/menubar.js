@@ -43,7 +43,7 @@ EdenUI.MenuBar = function() {
 		}
 	});
 
-	this.sharebox = $('<div class="modal"><div class="modal-content" style="width: 400px;"><div class="menubar-sharebox-title"><span class="menubar-shareicon">&#xf1e0;</span>Save and Share</div><div class="menubar-sharebox-content">Saved to your projects and shared at:<div class="projecturl"></div><br/>Download to file: <span class="downloadurl"></span><br/><br><button class="jseden done" style="margin-top: 20px;">Done</button><button class="jseden publish" style="margin-top: 20px;">Publish</button></div></div></div>');
+	this.sharebox = $('<div class="modal"><div class="modal-content" style="width: 400px;"><div class="menubar-sharebox-title"><span class="menubar-shareicon">&#xf1e0;</span>Save and Share</div><div class="menubar-sharebox-content">Add tags to your project:<div class="projecttags" contenteditable></div><div id="projectuploadbox"></div><br/><br/>Download to file: <span class="downloadurl"></span><br/><br><button class="jseden done" style="margin-top: 20px;">Done</button></div></div></div>');
 	this.element.append(this.sharebox);
 	this.sharebox.hide();
 
@@ -64,13 +64,53 @@ EdenUI.MenuBar = function() {
 		me.sharebox.hide();
 	});
 
-	this.element.on("click", ".menubar-button.share", function(e) {
+	function updateTags() {
+		var tagbox = me.sharebox.find(".projecttags");
+
+		var tagstr = tagbox.get(0).textContent;
+
+		tags = tagstr.toLowerCase().replace(/[\!\'\-\?\&]/g, "").split(" ");
+		/*for (var i=0; i<tags.length; i++) {
+			if (tags[i].charAt(0) != "#") tags[i] = "#" + tags[i];
+		}*/
+
+		if (tags && tags.length > 0) {
+			var taghtml = "";
+			for (var i=0; i<tags.length; i++) {
+				taghtml += "<span class=\"project-tag\">" + tags[i] + "</span>";
+				if (i < tags.length-1) taghtml += " ";
+			}
+			tagbox.html(taghtml);
+		}
+	}
+
+	this.sharebox.on("keydown",".projecttags",function(e) { if (e.keyCode == 32) {
+		var tagbox = me.sharebox.find(".projecttags").get(0);
+
+		var spacer = document.createTextNode(" ");
+		tagbox.appendChild(spacer);
+		var newElement = document.createElement('span');
+		newElement.className = "project-tag";
+		newElement.innerHTML = "&#8203;";
+		tagbox.appendChild(newElement);
+
+		var range = document.createRange();
+		var sel = window.getSelection();
+		//var currange = sel.getRangeAt(0);
+		//var element = currange.startContainer();
+		range.selectNodeContents(newElement);
+		range.collapse(false);
+		sel.removeAllRanges();
+		sel.addRange(range);
+
+		e.preventDefault();
+	} });
+	this.sharebox.on("blur",".projecttags",updateTags);
+
+	this.sharebox.on("click",".upload", function(e) {
 		var title = me.element.find(".jseden-title").get(0).textContent;
-
-		me.sharebox.find(".projecturl").html('Saving...');
-		me.sharebox.show();
-
-		Eden.DB.save(title, function(status) {
+		me.sharebox.find("#projectuploadbox").html('<br/><br/>Saved to your projects and shared at:<div class="projecturl">Saving...</div>');
+		Eden.DB.saveSource(title, me.projectsource, function(status) {
 			if (status.path) {
 				var url = "?load="+status.path+"&tag="+status.saveID;
 				me.sharebox.find(".projecturl").html(window.location.href+url);
@@ -84,10 +124,46 @@ EdenUI.MenuBar = function() {
 			} else {
 				me.sharebox.find(".projecturl").html('<b>Save failed</b>, not logged in.');
 			}
-
-			var source = "data:application/octet-stream," + encodeURIComponent(status.source);
-			me.sharebox.find(".downloadurl").html('<a href="'+source+'" download="'+title+'.js-e">'+title+'.js-e</a>');
 		});
+	});
+
+	this.element.on("click", ".menubar-button.share", function(e) {
+		var title = me.element.find(".jseden-title").get(0).textContent;
+
+		if (Eden.DB.isLoggedIn()) {
+			me.sharebox.find("#projectuploadbox").html('<button class="sharebox-button upload">Upload</button><button class="sharebox-button publish" style="margin-top: 20px;">Publish</button>');
+		} else {
+			me.sharebox.find("#projectuploadbox").html('');
+		}
+		me.sharebox.show();
+
+		//Saved to your projects and shared at:<div class="projecturl"></div>
+
+		var tags;
+
+		if (tags === undefined || tags.length == 0) {
+			tags = title.toLowerCase().replace(/[\!\'\-\?\&]/g, "").split(" ");
+			//console.log(tags);
+			//for (var i=0; i<tags.length; i++) tags[i] = "#" + tags[i];
+			//Eden.DB.meta[status.path].tags = tags;
+			if (Eden.DB.isLoggedIn()) {
+				var nametags = Eden.DB.username.toLowerCase().replace(/[\!\'\-\?\&]/g, "").split(" ");
+				tags.push.apply(tags,nametags);
+			}
+		}
+
+		if (tags && tags.length > 0) {
+			var taghtml = "";
+			for (var i=0; i<tags.length; i++) {
+				taghtml += "<span class=\"project-tag\">" + tags[i] + "</span>";
+				if (i < tags.length-1) taghtml += " ";
+			}
+			me.sharebox.find(".projecttags").html(taghtml);
+		}
+
+		me.projectsource = Eden.DB.generateSource(title);
+		var source = "data:application/octet-stream," + encodeURIComponent(me.projectsource);
+		me.sharebox.find(".downloadurl").html('<a href="'+source+'" download="'+title+'.js-e">'+title+'.js-e</a>');
 	});
 
 	this.element.on("click", ".menubar-button.new", function(e) {

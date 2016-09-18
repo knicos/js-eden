@@ -264,6 +264,10 @@
 
 		if (viewData.defaultWidth) diag.css("width",""+viewData.defaultWidth+"px");
 		if (viewData.defaultHeight) diag.css("height",""+viewData.defaultHeight+"px");
+		if (viewData.background == "dark") {
+			diag.addClass("dark");
+		}
+		//if (viewData.background) diag.css("background",viewData.background);
 
 		// Rebuild view spaces...
 		ViewSpace.spaces = [new ViewSpace(10,70,$(document).width()-10,$(document).height()-70)];
