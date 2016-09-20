@@ -411,21 +411,26 @@ See LICENSE.txt
 				});
 			}
 
-			displayProjects(true, function() {
-				if (Eden.DB.isLoggedIn()) {
-					var plist = lopts.find("#jseden-private-projects").get(0);
-					var node = plist.firstChild;
-					while (node) {
-						var next = node.nextSibling;
-						plist.removeChild(node);
-						node = next;
+			if (Eden.DB.isConnected()) {
+				displayProjects(true, function() {
+					if (Eden.DB.isLoggedIn()) {
+						var plist = lopts.find("#jseden-private-projects").get(0);
+						var node = plist.firstChild;
+						while (node) {
+							var next = node.nextSibling;
+							plist.removeChild(node);
+							node = next;
+						}
+						displayProjects();
 					}
-					displayProjects();
-				}
-			});
+				});
+			} else {
+				$("#project-browser").html('<div class="jseden-project-cat">Offline Examples:</div><div id="jseden-public-projects" class="jseden-dialog-plisting"></div>');
+			}
 
 			Eden.DB.listenTo("login", this, function(name) {
 				var plist = lopts.find("#jseden-private-projects").get(0);
+				if (!plist) return;
 				var node = plist.firstChild;
 				while (node) {
 					var next = node.nextSibling;
@@ -438,6 +443,7 @@ See LICENSE.txt
 
 			Eden.DB.listenTo("logout", this, function() {
 				var plist = lopts.find("#jseden-private-projects").get(0);
+				if (!plist) return;
 				var node = plist.firstChild;
 				while (node) {
 					var next = node.nextSibling;
@@ -465,12 +471,14 @@ See LICENSE.txt
 			<div id="importfile" class="cadence-plisting-entry noselect special"><div class="cadence-plisting-icon special">&#xf07c;</div><div class="cadence-plisting-title">Import File</div></div>
 			<div id="restoreold" class="cadence-plisting-entry noselect special"><div class="cadence-plisting-icon special">&#xf01e;</div><div class="cadence-plisting-title">Restore Last</div></div>
 		</div>
-		<div class="jseden-project-cat">Published:</div>
-		<div id="jseden-public-projects" class="jseden-dialog-plisting">
-		</div>
-		<div class="jseden-project-cat">Your Projects:</div>
-		<div id="jseden-private-projects" class="jseden-dialog-plisting">
-			<div id="plist-login" class="cadence-plisting-login"><span class="cadence-plisting-loginicon">&#xf090;</span>Login</div>
+		<div id="project-browser">
+			<div class="jseden-project-cat">Published:</div>
+			<div id="jseden-public-projects" class="jseden-dialog-plisting">
+			</div>
+			<div class="jseden-project-cat">Your Projects:</div>
+			<div id="jseden-private-projects" class="jseden-dialog-plisting">
+				<div id="plist-login" class="cadence-plisting-login"><span class="cadence-plisting-loginicon">&#xf090;</span>Login</div>
+			</div>
 		</div>
 	</div>
 </div>
