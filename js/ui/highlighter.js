@@ -297,15 +297,15 @@
 					classes += "eden-constant";	
 				} else if (token == "OBSERVABLE") {
 					if (EdenUI.Highlight.isConstant(stream.data.value)) {
-						classes += "eden-constant";
+						classes += "eden-constant eden-observable";
 					} else if (EdenUI.Highlight.isType(stream.data.value)) {
-						classes += "eden-type";
+						classes += "eden-type eden-observable";
 					} else if (EdenUI.Highlight.isLibrary(stream.data.value)) {
-						classes += "eden-function";
+						classes += "eden-function eden-observable";
 					} else if (edenSpecials[stream.data.value]) {
-						classes += "eden-special";
+						classes += "eden-special eden-observable";
 					} else if (EdenUI.Highlight.isMissing(stream.data.value)) {
-						classes += "eden-missing";
+						classes += "eden-missing eden-observable";
 					} else {
 						classes += "eden-observable";
 					}
@@ -406,7 +406,7 @@
 				// Left text
 				var parentspan = document.createElement('span');
 				parentspan.className = classes;
-				if (classes == "eden-observable" || classes == "eden-function") {
+				if (classes.indexOf("eden-observable") != -1) {
 					parentspan.setAttribute("data-observable", tokentext);
 				}
 
@@ -438,7 +438,7 @@
 			} else {
 				var tokenspan = document.createElement('span');
 				tokenspan.className = classes;
-				if (classes == "eden-observable") {
+				if (classes.indexOf("eden-observable") != -1) {
 					tokenspan.setAttribute("data-observable", tokentext);
 				}
 				tokenspan.appendChild(document.createTextNode(tokentext));

@@ -455,7 +455,7 @@ EdenUI.ScriptBox = function(element, options) {
 				} else {
 					//openTab(path[0], path[1]);
 				}
-			} else if (element.className == "eden-observable" || element.className == "eden-function") {
+			} else if (element.className && element.className.indexOf("eden-observable") != -1) {
 				var obs = element.getAttribute("data-observable");
 
 				var stat = Eden.Statement.statements[me.currentstatement];
