@@ -125,12 +125,12 @@
 			"rid": "bXs62k5nav"
 		},
 		{
-			"source": "/** Maximum. #library */\nmax is a if (a >= b) else b;",
+			"source": "/** Maximum. #library */\nmax is (a if (a >= b) else b)(a-->_0,b-->_1);",
 			"active": true,
 			"rid": "bkQOaguVhx"
 		},
 		{
-			"source": "/** Minimum. #library */\nmin is a if (a <= b) else b;",
+			"source": "/** Minimum. #library */\nmin is (a if (a <= b) else b)(a-->_0,b-->_1);",
 			"active": true,
 			"rid": "I2kjlKBfLY"
 		},
@@ -360,12 +360,12 @@
 			"rid": "EacofdKSDK"
 		},
 		{
-			"source": "/** #library #svg #drawable */\nText is Object(position-->Point,text-->\"Text\",colour-->\"black\",size-->12,family->\"Arial\",weight->\"normal\");",
+			"source": "/** #library #svg #drawable */\nText is Object(position-->_0,text-->_1,colour-->\"black\",size-->12,family->\"Arial\",weight->\"normal\");",
 			"active": true,
 			"rid": "HXmZMD0pgl"
 		},
 		{
-			"source": "/** #library #svg #drawable */\nRectangle is Object(position-->_0,size-->_1,_0-->Point,_1-->Point(100,100),colour-->\"black\",border-->\"black\",borderSize-->2);",
+			"source": "/** #library #svg #drawable */\nRectangle is Object(position-->_0,size-->_1,colour-->\"black\",border-->\"black\",borderSize-->2);",
 			"active": true,
 			"rid": "Yh3EsWFNBV"
 		},
@@ -375,7 +375,7 @@
 			"rid": "yHGIizFhDW"
 		},
 		{
-			"source": "/** #library #svg #drawable */\nCircle is Object(position-->Point,radius-->100,colour-->\"white\",border-->\"black\",borderSize-->2);",
+			"source": "/** #library #svg #drawable */\nCircle is Object(position-->_0,radius-->100,colour-->\"white\",border-->\"black\",borderSize-->2);",
 			"active": true,
 			"rid": "njOsalmk0w"
 		},
@@ -400,49 +400,74 @@
 			"rid": "Qwv5PoqcHo"
 		},
 		{
-			"source": "/** #library #math */\ncos is ${{Math.cos(Math.PI * (context.lookup(\"value\").value(scope) / 180))}}$(value-->0);",
+			"source": "/** #library #math */\ncos is ${{Math.cos(Math.PI * (context.lookup(\"_0\").value(scope) / 180))}}$(_0-->value);",
 			"active": true,
 			"rid": "k1wkZEoLbX"
 		},
 		{
-			"source": "/** #library #math */\nsin is ${{Math.sin(Math.PI * (context.lookup(\"value\").value(scope) / 180))}}$(value-->0);",
+			"source": "/** #library #math */\nsin is ${{Math.sin(Math.PI * (context.lookup(\"_0\").value(scope) / 180))}}$(_0-->value);",
 			"active": true,
 			"rid": "RboKnF8k69"
 		},
 		{
-			"source": "/** #library #math */\natan is ${{Math.atan(context.lookup(\"value\").value(scope)) * 180 / Math.PI}}$(value-->0);",
+			"source": "/** #library #math */\natan is ${{Math.atan(context.lookup(\"_0\").value(scope)) * 180 / Math.PI}}$(_0-->value);",
 			"active": true,
 			"rid": "0gqhW3kbii"
 		},
 		{
-			"source": "/** #library */\nTranslate is Point(x->_TranslateX,y->_TranslateY);",
+			"source": "/** #library */\nTranslate is Point(_TranslateX,_TranslateY);",
 			"active": true,
 			"rid": "vZ9OswFqar"
 		},
 		{
-			"source": "/** #library */\n_TranslateX is a.x + b.x;",
+			"source": "/** #library */\n_TranslateX is _0.x + _1.x;",
 			"active": true,
 			"rid": "Jt7fvF7XGd"
 		},
 		{
-			"source": "/** #library */\n_TranslateY is a.y + b.y;",
+			"source": "/** #library */\n_TranslateY is _0.y + _1.y;",
 			"active": true,
 			"rid": "SZ6oNY5lq8"
 		},
 		{
-			"source": "/** #library */\nScale is Point(x->_ScaleX,y->_ScaleY);",
+			"source": "/** #library */\nScale is Point(_ScaleX,_ScaleY);",
 			"active": true,
 			"rid": "FilT5n8MPL"
 		},
 		{
-			"source": "/** #library */\n_ScaleY is point.y * scale;",
+			"source": "/** #library */\n_ScaleY is _0.y * _1;",
 			"active": true,
 			"rid": "xOZpfWtdbw"
 		},
 		{
-			"source": "/** #library */\n_ScaleX is point.x * scale;",
+			"source": "/** #library */\n_ScaleX is _0.x * _1;",
 			"active": true,
 			"rid": "7s7kkUhyhq"
+		},
+		{
+			"source": "Rotate is (Point(_RotateX,_RotateY))(center-->Point(0,0));",
+			"active": true,
+			"rid": "9aylXr9kdK"
+		},
+		{
+			"source": "_RotateX is ((_0.x - center.x) * _RotateCOS - (_0.y - center.y) * _RotateSIN) + center.x;",
+			"active": true,
+			"rid": "RFRWrIM9x8"
+		},
+		{
+			"source": "_RotateY is ((_0.x - center.x) * _RotateSIN + (_0.y - center.y) * _RotateCOS) + center.y;",
+			"active": true,
+			"rid": "d2dl3vPMX5"
+		},
+		{
+			"source": "_RotateCOS is cos(_1);",
+			"active": true,
+			"rid": "aask22lkXn"
+		},
+		{
+			"source": "_RotateSIN is sin(-_1);",
+			"active": true,
+			"rid": "FgJfLSPwvw"
 		},
 		null
 	],
