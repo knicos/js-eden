@@ -237,7 +237,7 @@ EdenStream.prototype.parseAlphaNumeric = function(data) {
 	while (this.valid() && this.isAlphaNumeric(this.peek())) {
 		result += String.fromCharCode(this.get());
 	}
-	data.value = result;
+	data.value = result.trim();
 	return true;
 };
 

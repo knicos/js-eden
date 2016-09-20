@@ -39,3 +39,55 @@ Eden.Query = {};
 Eden.Query.sortByCount = sortByCount;
 Eden.Query.reduceByCount = reduceByCount;
 Eden.Query.negativeFilter = negativeFilter;
+
+Eden.Query.treeBottomUp = function() {
+	var base = {};
+	for (var x in eden.root.symbols) {
+		var sym = eden.root.symbols[x];
+		if (sym.definition === undefined || sym.definition.deps.length == 0) {
+			base[x] = {};
+		}
+	}
+
+	function processSymbol(base) {
+		for (var x in base) {
+			var sym = eden.root.symbols[x];
+			if (!sym) continue;
+			var dest = base[x];
+			for (var y in sym.subscribers) {
+				dest[y.slice(1)] = {};
+			}
+			processSymbol(dest);
+		}
+	}
+
+	processSymbol(base);
+
+	return base;
+}
+
+Eden.Query.treeTopDown = function() {
+	var base = {};
+	for (var x in eden.root.symbols) {
+		var sym = eden.root.symbols[x];
+		if (Object.keys(sym.subscribers).length == 0) {
+			base[x] = {};
+		}
+	}
+
+	function processSymbol(base) {
+		for (var x in base) {
+			var sym = eden.root.symbols[x];
+			if (!sym) continue;
+			var dest = base[x];
+			for (var y in sym.dependencies) {
+				dest[y.slice(1)] = {};
+			}
+			processSymbol(dest);
+		}
+	}
+
+	processSymbol(base);
+
+	return base;
+}

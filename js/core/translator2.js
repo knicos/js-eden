@@ -304,6 +304,16 @@ Eden.AST.prototype.next = function() {
 			// Return code as value and generate JAVASCRIPT token
 			this.data.value = this.stream.code.substring(start, this.stream.position-3);
 			this.token = "JAVASCRIPT";
+		// Allow multiword observables
+		} else if (this.token == "OBSERVABLE") {
+			var obs = this.data.value;
+			while (this.peekNext(1) == "OBSERVABLE") {
+				this.token = this.stream.readToken();
+				//console.log(this.data.value);
+				obs += " " + this.data.value;
+			}
+			this.data.value = obs;
+			break;
 		} else {
 			break;
 		}

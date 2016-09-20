@@ -296,6 +296,17 @@
 				} else if (token == "BOOLEAN") {
 					classes += "eden-constant";	
 				} else if (token == "OBSERVABLE") {
+					// Get multi word observable
+					var obs = stream.data.value;
+					var pos = stream.position;
+					while (stream.readToken() == "OBSERVABLE") {
+						pos = stream.position;
+						obs += " " + stream.data.value;
+					}
+					stream.data.value = obs;
+					tokentext = obs;
+					stream.position = pos;
+
 					if (EdenUI.Highlight.isConstant(stream.data.value)) {
 						classes += "eden-constant eden-observable";
 					} else if (EdenUI.Highlight.isType(stream.data.value)) {
