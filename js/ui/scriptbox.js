@@ -515,6 +515,7 @@ EdenUI.ScriptBox = function(element, options) {
 				me.showInfoBox(e.target.offsetLeft+20, e.target.offsetTop-me.codearea.scrollTop+25, "error", err.messageText());
 			}
 		}
+		me.updateLineCachedHighlight();
 		//changeClass(e.currentTarget,"active",true);
 	}
 

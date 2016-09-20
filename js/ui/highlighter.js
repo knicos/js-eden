@@ -83,7 +83,9 @@
 		this.mode_at_line = {};
 	}
 
-
+	EdenUI.Highlight.isMissing = function(str) {
+		return eden.root.symbols[str] === undefined;
+	}
 
 	EdenUI.Highlight.isType = function(str) {
 		return /[A-Z]/.test(str.charAt(0)) && eden.root.symbols[str];
@@ -302,6 +304,8 @@
 						classes += "eden-function";
 					} else if (edenSpecials[stream.data.value]) {
 						classes += "eden-special";
+					} else if (EdenUI.Highlight.isMissing(stream.data.value)) {
+						classes += "eden-missing";
 					} else {
 						classes += "eden-observable";
 					}
