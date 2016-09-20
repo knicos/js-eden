@@ -92,7 +92,7 @@
 	}
 
 	EdenUI.Highlight.isConstant = function(str) {
-		return eden.root.symbols[str] && eden.root.symbols[str].definition === undefined;
+		return eden.root.symbols[str] && (eden.root.symbols[str].definition === undefined || eden.root.symbols[str].definition.deps.length == 0);
 		//return edenValues[str] || (/^[A-Z][A-Z0-9]*$/.test(str) && eden.root.symbols[str] && eden.root.symbols[str].definition === undefined);
 	}
 

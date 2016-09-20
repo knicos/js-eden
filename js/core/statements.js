@@ -127,12 +127,34 @@ Eden.Statement.search = function(str, cb) {
 					for (var j=0; j<res.active.length; j++) {
 						var stat = Eden.Statement.statements[res.active[j]];
 						if (stat.statement && stat.statement.type == "assignment") ahandles.push(res.active[j]);
-						else if (stat.statement && stat.statement.type == "definition" && stat.statement.expression.type == "literal" && stat.statement.expression.datatype != "JAVASCRIPT" && stat.statement.expression.datatype != "LIST") ahandles.push(res.active[j]);
+						else if (stat.statement && stat.statement.type == "definition" && Object.keys(stat.statement.dependencies).length == 0) ahandles.push(res.active[j]);
 					}
 					for (var j=0; j<res.inactive.length; j++) {
 						var stat = Eden.Statement.statements[res.inactive[j]];
 						if (stat.statement && stat.statement.type == "assignment") ihandles.push(res.inactive[j]);
-						else if (stat.statement && stat.statement.type == "definition" && stat.statement.expression.type == "literal" && stat.statement.expression.datatype != "JAVASCRIPT" && stat.statement.expression.datatype != "LIST") ihandles.push(res.inactive[j]);
+						else if (stat.statement && stat.statement.type == "definition" && Object.keys(stat.statement.dependencies).length == 0) ihandles.push(res.inactive[j]);
+					}
+
+					res.active = ahandles;
+					res.inactive = ihandles;
+					res.agents = [];
+				} else if (tokens[i] == "oracles") {
+					var ahandles = [];
+					var ihandles = [];
+
+					for (var j=0; j<res.active.length; j++) {
+						var stat = Eden.Statement.statements[res.active[j]];
+						if (stat.statement && (stat.statement.type == "assignment" || stat.statement.type == "definition")) {
+							var sym = eden.root.symbols[stat.statement.lvalue.name];
+							if (sym && Object.keys(sym.subscribers).length == 0) ahandles.push(res.active[j]);
+						}
+					}
+					for (var j=0; j<res.inactive.length; j++) {
+						var stat = Eden.Statement.statements[res.inactive[j]];
+						if (stat.statement && (stat.statement.type == "assignment" || stat.statement.type == "definition")) {
+							var sym = eden.root.symbols[stat.statement.lvalue.name];
+							if (sym && Object.keys(sym.subscribers).length == 0) ihandles.push(res.inactive[j]);
+						}
 					}
 
 					res.active = ahandles;

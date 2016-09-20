@@ -307,12 +307,14 @@ Eden.AST.prototype.next = function() {
 		// Allow multiword observables
 		} else if (this.token == "OBSERVABLE") {
 			var obs = this.data.value;
+			var prevpos = this.stream.prevposition;
 			while (this.peekNext(1) == "OBSERVABLE") {
 				this.token = this.stream.readToken();
 				//console.log(this.data.value);
 				obs += " " + this.data.value;
 			}
 			this.data.value = obs;
+			this.stream.prevposition = prevpos;
 			break;
 		} else {
 			break;
