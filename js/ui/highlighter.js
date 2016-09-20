@@ -6,200 +6,8 @@
  */
 
 (function (global) {
-	var edenFunctions = {
-	"apply": true,
-	"array": true,
-	"canvasURL": true,
-	"centroid": true,
-	"char": true,
-	"charCode": true,
-	"choose": true,
-	"compose": true,
-	"concat": true,
-	"curry": true,
-	"decodeHTML": true,
-	"definitionOf": true,
-	"definitionRHS": true,
-	"doDefault": true,
-	"edenCode": true,
-	"escapeRE": true,
-	"foldl": true,
-	"foldr": true,
-	"hasProperty": true,
-	"hslColour": true,
-	"htmlBulletList": true,
-	"htmlNumberedList": true,
-	"positionInList": true,
-	"positionOfRE": true,
-	"substringPosition": true,
-	"int": true,
-	"isBoolean": true,
-	"isCallable": true,
-	"isChar": true,
-	"isDefined": true,
-	"isDependency": true,
-	"isDependent": true,
-	"isFunc": true,
-	"isInt": true,
-	"isList": true,
-	"isNaN": true,
-	"isNumber": true,
-	"isObject": true,
-	"isPoint": true,
-	"isPointer": true,
-	"isProc": true,
-	"isString": true,
-	"isValue": true,
-	"distanceMoved": true,
-	"angleTurned": true,
-	"List": true,
-	"listcat": true,
-	"lookup": true,
-	"lowercase": true,
-	"map": true,
-	"mapPartial": true,
-	"max": true,
-	"Menu": true,
-	"MenuItem": true,
-	"min": true,
-	"mod": true,
-	"nameof": true,
-	"partApply": true,
-	"Point": true,
-	"pow": true,
-	"properties": true,
-	"randomBoolean": true,
-	"randomFloat": true,
-	"randomInteger": true,
-	"RE": true,
-	"replaceFirst": true,
-	"reverse": true,
-	"rgbColour": true,
-	"rotatePoint": true,
-	"round": true,
-	"roundMultiple": true,
-	"scalePoint": true,
-	"search": true,
-	"sequenceItoJ": true,
-	"sequenceN": true,
-	"sequenceArithmeticN": true,
-	"sequenceList": true,
-	"sequencePrevious": true,
-	"sort": true,
-	"str": true,
-	"sqrt": true,
-	"strcat": true,
-	"sublist": true,
-	"substitute": true,
-	"substr": true,
-	"sum": true,
-	"tail": true,
-	"trim": true,
-	"type": true,
-	"uppercase": true,
-	"include_css": true,
-	"html": true,
-	"time": true,
-	"execute": true,
-	"Text": true,
-	"textWidth": true,
-	"textHeight": true,
-	"Arc": true,
-	"Curve": true,
-	"FillPattern": true,
-	"Ellipse": true,
-	"Line": true,
-	"LinearGradient": true,
-	"LineSequence": true,
-	"PixelList": true,
-	"GreyPixelList": true,
-	"Rectangle": true,
-	"RotateAboutCentre": true,
-	"RotateAboutPoint": true,
-	"CombinedRotation": true,
-	"Scale": true,
-	"Translate": true,
-	"RoundedRectangle": true,
-	"Polygon": true,
-	"RegularPolygon": true,
-	"Sector": true,
-	"Shadow": true,
-	"Circle": true,
-	"Button": true,
-	"Checkbox": true,
-	"Div": true,
-	"Image": true,
-	"imageWithZones": true,
-	"HTMLImage": true,
-	"RadioButtons": true,
-	"Slider": true,
-	"Textbox": true,
-	"DropDownList": true,
-	"Combobox": true,
-	"BulletSlide": true,
-	"Video": true,
-	"Audio": true,
-	"Slide": true,
-	"TitledSlide": true,
-	"TitleSlide": true,
-	"cos": true,
-	"sin": true,
-	"tan": true,
-	"abs": true,
-	"acos": true,
-	"asin": true,
-	"atan": true,
-	"ceil": true,
-	"roundUp": true,
-	"exp": true,
-	"floor": true,
-	"roundDown": true,
-	"log": true,
-	"random": true,
-	"forget": true,
-	"forgetAll": true,
-	"shapeOnTopAt": true,
-	"zoneOnTopAt": true,
-	"observableOnTopAt": true,
-	"shapeOnBottomAt": true,
-	"zoneOnBottomAt": true,
-	"observableOnBottomAt": true,
-	"shapesAt": true,
-	"zonesAt": true,
-	"observablesAt": true,
-	"observableForShape": true,
-	"alias": true,
-	"arrangeWindows": true,
-	"attemptMouseCapture": true,
-	"bindCSSNumericProperty": true,
-	"bindCSSProperty": true,
-	"bindCSSRule": true,
-	"createCanvas": true,
-	"createHTMLView": true,
-	"createProjectList": true,
-	"createView": true,
-	"destroyView": true,
-	"eager": true,
-	"error": true,
-	"hideView": true,
-	"highlightView": true,
-	"moveView": true,
-	"patch": true,
-	"removeedenclock": true,
-	"resizeView": true,
-	"setedenclock": true,
-	"showObservables": true,
-	"showView": true,
-	"stopHighlightingView": true,
-	"todo": true,
-	"touch": true,
-	"unbind": true,
-	"withAppendedItem": true,
-	"writeln": true
-	};
 
 	var edenSpecials = {
-	"autocalc": true,
 	"this": true,
 	"from": true,
 	"has": true,
@@ -278,8 +86,21 @@
 
 
 	EdenUI.Highlight.isType = function(str) {
-		return false;
-		//return (str.charCodeAt(0) >= 65 && str.charCodeAt(0) <= 90);
+		return /[A-Z]/.test(str.charAt(0)) && eden.root.symbols[str];
+	}
+
+	EdenUI.Highlight.isConstant = function(str) {
+		return eden.root.symbols[str] && eden.root.symbols[str].definition === undefined;
+		//return edenValues[str] || (/^[A-Z][A-Z0-9]*$/.test(str) && eden.root.symbols[str] && eden.root.symbols[str].definition === undefined);
+	}
+
+	EdenUI.Highlight.isLibrary = function(str) {
+		var sym = eden.root.symbols[str];
+		if (!sym) return false;
+		if (sym.statid === undefined) return false
+		var stat = Eden.Statement.statements[sym.statid];
+		if (!stat || !stat.statement || !stat.statement.doxyComment) return false;
+		return stat.statement.doxyComment.hasTag("#library");
 	}
 
 
@@ -473,12 +294,12 @@
 				} else if (token == "BOOLEAN") {
 					classes += "eden-constant";	
 				} else if (token == "OBSERVABLE") {
-					if (edenFunctions[stream.data.value]) {
-						classes += "eden-function";
+					if (EdenUI.Highlight.isConstant(stream.data.value)) {
+						classes += "eden-constant";
 					} else if (EdenUI.Highlight.isType(stream.data.value)) {
 						classes += "eden-type";
-					} else if (edenValues[stream.data.value]) {
-						classes += "eden-constant";
+					} else if (EdenUI.Highlight.isLibrary(stream.data.value)) {
+						classes += "eden-function";
 					} else if (edenSpecials[stream.data.value]) {
 						classes += "eden-special";
 					} else {

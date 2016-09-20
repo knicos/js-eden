@@ -37,6 +37,7 @@ span.hidden {
 
 span.eden-constant {
 	color: #4e9a06;
+	/*font-weight: bold;*/
 }
 
 span.eden-type {
