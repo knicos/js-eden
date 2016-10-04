@@ -103,6 +103,18 @@ span.eden-doxytagerror {
 	color: #cc0000;
 }
 
+span.eden-qattriberror {
+	font-style: normal;
+	font-weight: bold;
+	color: #cc0000;
+}
+
+span.eden-qattrib {
+	font-style: normal;
+	font-weight: bold;
+	color: #3465a4;
+}
+
 span.eden-backticks {
 	background-color: #f6e1f4;
 }

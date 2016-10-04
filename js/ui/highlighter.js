@@ -287,6 +287,13 @@
 					if (stream.data.value == "import") {
 						this.mode = 7;
 					}
+				} else if (token == "?") {
+					this.mode = 9;
+					linestack.push(line);
+					var nline = document.createElement("span");
+					nline.className = "eden-backticks";
+					line.appendChild(nline);
+					line = nline;
 				} else if (token == "NUMBER") {
 					classes += "eden-number";
 				} else if (token == "STRING") {
@@ -406,6 +413,16 @@
 				if (token == "}}$") {
 					this.mode = 0;
 				}
+			} else if (this.mode == 9) {
+				if (token == ":") this.mode = 91;
+			} else if (this.mode == 91) {
+				if (token == "OBSERVABLE") {
+					switch (stream.data.value) {
+					case "source": classes += "eden-qattrib"; break;
+					default: classes += "eden-qattriberror";
+					}
+				}
+				this.mode = 6;
 			}
 
 			// Insert caret in middle of token if needed

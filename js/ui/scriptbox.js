@@ -565,37 +565,19 @@ EdenUI.ScriptBox = function(element, options) {
 
 	setInterval(function() {
 		for (var x in me.valuedivs) {
+			//console.log("UPDATE: " + x);
 			var stat = Eden.Statement.statements[x];
+			var valhtml = EdenUI.htmlForStatement(stat,30,30);
+			//var valhtml = EdenUI.Highlight.html(val)
 			var active = stat.isActive();
 
-			if (active) {
-				var sym = eden.root.lookup(stat.statement.lvalue.name);
-				me.valuedivs[x].find(".scriptbox-valuecontent").html(Eden.edenCodeForValue(sym.boundValue(eden.root.scope)));
-				me.valuedivs[x].removeClass("inactive");
-			} else {
-				if (stat.statement.type == "definition" || stat.statement.type == "assignment") {
-					var dummyctx = {scopes: [], dependencies: {}};
-					var rhs = "(function(context,scope) { \n";
-					var express = stat.statement.expression.generate(dummyctx, "scope",true);
-
-					// Generate array of all scopes used in this definition (if any).
-					if (dummyctx.scopes.length > 0) {
-						//rhs += "\tvar _scopes = [];\n";
-						for (var i=0; i<dummyctx.scopes.length; i++) {
-							rhs += "\tvar scope" + (i+1) + " = " + dummyctx.scopes[i];
-							rhs += ";\n";
-						}
-					}
-
-					rhs += "return " + express;
-					rhs += ";})";
-
-					var val = eval(rhs).call(dummyctx,eden.root,eden.root.scope);
-					//if (val instanceof BoundValue) val = val.value;
-					me.valuedivs[x].find(".scriptbox-valuecontent").html(Eden.edenCodeForValue(val));
-				}
-				me.valuedivs[x].addClass("inactive");
-			}
+			//if (active) {
+				me.valuedivs[x].innerHTML = '<div class="eden-line">'+valhtml+'</div>';
+				//me.valuedivs[x].removeClass("inactive");
+			//} else {
+			//	me.valuedivs[x].innerHTML = valhtml;
+				//me.valuedivs[x].addClass("inactive");
+			//}
 		}
 	}, 500);
 }
@@ -625,13 +607,15 @@ EdenUI.ScriptBox.prototype.setChangeCB = function(cb) {
 
 EdenUI.ScriptBox.prototype.moveTo = function(num) {
 	if (num == this.currentstatement) return;
+	this.disable();
 	this.changeOutput($(this.statements[num]).find(".scriptbox-output").get(0));
 	this.currentstatement = num;
+	this.enable();
 	this.setSource(Eden.Statement.statements[this.currentstatement].source);
 }
 
 EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
-	this.disable();
+	//this.disable();
 	//changeClass(this.outdiv.parentNode.firstChild, "play", false);
 	if (this.outdiv) {
 		$(this.outdiv).find(".fake-caret").remove();
@@ -639,7 +623,7 @@ EdenUI.ScriptBox.prototype.changeOutput = function(newoutput) {
 	this.outdiv = newoutput;
 	//changeClass(this.outdiv.parentNode.firstChild, "play", true);
 	this.highlighter = new EdenUI.Highlight(this.outdiv);
-	this.enable();
+	//this.enable();
 }
 
 EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
@@ -658,10 +642,11 @@ EdenUI.ScriptBox.prototype.insertStatement = function(stat, stick) {
 		else newout.appendTo(this.$codearea);
 		this.statements[stat.id] = newout.get(0);
 	}
-	this.currentstatement = stat.id;
+	this.moveTo(stat.id);
+	//this.currentstatement = stat.id;
 	//this.statements.push("");
-	this.changeOutput(newout.find(".scriptbox-output").get(0));
-	this.setSource(stat.source);
+	//this.changeOutput(newout.find(".scriptbox-output").get(0));
+	//this.setSource(stat.source);
 	if (stat.isActive()) {
 		if (stat.statement.type == "assignment") {
 			changeClass(this.statements[stat.id].childNodes[(this.showstars)?2:1],"last",true);
@@ -894,18 +879,25 @@ EdenUI.ScriptBox.prototype.showInfoBox = function(x, y, type, message) {
 EdenUI.ScriptBox.prototype.disable = function() {
 	if (!this.outdiv) return;
 	changeClass(this.outdiv, "goto", false);
+	//console.log("DISABLE: " + this.currentstatement);
+	this.valuedivs[this.currentstatement] = this.outdiv;
+	var valhtml = EdenUI.htmlForStatement(Eden.Statement.statements[this.currentstatement],30,30);
+	this.valuedivs[this.currentstatement].innerHTML = '<div class="eden-line">'+valhtml+'</div>';
+	//console.log(this.valuedivs);
 	this.gotomode = false;
 	//this.outdiv.contentEditable = false;
 	changeClass(this.outdiv.parentNode, "readonly", true);
 	if (this.ast) {
 		//this.highlighter.hideComments();
-		this.highlighter.highlight(this.ast,-1,-1);
+		//this.highlighter.highlight(this.ast,-1,-1);
 	}
 }
 
 EdenUI.ScriptBox.prototype.enable = function() {
 	if (!this.outdiv) return;
 	this.outdiv.contentEditable = true;
+	if (this.valuedivs[this.currentstatement]) delete this.valuedivs[this.currentstatement];
+	//console.log("ENABLE: " + this.currentstatement);
 	changeClass(this.outdiv.parentNode, "readonly", false);
 	if (this.ast) {
 		//this.highlighter.showComments();

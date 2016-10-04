@@ -542,6 +542,9 @@ Eden.AST.prototype.pFACTOR = function() {
 			this.next();
 		}
 		res = expression;
+	} else if (this.token == "?") {
+		this.next();
+		res = this.pQUERY();
 	// Action parameters
 	} else if (this.token == "$") {
 		this.next();
@@ -2396,6 +2399,35 @@ Eden.AST.prototype.pDELETE = function() {
 	}
 
 	return del;
+}
+
+
+
+Eden.AST.prototype.pQUERY = function() {
+	var q = new Eden.AST.Query();
+
+	q.setQuery(this.pEXPRESSION());
+	if (q.errors.length > 0) return q;
+
+	if (this.token != ":") {
+		q.errors.push(new Eden.SyntaxError(this,Eden.SyntaxError.UNKNOWN));
+		return q;
+	}
+
+	this.next();
+
+	if (this.token == "OBSERVABLE") {
+		if (!q.setAttribute(this.data.value)) {
+			q.errors.push(new Eden.SyntaxError(this,Eden.SyntaxError.UNKNOWN));
+			return q;
+		}
+	} else {
+		q.errors.push(new Eden.SyntaxError(this,Eden.SyntaxError.UNKNOWN));
+		return q;
+	}
+
+	this.next();
+	return q;
 }
 
 

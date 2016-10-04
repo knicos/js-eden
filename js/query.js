@@ -70,6 +70,7 @@ Eden.Query.treeTopDown = function() {
 	var base = {};
 	for (var x in eden.root.symbols) {
 		var sym = eden.root.symbols[x];
+		if (!sym) continue;
 		if (Object.keys(sym.subscribers).length == 0) {
 			base[x] = {};
 		}
@@ -79,6 +80,43 @@ Eden.Query.treeTopDown = function() {
 		for (var x in base) {
 			var sym = eden.root.symbols[x];
 			if (!sym) continue;
+			var dest = base[x];
+			for (var y in sym.dependencies) {
+				dest[y.slice(1)] = {};
+			}
+			processSymbol(dest);
+		}
+	}
+
+	processSymbol(base);
+
+	return base;
+}
+
+Eden.Query.objectHierarchy = function() {
+	function testSymbol(sym) {
+		if (sym.statid !== undefined) {
+			var stat = Eden.Statement.statements[sym.statid];
+			if (stat.statement && stat.statement.doxyComment && stat.statement.doxyComment.hasTag("#library")) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	var base = {};
+	for (var x in eden.root.symbols) {
+		var sym = eden.root.symbols[x];
+		if (!sym || !testSymbol(sym)) continue;
+		if (Object.keys(sym.subscribers).length == 0 && Object.keys(sym.dependencies).length != 0) {
+			base[x] = {};
+		}
+	}
+
+	function processSymbol(base) {
+		for (var x in base) {
+			var sym = eden.root.symbols[x];
+			if (!sym || !testSymbol(sym)) continue;
 			var dest = base[x];
 			for (var y in sym.dependencies) {
 				dest[y.slice(1)] = {};

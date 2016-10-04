@@ -134,7 +134,8 @@ div.info-erroritem:before {
 
 div.scriptbox-statement {
 	/*border-bottom: 1px solid #e5e5e5;*/
-	border-top: 1px solid #f0f0f0;
+	border-top: 1px solid #e0e0e0;
+	border-bottom: 1px solid #e0e0e0;
 	/*margin-top: 6px;*/
 	background: #f8f8f8;
 	white-space: pre;
@@ -155,6 +156,8 @@ div.scriptbox-statement.readonly {
 	/*-webkit-filter: grayscale(70%);
 	filter: grayscale(70%);*/
 	background-color: white;
+	border-top: 1px solid white;
+	border-bottom: 1px solid white;
 	/*max-height: 27px;*/
 	/*opacity: 0.5;*/
 }

@@ -23,6 +23,34 @@ Eden.Statement.findFree = function() {
 	return -1;
 }
 
+Eden.Statement.getSources = function(res) {
+	var srcs = [];
+	if (res) {
+		if (res.active) {
+			for (var i=0; i<res.active.length; i++) {
+				var stat = Eden.Statement.statements[res.active[i]];
+				srcs.push(stat.source);
+			}
+		}
+
+		if (res.inactive) {
+			for (var i=0; i<res.inactive.length; i++) {
+				var stat = Eden.Statement.statements[res.inactive[i]];
+				srcs.push(stat.source);
+			}
+		}
+
+		if (res.agents) {
+			for (var i=0; i<res.agents.length; i++) {
+				var stat = Eden.Statement.statements[res.agents[i]];
+				srcs.push(stat.source);
+			}
+		}
+	}
+
+	return srcs;
+}
+
 Eden.Statement.search = function(str, cb) {
 	var words = str.split(/[ ]+/);
 	var res;
@@ -31,6 +59,7 @@ Eden.Statement.search = function(str, cb) {
 	var tagres;
 	var inittoken = false;
 	var sortopts;
+	var groupopt = "category";
 
 	if (words.length > 0) {
 		if (words[0].charAt(words[0].length-1) == ":") {
@@ -64,6 +93,10 @@ Eden.Statement.search = function(str, cb) {
 			var opts = words[i].split(":");
 			sortopts = opts[1].split(",");
 			rcount--;
+		} else if (words[i].startsWith("group")) {
+			var opts = words[i].split(":");
+			groupopt = opts[1];
+			rcount--;
 		} else if (words[i].startsWith("depends:")) {
 			// Do a dependency search
 			var deps = words[i].split(":");
@@ -87,9 +120,9 @@ Eden.Statement.search = function(str, cb) {
 			} else {
 				nres = Eden.Statement._search(edenUI.regExpFromStr(theword));
 			}
-			res.active = negativeFilter(res.active, nres.active);
-			res.inactive = negativeFilter(res.inactive, nres.inactive);
-			res.agents = negativeFilter(res.agents, nres.agents);
+			res = negativeFilter(res, nres);
+			//res.inactive = negativeFilter(res.inactive, nres.inactive);
+			//res.agents = negativeFilter(res.agents, nres.agents);
 			rcount--;
 		} else {
 			res = Eden.Statement._search(edenUI.regExpFromStr(words[i]), undefined,res);
@@ -99,102 +132,99 @@ Eden.Statement.search = function(str, cb) {
 	if (res) {
 		if (inittoken) {
 			var tokens = words[0].split(":");
-			console.log(tokens);
+
 			for (var i=0; i<tokens.length; i++) {
 				if (tokens[i] == "agents") {
-					res.active = [];
-					res.inactive = [];
+					var newres = [];
+					for (var j=0; j<res.length; j++) {
+						if (Eden.Statement.statements[res[j]].isAgent()) newres.push(res[j]);
+					}
+					res = newres;
 				} else if (tokens[i] == "active") {
-					//res.agents = [];
-					var aagents = [];
-					for (var j=0; j<res.agents.length; j++) {
-						if (Eden.Statement.statements[res.agents[j]].isActive()) aagents.push(res.agents[j]);
+					var newres = [];
+					for (var j=0; j<res.length; j++) {
+						if (Eden.Statement.statements[res[j]].isActive()) newres.push(res[j]);
 					}
-					res.agents = aagents;
-					res.inactive = [];
+					res = newres;
 				} else if (tokens[i] == "inactive") {
-					//res.agents = [];
-					var aagents = [];
-					for (var j=0; j<res.agents.length; j++) {
-						if (!Eden.Statement.statements[res.agents[j]].isActive()) aagents.push(res.agents[j]);
+					var newres = [];
+					for (var j=0; j<res.length; j++) {
+						if (!Eden.Statement.statements[res[j]].isActive()) newres.push(res[j]);
 					}
-					res.agents = aagents;
-					res.active = [];
+					res = newres;
 				} else if (tokens[i] == "handles") {
 					var ahandles = [];
-					var ihandles = [];
 
-					for (var j=0; j<res.active.length; j++) {
-						var stat = Eden.Statement.statements[res.active[j]];
-						if (stat.statement && stat.statement.type == "assignment") ahandles.push(res.active[j]);
-						else if (stat.statement && stat.statement.type == "definition" && Object.keys(stat.statement.dependencies).length == 0) ahandles.push(res.active[j]);
-					}
-					for (var j=0; j<res.inactive.length; j++) {
-						var stat = Eden.Statement.statements[res.inactive[j]];
-						if (stat.statement && stat.statement.type == "assignment") ihandles.push(res.inactive[j]);
-						else if (stat.statement && stat.statement.type == "definition" && Object.keys(stat.statement.dependencies).length == 0) ihandles.push(res.inactive[j]);
+					for (var j=0; j<res.length; j++) {
+						var stat = Eden.Statement.statements[res[j]];
+						if (stat.statement && stat.statement.type == "assignment") ahandles.push(res[j]);
+						else if (stat.statement && stat.statement.type == "definition" && Object.keys(stat.ast.dependencies).length == 0) ahandles.push(res[j]);
 					}
 
-					res.active = ahandles;
-					res.inactive = ihandles;
-					res.agents = [];
+					res = ahandles;
 				} else if (tokens[i] == "oracles") {
 					var ahandles = [];
-					var ihandles = [];
 
-					for (var j=0; j<res.active.length; j++) {
-						var stat = Eden.Statement.statements[res.active[j]];
+					for (var j=0; j<res.length; j++) {
+						var stat = Eden.Statement.statements[res[j]];
 						if (stat.statement && (stat.statement.type == "assignment" || stat.statement.type == "definition")) {
 							var sym = eden.root.symbols[stat.statement.lvalue.name];
-							if (sym && Object.keys(sym.subscribers).length == 0) ahandles.push(res.active[j]);
-						}
-					}
-					for (var j=0; j<res.inactive.length; j++) {
-						var stat = Eden.Statement.statements[res.inactive[j]];
-						if (stat.statement && (stat.statement.type == "assignment" || stat.statement.type == "definition")) {
-							var sym = eden.root.symbols[stat.statement.lvalue.name];
-							if (sym && Object.keys(sym.subscribers).length == 0) ihandles.push(res.inactive[j]);
+							if (sym && Object.keys(sym.subscribers).length == 0) ahandles.push(res[j]);
 						}
 					}
 
-					res.active = ahandles;
-					res.inactive = ihandles;
-					res.agents = [];
+					res = ahandles;
 				} else if (tokens[i] == "defs") {
-					res.agents = [];
+					var newres = [];
+					for (var j=0; j<res.length; j++) {
+						if (!Eden.Statement.statements[res[j]].isAgent()) newres.push(res[j]);
+					}
+					res = newres;
 				}
 			}
 		}
 
-		res.active = reduceByCount(res.active, rcount);
-		res.inactive = reduceByCount(res.inactive, rcount);
-		res.agents = reduceByCount(res.agents, rcount);
-		if (tagres) res.tags = tagres;
+		res = reduceByCount(res, rcount);
 
 		// Now apply sorting
 		if (sortopts && sortopts.length > 0) {
-			var allres = [];
-			allres.push.apply(allres, res.active);
-			allres.push.apply(allres, res.inactive);
+			//var allres = [];
+			//allres.push.apply(allres, res.active);
+			//allres.push.apply(allres, res.inactive);
 
 			if (sortopts[0] == "youngest") {
-				allres.push.apply(allres, res.agents);
-				allres.sort(function(a,b) {
+				//allres.push.apply(allres, res.agents);
+				res.sort(function(a,b) {
 					return Eden.Statement.statements[a].timestamp < Eden.Statement.statements[b].timestamp;
 				});
 			} else if (sortopts[0] == "oldest") {
-				allres.push.apply(allres, res.agents);
-				allres.sort(function(a,b) {
+				//allres.push.apply(allres, res.agents);
+				res.sort(function(a,b) {
 					return Eden.Statement.statements[a].timestamp > Eden.Statement.statements[b].timestamp;
 				});
 			} else if (sortopts[0] == "name") {
-				allres.sort(function(a,b) {
+				// TODO REMOVE AGENTS.
+				res.sort(function(a,b) {
 					return Eden.Statement.statements[a].statement.lvalue.name.toUpperCase().localeCompare(Eden.Statement.statements[b].statement.lvalue.name.toUpperCase());
 				});
 			}
-			res.all = allres;
 		}
 
+		// Now perform grouping
+		if (groupopt == "category") {
+			// Default should be by category (active, inactive, agents)
+			// Others are topdown or bottomup dependence, by tags
+			var gres = {grouping: groupopt, active: [], inactive: [], agents: [], all: res};
+			for (var i=0; i<res.length; i++) {
+				var stat = Eden.Statement.statements[res[i]];
+				if (stat.isAgent()) gres.agents.push(res[i]);
+				else if (stat.isActive()) gres.active.push[res[i]];
+				else gres.inactive.push[res[i]];
+			}
+			res = gres;
+		}
+
+		if (tagres) res.tags = tagres;
 		return res;
 	} else if (tagres) {
 		return {tags: tagres};
@@ -210,9 +240,10 @@ Eden.Statement.remoteSearch = function(str, cb) {
 
 Eden.Statement._search = function(regex, m, prev) {
 	var maxres = (m) ? m : 10;
-	var agentres = (prev)?prev.agents:[];
-	var activeres = (prev)?prev.active:[];
-	var inactiveres = (prev)?prev.inactive:[];
+	//var agentres = (prev)?prev.agents:[];
+	//var activeres = (prev)?prev.active:[];
+	//var inactiveres = (prev)?prev.inactive:[];
+	var res = (prev)?prev:[];
 
 	for (var i=0; i<Eden.Statement.statements.length; i++) {
 		//if (results.length >= maxres) break;
@@ -221,31 +252,32 @@ Eden.Statement._search = function(regex, m, prev) {
 		if (stat.ast && stat.statement) {
 			if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
 				if (regex.test(stat.statement.lvalue.name)) {
-					if (stat.isActive()) {
-						activeres.push(i);
-					} else {
-						inactiveres.push(i);
-					}
+					//if (stat.isActive()) {
+					//	activeres.push(i);
+					//} else {
+						res.push(i);
+					//}
 					continue;
 				}
 			} else if (stat.statement.type == "when") {
 				for (var x in stat.statement.triggers) {
 					if (regex.test(x)) {
-						agentres.push(i);
+						res.push(i);
 						break;
 					}
 				}
 			}
 		}
 	}
-	return {active: activeres, inactive: inactiveres, agents: agentres};
+	return res;
 }
 
 Eden.Statement.dependSearch = function(regex, m, prev) {
 	var maxres = (m) ? m : 10;
-	var agentres = (prev)?prev.agents:[];
-	var activeres = (prev)?prev.active:[];
-	var inactiveres = (prev)?prev.inactive:[];
+	//var agentres = (prev)?prev.agents:[];
+	//var activeres = (prev)?prev.active:[];
+	//var inactiveres = (prev)?prev.inactive:[];
+	var res = (prev)?prev:[];
 
 	for (var i=0; i<Eden.Statement.statements.length; i++) {
 		//if (results.length >= maxres) break;
@@ -255,32 +287,33 @@ Eden.Statement.dependSearch = function(regex, m, prev) {
 				
 				for (var x in stat.ast.dependencies) {
 					if (regex.test(x)) {
-						if (stat.isActive()) {
-							activeres.push(i);
-						} else {
-							inactiveres.push(i);
-						}
+						//if (stat.isActive()) {
+						//	activeres.push(i);
+						//} else {
+							res.push(i);
+						//}
 						break;
 					}
 				}
 			} else if (stat.statement.type == "when") {
 				for (var x in stat.statement.triggers) {
 					if (regex.test(x)) {
-						agentres.push(i);
+						res.push(i);
 						break;
 					}
 				}
 			}
 		}
 	}
-	return {active: activeres, inactive: inactiveres, agents: agentres};
+	return res;
 }
 
 Eden.Statement.determineSearch = function(regex, m, prev) {
 	var maxres = (m) ? m : 10;
-	var agentres = (prev)?prev.agents:[];
-	var activeres = (prev)?prev.active:[];
-	var inactiveres = (prev)?prev.inactive:[];
+	//var agentres = (prev)?prev.agents:[];
+	//var activeres = (prev)?prev.active:[];
+	//var inactiveres = (prev)?prev.inactive:[];
+	var res = (prev)?prev:[];
 
 	// Find all matching symbols
 	// For each, get all dependencies recursively
@@ -308,23 +341,24 @@ Eden.Statement.determineSearch = function(regex, m, prev) {
 		var statid = done[x].statid;
 		if (statid !== undefined) {
 			var stat = Eden.Statement.statements[statid];
-			if (stat.statement.type == "when") {
-				agentres.push(statid);
-			} else {
-				activeres.push(statid);
-			}
+			//if (stat.statement.type == "when") {
+				res.push(statid);
+			//} else {
+			//	activeres.push(statid);
+			//}
 		}
 	}
 
 	
-	return {active: activeres, inactive: inactiveres, agents: agentres};
+	return res;
 }
 
 Eden.Statement.tagSearch = function(regex, m, prev) {
 	var maxres = (m) ? m : 10;
-	var agentres = (prev)?prev.agents:[];
-	var activeres = (prev)?prev.active:[];
-	var inactiveres = (prev)?prev.inactive:[];
+	//var agentres = (prev)?prev.agents:[];
+	//var activeres = (prev)?prev.active:[];
+	//var inactiveres = (prev)?prev.inactive:[];
+	var res = (prev)?prev:[];
 
 	for (var x in Eden.Statement.tags) {
 		if (regex.test(x)) {
@@ -334,28 +368,28 @@ Eden.Statement.tagSearch = function(regex, m, prev) {
 			for (var i in stats) {
 				var stat = stats[i];
 				if (stat.ast && stat.statement) {
-					if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
+					//if (stat.statement.type == "definition" || stat.statement.type == "assignment" || stat.statement.type == "modify") {
 						//if (regex.test(stat.statement.lvalue.name)) {
-							if (stat.isActive()) {
-								activeres.push(stat.id);
-							} else {
-								inactiveres.push(stat.id);
-							}
+							//if (stat.isActive()) {
+							//	activeres.push(stat.id);
+							//} else {
+								res.push(stat.id);
+							//}
 							//continue;
 						//}
-					} else if (stat.statement.type == "when") {
+					//} else if (stat.statement.type == "when") {
 						//for (var u in stat.statement.triggers) {
 							//if (regex.test(x)) {
-								agentres.push(stat.id);
+								//res.push(stat.id);
 								//break;
 							//}
 						//}
-					}
+					//}
 				}
 			}
 		}
 	}
-	return {active: activeres, inactive: inactiveres, agents: agentres};
+	return res;
 }
 
 Eden.Statement.prototype.lock = function() {
@@ -371,6 +405,47 @@ Eden.Statement.prototype.unlock = function() {
 	this.owned = false;
 }
 
+Eden.Statement.prototype.valueStringFull = function() {
+	var val = Eden.edenCodeForValue(this.value());
+	if (this.statement.type == "definition") {
+		return this.statement.lvalue.name + " is " + val;
+	} else if (this.statement.type == "assignment") {
+		return this.statement.lvalue.name + " = " + val;
+	}
+	return undefined;
+}
+
+Eden.Statement.prototype.value = function() {
+	var active = this.isActive();
+
+	if (active) {
+		var sym = eden.root.lookup(this.statement.lvalue.name);
+		return sym.boundValue(eden.root.scope);
+	} else {
+		if (this.statement.type == "definition" || this.statement.type == "assignment") {
+			var dummyctx = {scopes: [], dependencies: {}};
+			var rhs = "(function(context,scope) { \n";
+			var express = this.statement.expression.generate(dummyctx, "scope",true);
+
+			// Generate array of all scopes used in this definition (if any).
+			if (dummyctx.scopes.length > 0) {
+				//rhs += "\tvar _scopes = [];\n";
+				for (var i=0; i<dummyctx.scopes.length; i++) {
+					rhs += "\tvar scope" + (i+1) + " = " + dummyctx.scopes[i];
+					rhs += ";\n";
+				}
+			}
+
+			rhs += "return " + express;
+			rhs += ";})";
+
+			var val = eval(rhs).call(dummyctx,eden.root,eden.root.scope);
+			return val;
+		}
+		return undefined;
+	}
+}
+
 Eden.Statement.prototype.isActive = function() {
 	if (this.ast && this.statement) {
 		if (this.statement.type == "definition" || this.statement.type == "assignment") {
@@ -381,6 +456,10 @@ Eden.Statement.prototype.isActive = function() {
 		}
 	}
 	return false;
+}
+
+Eden.Statement.prototype.isAgent = function() {
+	return this.statement && this.statement.type == "when";
 }
 
 Eden.Statement.reset = function() {

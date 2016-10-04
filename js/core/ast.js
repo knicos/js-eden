@@ -1376,7 +1376,54 @@ Eden.AST.Insert.prototype.setSource = function(start, end) {
 Eden.AST.Insert.prototype.error = fnEdenASTerror;
 
 
+//------------------------------------------------------------------------------
 
+Eden.AST.Query = function() {
+	this.type = "query";
+	this.query = undefined;
+	this.errors = [];
+	this.start = 0;
+	this.end = 0;
+	this.attrib = "source";
+}
+
+Eden.AST.Query.prototype.setQuery = function(q) {
+	this.query = q;
+	if (q.errors.length > 0) {
+		this.errors.push.apply(this.errors, q.errors);
+	}
+}
+
+Eden.AST.Query.prototype.setAttribute = function(str) {
+	this.attrib = str;
+	switch(str) {
+	case "source" :
+	case "tags" :
+	case "active" :
+	case "observable" :
+	case "dependencies" :
+	case "id" :
+	case "rid" :
+	case "locked": return true;
+	default: return false;
+	}
+}
+
+Eden.AST.Query.prototype.setSource = function(start, end) {
+	this.start = start;
+	this.end = end;
+}
+
+Eden.AST.Query.prototype.generate = function(ctx, scope) {
+	var res = "Eden.Statement.getSources(Eden.Statement.search(" + this.query.generate(ctx,scope) + "))";
+	return res;
+}
+
+Eden.AST.Query.prototype.execute = function(root, ctx, base, scope) {
+
+}
+
+Eden.AST.Query.prototype.error = fnEdenASTerror;
 
 //------------------------------------------------------------------------------
 
