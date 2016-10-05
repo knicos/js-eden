@@ -15,6 +15,41 @@ EdenUI.htmlForValue = function(value, width, height) {
 		return '<path style="stroke: black; stroke-width: 2px" d="M '+x1+' '+y1+' L '+x2+' '+y2+'"></path>';
 	}
 
+	function makeCircle(scope, viewbox) {
+		var x = scope.lookup("/position").scope.lookup("/x").value;
+		var y = scope.lookup("/position").scope.lookup("/y").value;
+		var r = scope.lookup("/radius").value;
+		var colour = scope.lookup("/colour").value;
+		if (x-r-5 < viewbox.x) viewbox.x = x-r-5;
+		if (y-r-5 < viewbox.y) viewbox.y = y-r-5;
+		if (x+r+5 > viewbox.x2) viewbox.x2 = x+r+5;
+		if (y+r+5 > viewbox.y2) viewbox.y2 = y+r+5;
+		return '<circle style="stroke: black; stroke-width: 2px; fill: '+colour+';" r="'+r+'" cx="'+x+'" cy="'+y+'"></circle>';
+	}
+
+	function makeRectangle(scope, viewbox) {
+		var x = scope.lookup("/position").scope.lookup("/x").value;
+		var y = scope.lookup("/position").scope.lookup("/y").value;
+		var w = scope.lookup("/size").scope.lookup("/x").value;
+		var h = scope.lookup("/size").scope.lookup("/y").value;
+		var colour = scope.lookup("/colour").value;
+		if (x < viewbox.x) viewbox.x = x;
+		if (y < viewbox.y) viewbox.y = y;
+		if (x+w > viewbox.x2) viewbox.x2 = x+w;
+		if (y+h > viewbox.y2) viewbox.y2 = y+h;
+		return '<rect style="stroke: black; stroke-width: 2px; fill: '+colour+';" width="'+w+'" height="'+h+'" x="'+x+'" y="'+y+'"></rect>';
+	}
+
+	function makePoint(scope) {
+		var x = value.scope.lookup("/x").value;
+		var y = value.scope.lookup("/y").value;
+		if (x === undefined) x = "@";
+		if (y === undefined) y = "@";
+		if (typeof x == "number") x = x.toFixed(2);
+		if (typeof y == "number") y = y.toFixed(2);
+		return '<span class="eden-type">Point</span>(<span class="eden-number">'+x+'</span>,<span class="eden-number">'+y+'</span>)';
+	}
+
 	function makeViewbox(viewbox) {
 		return 'viewBox="'+viewbox.x+' '+viewbox.y+' '+(viewbox.x2-viewbox.x)+' '+(viewbox.y2-viewbox.y)+'"';
 	}
@@ -26,17 +61,23 @@ EdenUI.htmlForValue = function(value, width, height) {
 	if (value instanceof BoundValue) {
 		var self = value.scope.self();
 		switch(value.value) {
+		case "[Rectangle object]": ele = makeRectangle(value.scope, viewbox); return '<svg '+makeViewbox(viewbox)+' style="float: right;" width='+width+' height='+height+'>'+ele+'</svg>'; 
+		case "[Circle object]": ele = makeCircle(value.scope, viewbox); return '<svg '+makeViewbox(viewbox)+' style="float: right;" width='+width+' height='+height+'>'+ele+'</svg>'; 
 		case "[Line object]": ele = makeLine(value.scope, viewbox); return '<svg '+makeViewbox(viewbox)+' style="float: right;" width='+width+' height='+height+'>'+ele+'</svg>';
-		case "[Point object]": return '<span class="eden-type">Point</span>';
+		case "[Point object]": return makePoint(value.scope);
 		}
 
-		if (Array.isArray(value.value) && value.value.length > 0) {
+		if (Array.isArray(value.value) && value.value.length > 0 && value.scopes) {
 			ele = "";
 			switch (value.value[0]) {
+			case "[Rectangle object]":
+			case "[Circle object]":
 			case "[Line object]":	for (var i=0; i<value.value.length; i++) {
 										//console.log("ITEM " + i + " = " + value.value[i]);
 										switch(value.value[i]) {
-											case "[Line object]": ele += makeLine(value.scopes[i], viewbox);
+											case "[Rectangle object]": ele += makeRectangle(value.scopes[i], viewbox); break;
+											case "[Circle object]": ele += makeCircle(value.scopes[i], viewbox); break;
+											case "[Line object]": ele += makeLine(value.scopes[i], viewbox); break;
 										}
 									}
 									//console.log(ele);
@@ -48,18 +89,21 @@ EdenUI.htmlForValue = function(value, width, height) {
 
 	if (value === undefined) return '<span class="eden-missing">@</span>';
 	switch(typeof value) {
-	case "number": return '<span class="eden-number">'+value+'</span>';
+	case "number": return '<span class="eden-number">'+value.toFixed(2)+'</span>';
 	case "string": return '<span class="eden-string">"'+value+'"</span>';
 	default: return EdenUI.Highlight.html(Eden.edenCodeForValue(oval));
 	}
 }
 
 EdenUI.htmlForStatement = function(stat, width, height) {
-	var val = EdenUI.htmlForValue(stat.value(), width, height);
 	if (stat.statement.type == "definition") {
+		var val = EdenUI.htmlForValue(stat.value(), width, height);
 		return stat.statement.lvalue.name + " <span class=\"eden-keyword\">is</span> " + val;
 	} else if (stat.statement.type == "assignment") {
+		var val = EdenUI.htmlForValue(stat.value(), width, height);
 		return stat.statement.lvalue.name + " = " + val;
+	} else {
+		return EdenUI.Highlight.html(stat.ast.getSource(stat.statement));
 	}
 	return undefined;
 }

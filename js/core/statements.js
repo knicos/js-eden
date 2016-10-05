@@ -218,8 +218,8 @@ Eden.Statement.search = function(str, cb) {
 			for (var i=0; i<res.length; i++) {
 				var stat = Eden.Statement.statements[res[i]];
 				if (stat.isAgent()) gres.agents.push(res[i]);
-				else if (stat.isActive()) gres.active.push[res[i]];
-				else gres.inactive.push[res[i]];
+				else if (stat.isActive()) gres.active.push(res[i]);
+				else gres.inactive.push(res[i]);
 			}
 			res = gres;
 		}

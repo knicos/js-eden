@@ -143,10 +143,6 @@ div.scriptbox-statement {
 	overflow-y: hidden;
 }
 
-div.scriptbox-statement:last-child {
-	border-bottom: 1px solid #f0f0f0;
-}
-
 div.scriptbox-statement::-webkit-scrollbar {
     height: 0px;  /* remove scrollbar space */
     background: transparent;  /* optional: just make scrollbar invisible */
