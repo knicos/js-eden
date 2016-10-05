@@ -579,7 +579,7 @@ EdenUI.ScriptBox = function(element, options) {
 				//me.valuedivs[x].addClass("inactive");
 			//}
 		}
-	}, 500);
+	}, 200);
 }
 
 /**

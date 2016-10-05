@@ -96,6 +96,7 @@ EdenUI.htmlForValue = function(value, width, height) {
 }
 
 EdenUI.htmlForStatement = function(stat, width, height) {
+	if (stat === undefined) return "";
 	if (stat.statement.type == "definition") {
 		var val = EdenUI.htmlForValue(stat.value(), width, height);
 		return stat.statement.lvalue.name + " <span class=\"eden-keyword\">is</span> " + val;
